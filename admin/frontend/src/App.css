@@ -181,3 +181,30 @@ nav button {
 .errores-simple {
   color: #b91c1c !important;
 }
+
+.tarjetas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.tarjeta {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tarjeta-valor {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.tarjeta-etiqueta {
+  color: #6b7280;
+}

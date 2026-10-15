@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import GestionRecurso from './components/GestionRecurso'
 import Login from './components/Login'
+import Dashboard from './components/Dashboard'
 import './App.css'
 
 const ACTIVA = { nombre: 'activa', etiqueta: 'Activa', tipo: 'checkbox' }
@@ -21,6 +22,7 @@ const ROLES = [
 ]
 
 const SECCIONES = [
+  { clave: 'panel', titulo: 'Panel', campos: [] },
   {
     clave: 'academias',
     titulo: 'Academias',
@@ -119,7 +121,7 @@ export default function App() {
         }
       : null
   })
-  const [clave, setClave] = useState('academias')
+  const [clave, setClave] = useState('panel')
 
   if (!sesion) return <Login onLogin={setSesion} />
 
@@ -158,12 +160,16 @@ export default function App() {
           </button>
         ))}
       </nav>
-      <GestionRecurso
-        key={actual.clave}
-        titulo={actual.titulo}
-        endpoint={actual.clave}
-        campos={actual.campos}
-      />
+      {actual.clave === 'panel' ? (
+        <Dashboard />
+      ) : (
+        <GestionRecurso
+          key={actual.clave}
+          titulo={actual.titulo}
+          endpoint={actual.clave}
+          campos={actual.campos}
+        />
+      )}
     </div>
   )
 }
