@@ -1,8 +1,10 @@
 from rest_framework.routers import DefaultRouter
 
+from .academias import AcademiaViewSet
 from .views import AulaViewSet, CicloViewSet, CursoViewSet, SedeViewSet
 
 router = DefaultRouter()
+router.register('academias', AcademiaViewSet)
 router.register('sedes', SedeViewSet)
 router.register('aulas', AulaViewSet)
 router.register('ciclos', CicloViewSet)

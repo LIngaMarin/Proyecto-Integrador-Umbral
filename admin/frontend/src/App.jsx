@@ -1,122 +1,108 @@
 import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
+import GestionRecurso from './components/GestionRecurso'
 import './App.css'
 
-function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+const ACTIVA = { nombre: 'activa', etiqueta: 'Activa', tipo: 'checkbox' }
+const ACTIVO = { nombre: 'activo', etiqueta: 'Activo', tipo: 'checkbox' }
+const ACADEMIA = {
+  nombre: 'academia',
+  etiqueta: 'Academia',
+  tipo: 'select',
+  requerido: true,
+  relacion: { endpoint: 'academias', mostrar: 'nombre' },
 }
 
-export default App
+const SECCIONES = [
+  {
+    clave: 'academias',
+    titulo: 'Academias',
+    campos: [
+      { nombre: 'nombre', etiqueta: 'Nombre', tipo: 'text', requerido: true },
+      ACTIVA,
+    ],
+  },
+  {
+    clave: 'sedes',
+    titulo: 'Sedes',
+    campos: [
+      ACADEMIA,
+      { nombre: 'nombre', etiqueta: 'Nombre', tipo: 'text', requerido: true },
+      { nombre: 'direccion', etiqueta: 'Dirección', tipo: 'text', requerido: true },
+      { nombre: 'contacto', etiqueta: 'Contacto', tipo: 'text' },
+      ACTIVA,
+    ],
+  },
+  {
+    clave: 'aulas',
+    titulo: 'Aulas',
+    campos: [
+      {
+        nombre: 'sede',
+        etiqueta: 'Sede',
+        tipo: 'select',
+        requerido: true,
+        relacion: { endpoint: 'sedes', mostrar: 'nombre' },
+      },
+      { nombre: 'nombre', etiqueta: 'Nombre', tipo: 'text', requerido: true },
+      { nombre: 'capacidad', etiqueta: 'Capacidad', tipo: 'number', requerido: true },
+      ACTIVA,
+    ],
+  },
+  {
+    clave: 'ciclos',
+    titulo: 'Ciclos',
+    campos: [
+      ACADEMIA,
+      { nombre: 'nombre', etiqueta: 'Nombre', tipo: 'text', requerido: true },
+      { nombre: 'fecha_inicio', etiqueta: 'Inicio', tipo: 'date', requerido: true },
+      { nombre: 'fecha_fin', etiqueta: 'Fin', tipo: 'date', requerido: true },
+      ACTIVO,
+    ],
+  },
+  {
+    clave: 'cursos',
+    titulo: 'Cursos',
+    campos: [
+      {
+        nombre: 'ciclo',
+        etiqueta: 'Ciclo',
+        tipo: 'select',
+        requerido: true,
+        relacion: { endpoint: 'ciclos', mostrar: 'nombre' },
+      },
+      { nombre: 'nombre', etiqueta: 'Nombre', tipo: 'text', requerido: true },
+      ACTIVO,
+    ],
+  },
+]
+
+export default function App() {
+  const [clave, setClave] = useState('academias')
+  const actual = SECCIONES.find((s) => s.clave === clave)
+
+  return (
+    <div className="app">
+      <header>
+        <h1>Umbral · Panel de administración</h1>
+        <p>Infraestructura académica</p>
+      </header>
+      <nav>
+        {SECCIONES.map((s) => (
+          <button
+            key={s.clave}
+            className={s.clave === clave ? 'activa' : ''}
+            onClick={() => setClave(s.clave)}
+          >
+            {s.titulo}
+          </button>
+        ))}
+      </nav>
+      <GestionRecurso
+        key={actual.clave}
+        titulo={actual.titulo}
+        endpoint={actual.clave}
+        campos={actual.campos}
+      />
+    </div>
+  )
+}
