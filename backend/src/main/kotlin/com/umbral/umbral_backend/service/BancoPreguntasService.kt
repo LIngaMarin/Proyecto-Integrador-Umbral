@@ -13,6 +13,16 @@ import org.springframework.web.multipart.MultipartFile
 class BancoPreguntasService(
     private val preguntaRepository: PreguntaRepository
 ) {
+    // HU 22: Consultar las preguntas de un docente con filtros opcionales.
+    fun obtenerPreguntas(docenteId: Long, tema: String?, dificultad: Dificultad?): List<Pregunta> =
+        when {
+            tema != null && dificultad != null ->
+                preguntaRepository.findByDocenteIdAndTemaAndDificultad(docenteId, tema, dificultad)
+            tema != null -> preguntaRepository.findByDocenteIdAndTema(docenteId, tema)
+            dificultad != null -> preguntaRepository.findByDocenteIdAndDificultad(docenteId, dificultad)
+            else -> preguntaRepository.findByDocenteId(docenteId)
+        }
+
     // HU 18: Extraer preguntas desde boletín (PDF/Imagen)
     fun extraerPreguntasDeBoletin(file: MultipartFile, docenteId: Long): List<Pregunta> {
         val preguntasExtraidas = listOf(

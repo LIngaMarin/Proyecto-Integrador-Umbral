@@ -2,6 +2,7 @@ package com.umbral.umbral_backend.controller
 
 import com.umbral.umbral_backend.dto.ActualizarPreguntaDTO
 import com.umbral.umbral_backend.dto.AprobarRechazarDTO
+import com.umbral.umbral_backend.model.Dificultad
 import com.umbral.umbral_backend.model.Pregunta
 import com.umbral.umbral_backend.service.BancoPreguntasService
 import jakarta.validation.Valid
@@ -15,6 +16,14 @@ import org.springframework.web.multipart.MultipartFile
 class DocenteController(
     private val bancoService: BancoPreguntasService
 ) {
+    @GetMapping("/preguntas")
+    fun listarPreguntas(
+        @RequestParam docenteId: Long,
+        @RequestParam(required = false) tema: String?,
+        @RequestParam(required = false) dificultad: Dificultad?
+    ): ResponseEntity<List<Pregunta>> =
+        ResponseEntity.ok(bancoService.obtenerPreguntas(docenteId, tema, dificultad))
+
     @PostMapping("/boletin/extraer")
     fun extraerBoletin(
         @RequestParam("file") file: MultipartFile,
