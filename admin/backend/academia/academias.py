@@ -1,4 +1,5 @@
-from rest_framework import permissions, serializers, viewsets
+from rest_framework import permissions, serializers, status, viewsets
+from rest_framework.response import Response
 
 from .auth import EsAdminOCoordinador, EsAdministrador
 from .models import Academia
@@ -32,3 +33,9 @@ class AcademiaViewSet(viewsets.ModelViewSet):
         if self.request.method in permissions.SAFE_METHODS:
             return [EsAdminOCoordinador()]
         return [EsAdministrador()]
+
+    def destroy(self, request, *args, **kwargs):
+        academia = self.get_object()
+        academia.activa = False
+        academia.save(update_fields=['activa'])
+        return Response(status=status.HTTP_204_NO_CONTENT)
