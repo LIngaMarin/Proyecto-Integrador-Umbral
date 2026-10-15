@@ -3,6 +3,7 @@ import { api } from './api'
 import GestionRecurso from './components/GestionRecurso'
 import Login from './components/Login'
 import Dashboard from './components/Dashboard'
+import Matriculas from './components/Matriculas'
 import './App.css'
 
 const ACTIVA = { nombre: 'activa', etiqueta: 'Activa', tipo: 'checkbox' }
@@ -97,6 +98,29 @@ const SECCIONES = [
     ],
   },
   {
+    clave: 'secciones',
+    titulo: 'Secciones',
+    campos: [
+      {
+        nombre: 'curso',
+        etiqueta: 'Curso',
+        tipo: 'select',
+        requerido: true,
+        relacion: { endpoint: 'cursos', mostrar: 'nombre' },
+      },
+      { nombre: 'nombre', etiqueta: 'Sección', tipo: 'text', requerido: true },
+      {
+        nombre: 'aula',
+        etiqueta: 'Aula',
+        tipo: 'select',
+        relacion: { endpoint: 'aulas', mostrar: 'nombre' },
+      },
+      { nombre: 'cupo', etiqueta: 'Cupo', tipo: 'number', requerido: true },
+      ACTIVA,
+    ],
+  },
+  { clave: 'matriculas', titulo: 'Matrículas', campos: [] },
+  {
     clave: 'usuarios',
     titulo: 'Usuarios',
     soloAdmin: true,
@@ -189,6 +213,8 @@ export default function App() {
       </nav>
       {actual.clave === 'panel' ? (
         <Dashboard />
+      ) : actual.clave === 'matriculas' ? (
+        <Matriculas />
       ) : (
         <GestionRecurso
           key={actual.clave}
