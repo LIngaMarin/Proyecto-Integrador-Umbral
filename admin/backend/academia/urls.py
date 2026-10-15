@@ -4,6 +4,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 
 from .academias import AcademiaViewSet
 from .auth import LoginView
+from .dashboard import DashboardView
 from .usuarios import UsuarioViewSet
 from .views import AulaViewSet, CicloViewSet, CursoViewSet, SedeViewSet
 
@@ -18,4 +19,5 @@ router.register('usuarios', UsuarioViewSet)
 urlpatterns = router.urls + [
     path('auth/login/', LoginView.as_view()),
     path('auth/refresh/', TokenRefreshView.as_view()),
+    path('dashboard/', DashboardView.as_view()),
 ]

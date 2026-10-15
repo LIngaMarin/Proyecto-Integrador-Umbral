@@ -23,3 +23,12 @@ class LoginSerializer(TokenObtainPairSerializer):
 
 class LoginView(TokenObtainPairView):
     serializer_class = LoginSerializer
+
+
+class EsAdminOCoordinador(BasePermission):
+    def has_permission(self, request, view):
+        usuario = request.user
+        if not usuario or not usuario.is_authenticated:
+            return False
+        perfil = getattr(usuario, 'perfil', None)
+        return bool(perfil and perfil.rol in ('ADMIN', 'COORDINADOR'))
