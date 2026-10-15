@@ -34,6 +34,5 @@ class Solucionario(
     var explicacionErroresComunes: String? = null,
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 32)
     var estado: EstadoSolucionario = EstadoSolucionario.BORRADOR
 )
