@@ -1,9 +1,12 @@
 package com.umbral.umbral_backend.service
 
 import com.umbral.umbral_backend.dto.ActualizarPreguntaDTO
+import com.umbral.umbral_backend.dto.AprobarRechazarDTO
 import com.umbral.umbral_backend.model.*
 import com.umbral.umbral_backend.repository.PreguntaRepository
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.web.server.ResponseStatusException
 import org.springframework.web.multipart.MultipartFile
 
 @Service
@@ -56,6 +59,20 @@ class BancoPreguntasService(
         pregunta.respuestaCorrecta = dto.respuestaCorrecta
         pregunta.estado = EstadoPregunta.APROBADA
         pregunta.motivoRechazo = null
+
+        return preguntaRepository.save(pregunta)
+    }
+
+    // HU 21: Rechazar preguntas con motivo
+    fun rechazarPregunta(id: Long, dto: AprobarRechazarDTO): Pregunta {
+        require(dto.motivoRechazo.isNotBlank()) { "El motivo de rechazo es obligatorio" }
+
+        val pregunta = preguntaRepository.findById(id).orElseThrow {
+            ResponseStatusException(HttpStatus.NOT_FOUND, "Pregunta no encontrada con el id: $id")
+        }
+
+        pregunta.estado = EstadoPregunta.RECHAZADA
+        pregunta.motivoRechazo = dto.motivoRechazo.trim()
 
         return preguntaRepository.save(pregunta)
     }
