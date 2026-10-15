@@ -9,3 +9,5 @@ Proyecto integrador - Tecsup, curso Construcción y Pruebas de Software.
 
 ## Integrante
 - Lucas Inga
+- Dario Maza
+- Sheyla Aguirre
