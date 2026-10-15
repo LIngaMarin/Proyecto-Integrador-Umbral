@@ -19,6 +19,7 @@ class SolucionarioServiceHu26Tests {
     private val solucionarioRepository = Mockito.mock(SolucionarioRepository::class.java)
     private val service = SolucionarioService(preguntaRepository, solucionarioRepository)
 
+    /** Comprueba que el borrador cambia a aprobado y el cambio se guarda. */
     @Test
     fun `aprueba y persiste un solucionario en borrador`() {
         val solucionario = solucionario(EstadoSolucionario.BORRADOR)
@@ -31,6 +32,7 @@ class SolucionarioServiceHu26Tests {
         Mockito.verify(solucionarioRepository).save(solucionario)
     }
 
+    /** Comprueba el 404 y la ausencia de guardado cuando no existe el solucionario. */
     @Test
     fun `retorna 404 si el solucionario no existe`() {
         `when`(solucionarioRepository.findById(99L)).thenReturn(Optional.empty())
@@ -43,6 +45,7 @@ class SolucionarioServiceHu26Tests {
         Mockito.verify(solucionarioRepository, Mockito.never()).save(Mockito.any(Solucionario::class.java))
     }
 
+    /** Comprueba que un solucionario ya aprobado no atraviesa otra vez la transición. */
     @Test
     fun `rechaza una transicion si el solucionario ya esta aprobado`() {
         val solucionario = solucionario(EstadoSolucionario.APROBADO)

@@ -12,6 +12,7 @@ class BancoPreguntasServiceHu22Tests {
     private val repository = Mockito.mock(PreguntaRepository::class.java)
     private val service = BancoPreguntasService(repository)
 
+    /** Consulta las preguntas del docente cuando no hay filtros opcionales. */
     @Test
     fun `sin filtros consulta todas las preguntas del docente`() {
         val preguntas = listOf(pregunta())
@@ -22,6 +23,7 @@ class BancoPreguntasServiceHu22Tests {
         Mockito.verifyNoMoreInteractions(repository)
     }
 
+    /** Filtra por tema manteniendo el identificador del docente. */
     @Test
     fun `filtra por tema dentro del docente`() {
         val preguntas = listOf(pregunta())
@@ -32,6 +34,7 @@ class BancoPreguntasServiceHu22Tests {
         Mockito.verifyNoMoreInteractions(repository)
     }
 
+    /** Filtra por dificultad manteniendo el identificador del docente. */
     @Test
     fun `filtra por dificultad dentro del docente`() {
         val preguntas = listOf(pregunta())
@@ -42,6 +45,7 @@ class BancoPreguntasServiceHu22Tests {
         Mockito.verifyNoMoreInteractions(repository)
     }
 
+    /** Combina tema y dificultad sin perder el filtro docente. */
     @Test
     fun `combina tema y dificultad manteniendo el docente`() {
         val preguntas = listOf(pregunta())

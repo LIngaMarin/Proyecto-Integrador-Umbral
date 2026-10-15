@@ -17,6 +17,7 @@ class BancoPreguntasServiceHu21Tests {
     private val repository = Mockito.mock(PreguntaRepository::class.java)
     private val service = BancoPreguntasService(repository)
 
+    /** Verifica que el rechazo recorta el motivo, actualiza estado y guarda la pregunta. */
     @Test
     fun `rechazar guarda estado y motivo sin espacios externos`() {
         val pregunta = pregunta()
@@ -30,6 +31,7 @@ class BancoPreguntasServiceHu21Tests {
         Mockito.verify(repository).save(pregunta)
     }
 
+    /** Comprueba que un motivo formado por espacios falla antes de acceder al repositorio. */
     @Test
     fun `rechazar requiere un motivo no vacio`() {
         assertThrows(IllegalArgumentException::class.java) {
@@ -38,6 +40,7 @@ class BancoPreguntasServiceHu21Tests {
         Mockito.verifyNoInteractions(repository)
     }
 
+    /** Comprueba el error 404 cuando la pregunta no existe. */
     @Test
     fun `rechazar devuelve 404 si la pregunta no existe`() {
         `when`(repository.findById(99L)).thenReturn(Optional.empty())

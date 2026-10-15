@@ -10,10 +10,12 @@ import org.springframework.web.server.ResponseStatusException
 import org.springframework.web.multipart.MultipartFile
 
 @Service
+/** Coordina las consultas y operaciones de revisión del banco de preguntas. */
 class BancoPreguntasService(
     private val preguntaRepository: PreguntaRepository
 ) {
     // HU 22: Consultar las preguntas de un docente con filtros opcionales.
+    /** Mantiene el filtro docente y combina los filtros opcionales presentes. */
     fun obtenerPreguntas(docenteId: Long, tema: String?, dificultad: Dificultad?): List<Pregunta> =
         when {
             tema != null && dificultad != null ->
@@ -24,6 +26,7 @@ class BancoPreguntasService(
         }
 
     // HU 18: Extraer preguntas desde boletín (PDF/Imagen)
+    /** Construye preguntas a partir del archivo recibido y persiste la lista para el docente. */
     fun extraerPreguntasDeBoletin(file: MultipartFile, docenteId: Long): List<Pregunta> {
         val preguntasExtraidas = listOf(
             Pregunta(
@@ -40,6 +43,7 @@ class BancoPreguntasService(
     }
 
     // HU 19: Generar variante con IA
+    /** Busca la pregunta base y guarda una variante pendiente; falla con RuntimeException si falta. */
     fun generarVariante(preguntaId: Long, docenteId: Long): Pregunta {
         val original = preguntaRepository.findById(preguntaId).orElseThrow {
             RuntimeException("Pregunta no encontrada")
@@ -57,6 +61,7 @@ class BancoPreguntasService(
     }
 
     // HU 20: Revisar, editar y aprobar pregunta
+    /** Actualiza los campos del DTO, aprueba la pregunta y limpia el motivo anterior. */
     fun editarYAprobar(id: Long, dto: ActualizarPreguntaDTO): Pregunta {
         val pregunta = preguntaRepository.findById(id).orElseThrow {
             RuntimeException("Pregunta no encontrada con el id: $id")
@@ -74,7 +79,9 @@ class BancoPreguntasService(
     }
 
     // HU 21: Rechazar preguntas con motivo
+    /** Exige un motivo, lo recorta, cambia el estado y guarda la pregunta rechazada. */
     fun rechazarPregunta(id: Long, dto: AprobarRechazarDTO): Pregunta {
+        // Evita consultar el repositorio si el motivo solo contiene espacios.
         require(dto.motivoRechazo.isNotBlank()) { "El motivo de rechazo es obligatorio" }
 
         val pregunta = preguntaRepository.findById(id).orElseThrow {

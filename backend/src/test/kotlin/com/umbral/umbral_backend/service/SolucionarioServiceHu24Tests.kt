@@ -20,6 +20,7 @@ class SolucionarioServiceHu24Tests {
     private val solucionarioRepository = Mockito.mock(SolucionarioRepository::class.java)
     private val service = SolucionarioService(preguntaRepository, solucionarioRepository)
 
+    /** Comprueba la generación de pasos de ejemplo y el guardado en borrador. */
     @Test
     fun `genera y guarda una solucion verificada como borrador`() {
         val pregunta = pregunta()
@@ -38,6 +39,7 @@ class SolucionarioServiceHu24Tests {
         Mockito.verify(solucionarioRepository).save(Mockito.any(Solucionario::class.java))
     }
 
+    /** Comprueba el 404 y que no se consulte solucionarios si falta la pregunta. */
     @Test
     fun `retorna 404 cuando no existe la pregunta`() {
         `when`(preguntaRepository.findById(99L)).thenReturn(Optional.empty())
@@ -50,6 +52,7 @@ class SolucionarioServiceHu24Tests {
         Mockito.verifyNoInteractions(solucionarioRepository)
     }
 
+    /** Comprueba el conflicto cuando la pregunta ya tiene solucionario. */
     @Test
     fun `rechaza generar si la pregunta ya tiene solucionario`() {
         `when`(preguntaRepository.findById(42L)).thenReturn(Optional.of(pregunta()))
@@ -63,6 +66,7 @@ class SolucionarioServiceHu24Tests {
         Mockito.verify(solucionarioRepository, Mockito.never()).save(Mockito.any(Solucionario::class.java))
     }
 
+    /** Comprueba que una respuesta registrada inconsistente produce 422 y no se guarda. */
     @Test
     fun `no inventa solucion para ecuacion no soportada o respuesta inconsistente`() {
         `when`(preguntaRepository.findById(42L)).thenReturn(Optional.of(pregunta(respuesta = "5")))
@@ -76,6 +80,7 @@ class SolucionarioServiceHu24Tests {
         Mockito.verify(solucionarioRepository, Mockito.never()).save(Mockito.any(Solucionario::class.java))
     }
 
+    /** Comprueba que un enunciado incompatible produce error y no persiste un solucionario. */
     @Test
     fun `no persiste solucionario si el enunciado no tiene ecuacion compatible`() {
         val sinEcuacion = Pregunta(

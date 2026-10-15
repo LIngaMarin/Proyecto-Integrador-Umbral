@@ -11,10 +11,12 @@ import org.springframework.web.server.ResponseStatusException
 import java.math.BigDecimal
 
 @Service
+/** Genera solucionarios mediante reglas programadas y administra su estado de revisión. */
 class SolucionarioService(
     private val preguntaRepository: PreguntaRepository,
     private val solucionarioRepository: SolucionarioRepository
 ) {
+    /** Busca la pregunta, evita duplicados y guarda como borrador los pasos que puede verificar. */
     fun generarParaPregunta(preguntaId: Long): Solucionario {
         val pregunta = preguntaRepository.findById(preguntaId).orElseThrow {
             ResponseStatusException(HttpStatus.NOT_FOUND, "Pregunta no encontrada con el id: $preguntaId")
@@ -36,6 +38,7 @@ class SolucionarioService(
         return solucionarioRepository.save(solucionario)
     }
 
+    /** Cambia un solucionario existente de BORRADOR a APROBADO; otros estados producen conflicto. */
     fun aprobar(id: Long): Solucionario {
         val solucionario = solucionarioRepository.findById(id).orElseThrow {
             ResponseStatusException(HttpStatus.NOT_FOUND, "Solucionario no encontrado con el id: $id")
@@ -52,11 +55,13 @@ class SolucionarioService(
         return solucionarioRepository.save(solucionario)
     }
 
+    /** Resuelve el patrón ax ± b = c con coeficientes enteros reconocidos por la expresión regular. */
     private fun resolverEcuacionLineal(pregunta: Pregunta): String {
         val match = ECUACION_LINEAL.find(pregunta.enunciado)
             ?: throw preguntaNoResuelta()
 
         val coeficiente = match.groupValues[1].toBigDecimalOrNull() ?: throw preguntaNoResuelta()
+        // No se puede despejar x si su coeficiente es cero.
         if (coeficiente.compareTo(BigDecimal.ZERO) == 0) throw preguntaNoResuelta()
 
         val signo = match.groupValues[2]
@@ -69,6 +74,7 @@ class SolucionarioService(
         } catch (_: ArithmeticException) {
             throw preguntaNoResuelta()
         }
+        // Comprueba la igualdad calculada y que coincida con la respuesta numérica registrada.
         if (coeficiente.multiply(valorVariable).add(terminoIndependiente)
                 .compareTo(resultadoEcuacion) != 0
         ) throw preguntaNoResuelta()
@@ -92,8 +98,10 @@ class SolucionarioService(
         ).joinToString("\n")
     }
 
+    /** Evita notación científica y ceros decimales finales en los pasos generados. */
     private fun formatear(valor: BigDecimal): String = valor.stripTrailingZeros().toPlainString()
 
+    /** Error común para enunciados no reconocidos o soluciones que no coinciden con la respuesta guardada. */
     private fun preguntaNoResuelta() = ResponseStatusException(
         HttpStatus.UNPROCESSABLE_ENTITY,
         "No se puede generar una solución verificada para esta pregunta; se admite una ecuación lineal del tipo ax ± b = c y una respuesta numérica correcta."
