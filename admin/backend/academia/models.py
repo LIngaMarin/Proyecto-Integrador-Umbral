@@ -142,3 +142,29 @@ class Matricula(models.Model):
 
     def __str__(self):
         return f'{self.alumno} en {self.seccion}'
+
+
+class Horario(models.Model):
+    class Dia(models.IntegerChoices):
+        LUNES = 0, 'Lunes'
+        MARTES = 1, 'Martes'
+        MIERCOLES = 2, 'Miércoles'
+        JUEVES = 3, 'Jueves'
+        VIERNES = 4, 'Viernes'
+        SABADO = 5, 'Sábado'
+        DOMINGO = 6, 'Domingo'
+
+    seccion = models.ForeignKey(Seccion, on_delete=models.CASCADE, related_name='horarios')
+    docente = models.ForeignKey(Perfil, on_delete=models.CASCADE, related_name='horarios')
+    aula = models.ForeignKey(Aula, on_delete=models.CASCADE, related_name='horarios')
+    dia_semana = models.PositiveSmallIntegerField(choices=Dia.choices)
+    hora_inicio = models.TimeField()
+    hora_fin = models.TimeField()
+    activa = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'adm_horario'
+        ordering = ['dia_semana', 'hora_inicio']
+
+    def __str__(self):
+        return f'{self.seccion} {self.get_dia_semana_display()} {self.hora_inicio:%H:%M}'
