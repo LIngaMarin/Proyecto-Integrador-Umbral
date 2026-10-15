@@ -1,5 +1,6 @@
 package com.umbral.umbral_backend.service
 
+import com.umbral.umbral_backend.dto.ActualizarPreguntaDTO
 import com.umbral.umbral_backend.model.*
 import com.umbral.umbral_backend.repository.PreguntaRepository
 import org.springframework.stereotype.Service
@@ -24,6 +25,7 @@ class BancoPreguntasService(
         )
         return preguntaRepository.saveAll(preguntasExtraidas)
     }
+
     // HU 19: Generar variante con IA
     fun generarVariante(preguntaId: Long, docenteId: Long): Pregunta {
         val original = preguntaRepository.findById(preguntaId).orElseThrow {
@@ -39,5 +41,22 @@ class BancoPreguntasService(
             docenteId = docenteId
         )
         return preguntaRepository.save(variante)
-}
+    }
+
+    // HU 20: Revisar, editar y aprobar pregunta
+    fun editarYAprobar(id: Long, dto: ActualizarPreguntaDTO): Pregunta {
+        val pregunta = preguntaRepository.findById(id).orElseThrow {
+            RuntimeException("Pregunta no encontrada con el id: $id")
+        }
+
+        pregunta.enunciado = dto.enunciado
+        pregunta.tema = dto.tema
+        pregunta.dificultad = dto.dificultad
+        pregunta.opciones = dto.opciones
+        pregunta.respuestaCorrecta = dto.respuestaCorrecta
+        pregunta.estado = EstadoPregunta.APROBADA
+        pregunta.motivoRechazo = null
+
+        return preguntaRepository.save(pregunta)
+    }
 }

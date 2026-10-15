@@ -1,5 +1,6 @@
 package com.umbral.umbral_backend.controller
 
+import com.umbral.umbral_backend.dto.ActualizarPreguntaDTO
 import com.umbral.umbral_backend.model.Pregunta
 import com.umbral.umbral_backend.service.BancoPreguntasService
 import org.springframework.http.ResponseEntity
@@ -24,4 +25,10 @@ class DocenteController(
         @RequestParam docenteId: Long
     ): ResponseEntity<Pregunta> =
         ResponseEntity.ok(bancoService.generarVariante(id, docenteId))
+    @PutMapping("/preguntas/{id}/aprobar")
+    fun aprobarPregunta(
+        @PathVariable id: Long,
+        @RequestBody dto: ActualizarPreguntaDTO
+    ): ResponseEntity<Pregunta> =
+        ResponseEntity.ok(bancoService.editarYAprobar(id, dto))
 }
