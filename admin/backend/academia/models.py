@@ -98,3 +98,18 @@ class Perfil(models.Model):
 
     def __str__(self):
         return f'{self.user.username} ({self.rol})'
+
+
+class Festivo(models.Model):
+    academia = models.ForeignKey(Academia, on_delete=models.CASCADE, related_name='festivos')
+    fecha = models.DateField()
+    nombre = models.CharField(max_length=150)
+    activo = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'adm_festivo'
+        unique_together = [('academia', 'fecha')]
+        ordering = ['fecha']
+
+    def __str__(self):
+        return f'{self.fecha} - {self.nombre}'
