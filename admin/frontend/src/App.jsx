@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import GestionRecurso from './components/GestionRecurso'
+import Login from './components/Login'
 import './App.css'
 
 const ACTIVA = { nombre: 'activa', etiqueta: 'Activa', tipo: 'checkbox' }
@@ -11,6 +12,13 @@ const ACADEMIA = {
   requerido: true,
   relacion: { endpoint: 'academias', mostrar: 'nombre' },
 }
+const ROLES = [
+  { valor: 'ADMIN', etiqueta: 'Administrador' },
+  { valor: 'COORDINADOR', etiqueta: 'Coordinador académico' },
+  { valor: 'DOCENTE', etiqueta: 'Docente' },
+  { valor: 'ALUMNO', etiqueta: 'Alumno' },
+  { valor: 'APODERADO', etiqueta: 'Apoderado' },
+]
 
 const SECCIONES = [
   {
@@ -74,23 +82,76 @@ const SECCIONES = [
       ACTIVO,
     ],
   },
+  {
+    clave: 'usuarios',
+    titulo: 'Usuarios',
+    soloAdmin: true,
+    campos: [
+      { nombre: 'first_name', etiqueta: 'Nombres', tipo: 'text', requerido: true },
+      { nombre: 'last_name', etiqueta: 'Apellidos', tipo: 'text', requerido: true },
+      { nombre: 'email', etiqueta: 'Correo', tipo: 'email', requerido: true },
+      {
+        nombre: 'password',
+        etiqueta: 'Contraseña',
+        tipo: 'password',
+        requeridoAlCrear: true,
+        oculto: true,
+      },
+      { nombre: 'rol', etiqueta: 'Rol', tipo: 'select', requerido: true, opciones: ROLES },
+      {
+        nombre: 'sede',
+        etiqueta: 'Sede',
+        tipo: 'select',
+        relacion: { endpoint: 'sedes', mostrar: 'nombre' },
+      },
+      ACTIVO,
+    ],
+  },
 ]
 
 export default function App() {
+  const [sesion, setSesion] = useState(() => {
+    const token = localStorage.getItem('umbral_token')
+    return token
+      ? {
+          nombre: localStorage.getItem('umbral_nombre'),
+          rol: localStorage.getItem('umbral_rol'),
+        }
+      : null
+  })
   const [clave, setClave] = useState('academias')
-  const actual = SECCIONES.find((s) => s.clave === clave)
+
+  if (!sesion) return <Login onLogin={setSesion} />
+
+  const secciones = SECCIONES.filter((s) => !s.soloAdmin || sesion.rol === 'ADMIN')
+  const actual = secciones.find((s) => s.clave === clave) || secciones[0]
+
+  const salir = () => {
+    localStorage.removeItem('umbral_token')
+    localStorage.removeItem('umbral_nombre')
+    localStorage.removeItem('umbral_rol')
+    setSesion(null)
+  }
 
   return (
     <div className="app">
-      <header>
-        <h1>Umbral · Panel de administración</h1>
-        <p>Infraestructura académica</p>
+      <header className="encabezado">
+        <div>
+          <h1>Umbral · Panel de administración</h1>
+          <p>Infraestructura académica</p>
+        </div>
+        <div className="sesion">
+          <span>{sesion.nombre}</span>
+          <button className="secundario" onClick={salir}>
+            Salir
+          </button>
+        </div>
       </header>
       <nav>
-        {SECCIONES.map((s) => (
+        {secciones.map((s) => (
           <button
             key={s.clave}
-            className={s.clave === clave ? 'activa' : ''}
+            className={s.clave === actual.clave ? 'activa' : ''}
             onClick={() => setClave(s.clave)}
           >
             {s.titulo}

@@ -131,3 +131,53 @@ td {
 nav button {
   color: #1f2937;
 }
+
+.encabezado {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.sesion {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.9rem;
+}
+
+.login {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.login-caja {
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.login-caja h1 {
+  margin: 0;
+}
+
+.login-caja p {
+  margin: 0;
+  color: #6b7280;
+}
+
+.login-caja label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.9rem;
+}
+
+.errores-simple {
+  color: #b91c1c !important;
+}

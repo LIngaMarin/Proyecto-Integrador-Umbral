@@ -14,12 +14,14 @@ export default function GestionRecurso({ titulo, endpoint, campos }) {
   const [errores, setErrores] = useState(null)
   const [mensaje, setMensaje] = useState('')
 
+  const visibles = campos.filter((c) => !c.oculto)
+
   const cargar = useCallback(async () => {
     try {
       const { data } = await api.get(`/${endpoint}/`)
       setItems(data)
     } catch {
-      setErrores({ error: 'No se pudo conectar con el servidor' })
+      setErrores({ error: 'No se pudo cargar la información del servidor' })
     }
   }, [endpoint])
 
@@ -36,6 +38,14 @@ export default function GestionRecurso({ titulo, endpoint, campos }) {
         }
       })
   }, [cargar, campos])
+
+  const listaOpciones = (c) =>
+    c.opciones
+      ? c.opciones.map((o) => ({ id: o.valor, texto: o.etiqueta }))
+      : (opciones[c.nombre] || []).map((o) => ({
+          id: o.id,
+          texto: o[c.relacion.mostrar],
+        }))
 
   const cambiar = (campo, e) => {
     const valor = campo.tipo === 'checkbox' ? e.target.checked : e.target.value
@@ -89,9 +99,9 @@ export default function GestionRecurso({ titulo, endpoint, campos }) {
   const celda = (campo, item) => {
     const valor = item[campo.nombre]
     if (campo.tipo === 'checkbox') return valor ? 'Sí' : 'No'
-    if (campo.relacion) {
-      const opcion = (opciones[campo.nombre] || []).find((o) => o.id === valor)
-      return opcion ? opcion[campo.relacion.mostrar] : valor
+    if (campo.tipo === 'select') {
+      const opcion = listaOpciones(campo).find((o) => String(o.id) === String(valor))
+      return opcion ? opcion.texto : valor
     }
     return valor
   }
@@ -111,9 +121,9 @@ export default function GestionRecurso({ titulo, endpoint, campos }) {
                 required={c.requerido}
               >
                 <option value="">Selecciona...</option>
-                {(opciones[c.nombre] || []).map((o) => (
+                {listaOpciones(c).map((o) => (
                   <option key={o.id} value={o.id}>
-                    {o[c.relacion.mostrar]}
+                    {o.texto}
                   </option>
                 ))}
               </select>
@@ -128,7 +138,10 @@ export default function GestionRecurso({ titulo, endpoint, campos }) {
                 type={c.tipo}
                 value={form[c.nombre]}
                 onChange={(e) => cambiar(c, e)}
-                required={c.requerido}
+                required={c.requerido || (c.requeridoAlCrear && !editandoId)}
+                placeholder={
+                  c.requeridoAlCrear && editandoId ? 'Vacío para no cambiarla' : ''
+                }
               />
             )}
           </label>
@@ -157,7 +170,7 @@ export default function GestionRecurso({ titulo, endpoint, campos }) {
       <table>
         <thead>
           <tr>
-            {campos.map((c) => (
+            {visibles.map((c) => (
               <th key={c.nombre}>{c.etiqueta}</th>
             ))}
             <th>Acciones</th>
@@ -166,12 +179,12 @@ export default function GestionRecurso({ titulo, endpoint, campos }) {
         <tbody>
           {items.length === 0 && (
             <tr>
-              <td colSpan={campos.length + 1}>Aún no hay registros.</td>
+              <td colSpan={visibles.length + 1}>Aún no hay registros.</td>
             </tr>
           )}
           {items.map((item) => (
             <tr key={item.id}>
-              {campos.map((c) => (
+              {visibles.map((c) => (
                 <td key={c.nombre}>{celda(c, item)}</td>
               ))}
               <td className="celda-acciones">
