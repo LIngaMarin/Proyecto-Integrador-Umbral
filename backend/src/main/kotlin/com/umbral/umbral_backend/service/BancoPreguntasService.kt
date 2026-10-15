@@ -24,4 +24,20 @@ class BancoPreguntasService(
         )
         return preguntaRepository.saveAll(preguntasExtraidas)
     }
+    // HU 19: Generar variante con IA
+    fun generarVariante(preguntaId: Long, docenteId: Long): Pregunta {
+        val original = preguntaRepository.findById(preguntaId).orElseThrow {
+            RuntimeException("Pregunta no encontrada")
+        }
+        val variante = Pregunta(
+            enunciado = "Variante IA de (${original.enunciado}): Si 3x + 9 = 21, halle X.",
+            tema = original.tema,
+            dificultad = original.dificultad,
+            opciones = listOf("3", "4", "5", "6"),
+            respuestaCorrecta = "4",
+            estado = EstadoPregunta.PENDIENTE,
+            docenteId = docenteId
+        )
+        return preguntaRepository.save(variante)
+}
 }

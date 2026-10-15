@@ -18,4 +18,10 @@ class DocenteController(
         @RequestParam("docenteId") docenteId: Long
     ): ResponseEntity<List<Pregunta>> =
         ResponseEntity.ok(bancoService.extraerPreguntasDeBoletin(file, docenteId))
+    @PostMapping("/preguntas/{id}/variantes")
+    fun generarVariante(
+        @PathVariable id: Long,
+        @RequestParam docenteId: Long
+    ): ResponseEntity<Pregunta> =
+        ResponseEntity.ok(bancoService.generarVariante(id, docenteId))
 }
