@@ -6,6 +6,7 @@ from .academias import AcademiaViewSet
 from .auth import LoginView
 from .dashboard import DashboardView
 from .festivos import FestivoViewSet
+from .matriculas import AlumnoViewSet, MatriculaViewSet, SeccionViewSet
 from .usuarios import UsuarioViewSet
 from .views import AulaViewSet, CicloViewSet, CursoViewSet, SedeViewSet
 
@@ -17,6 +18,9 @@ router.register('ciclos', CicloViewSet)
 router.register('cursos', CursoViewSet)
 router.register('usuarios', UsuarioViewSet)
 router.register('festivos', FestivoViewSet)
+router.register('secciones', SeccionViewSet)
+router.register('matriculas', MatriculaViewSet)
+router.register('alumnos', AlumnoViewSet, basename='alumno')
 
 urlpatterns = router.urls + [
     path('auth/login/', LoginView.as_view()),

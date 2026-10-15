@@ -113,3 +113,32 @@ class Festivo(models.Model):
 
     def __str__(self):
         return f'{self.fecha} - {self.nombre}'
+
+
+class Seccion(models.Model):
+    curso = models.ForeignKey(Curso, on_delete=models.CASCADE, related_name='secciones')
+    nombre = models.CharField(max_length=50)
+    aula = models.ForeignKey(Aula, null=True, blank=True, on_delete=models.SET_NULL)
+    cupo = models.PositiveIntegerField(validators=[MinValueValidator(1)])
+    activa = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'adm_seccion'
+        unique_together = [('curso', 'nombre')]
+
+    def __str__(self):
+        return f'{self.curso.nombre} - {self.nombre}'
+
+
+class Matricula(models.Model):
+    alumno = models.ForeignKey(Perfil, on_delete=models.CASCADE, related_name='matriculas')
+    seccion = models.ForeignKey(Seccion, on_delete=models.CASCADE, related_name='matriculas')
+    activa = models.BooleanField(default=True)
+    creado_en = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'adm_matricula'
+        unique_together = [('alumno', 'seccion')]
+
+    def __str__(self):
+        return f'{self.alumno} en {self.seccion}'
