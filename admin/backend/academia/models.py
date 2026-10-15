@@ -6,6 +6,7 @@ from django.db import models
 class Academia(models.Model):
     nombre = models.CharField(max_length=150)
     activa = models.BooleanField(default=True)
+    logo = models.ImageField(upload_to='logos/', null=True, blank=True)
     creado_en = models.DateTimeField(auto_now_add=True)
 
     class Meta:
