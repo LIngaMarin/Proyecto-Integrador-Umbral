@@ -4,7 +4,9 @@ import com.umbral.umbral_backend.dto.ActualizarPreguntaDTO
 import com.umbral.umbral_backend.dto.AprobarRechazarDTO
 import com.umbral.umbral_backend.model.Dificultad
 import com.umbral.umbral_backend.model.Pregunta
+import com.umbral.umbral_backend.model.Solucionario
 import com.umbral.umbral_backend.service.BancoPreguntasService
+import com.umbral.umbral_backend.service.SolucionarioService
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -14,7 +16,8 @@ import org.springframework.web.multipart.MultipartFile
 @RequestMapping("/api/docente")
 @CrossOrigin(origins = ["*"])
 class DocenteController(
-    private val bancoService: BancoPreguntasService
+    private val bancoService: BancoPreguntasService,
+    private val solucionarioService: SolucionarioService
 ) {
     @GetMapping("/preguntas")
     fun listarPreguntas(
@@ -49,4 +52,8 @@ class DocenteController(
         @Valid @RequestBody dto: AprobarRechazarDTO
     ): ResponseEntity<Pregunta> =
         ResponseEntity.ok(bancoService.rechazarPregunta(id, dto))
+
+    @PostMapping("/preguntas/{id}/solucionario")
+    fun generarSolucionario(@PathVariable id: Long): ResponseEntity<Solucionario> =
+        ResponseEntity.ok(solucionarioService.generarParaPregunta(id))
 }
