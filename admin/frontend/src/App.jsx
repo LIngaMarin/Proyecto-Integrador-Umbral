@@ -72,6 +72,16 @@ const SECCIONES = [
     ],
   },
   {
+    clave: 'festivos',
+    titulo: 'Festivos',
+    campos: [
+      ACADEMIA,
+      { nombre: 'fecha', etiqueta: 'Fecha', tipo: 'date', requerido: true },
+      { nombre: 'nombre', etiqueta: 'Nombre', tipo: 'text', requerido: true },
+      ACTIVO,
+    ],
+  },
+  {
     clave: 'cursos',
     titulo: 'Cursos',
     campos: [
