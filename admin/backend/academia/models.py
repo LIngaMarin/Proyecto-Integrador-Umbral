@@ -72,3 +72,28 @@ class Curso(models.Model):
 
     def __str__(self):
         return self.nombre
+
+from django.conf import settings
+
+
+class Perfil(models.Model):
+    class Rol(models.TextChoices):
+        ADMIN = 'ADMIN', 'Administrador'
+        COORDINADOR = 'COORDINADOR', 'Coordinador académico'
+        DOCENTE = 'DOCENTE', 'Docente'
+        ALUMNO = 'ALUMNO', 'Alumno'
+        APODERADO = 'APODERADO', 'Apoderado'
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='perfil'
+    )
+    rol = models.CharField(max_length=20, choices=Rol.choices)
+    sede = models.ForeignKey(
+        Sede, null=True, blank=True, on_delete=models.SET_NULL, related_name='perfiles'
+    )
+
+    class Meta:
+        db_table = 'adm_perfil'
+
+    def __str__(self):
+        return f'{self.user.username} ({self.rol})'
