@@ -2,11 +2,13 @@ package com.umbral.umbral_backend.controller
 
 import com.umbral.umbral_backend.dto.ActualizarPreguntaDTO
 import com.umbral.umbral_backend.dto.AprobarRechazarDTO
+import com.umbral.umbral_backend.dto.TemaDebilDTO
 import com.umbral.umbral_backend.model.Dificultad
 import com.umbral.umbral_backend.model.Pregunta
 import com.umbral.umbral_backend.model.Solucionario
 import com.umbral.umbral_backend.service.BancoPreguntasService
 import com.umbral.umbral_backend.service.SolucionarioService
+import com.umbral.umbral_backend.service.SimulacroService
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -17,7 +19,8 @@ import org.springframework.web.multipart.MultipartFile
 @CrossOrigin(origins = ["*"])
 class DocenteController(
     private val bancoService: BancoPreguntasService,
-    private val solucionarioService: SolucionarioService
+    private val solucionarioService: SolucionarioService,
+    private val simulacroService: SimulacroService
 ) {
     @GetMapping("/preguntas")
     fun listarPreguntas(
@@ -56,4 +59,8 @@ class DocenteController(
     @PostMapping("/preguntas/{id}/solucionario")
     fun generarSolucionario(@PathVariable id: Long): ResponseEntity<Solucionario> =
         ResponseEntity.ok(solucionarioService.generarParaPregunta(id))
+
+    @GetMapping("/secciones/{seccionId}/temas-debiles")
+    fun obtenerTemasDebiles(@PathVariable seccionId: Long): ResponseEntity<List<TemaDebilDTO>> =
+        ResponseEntity.ok(simulacroService.calcularTemasDebiles(seccionId))
 }
