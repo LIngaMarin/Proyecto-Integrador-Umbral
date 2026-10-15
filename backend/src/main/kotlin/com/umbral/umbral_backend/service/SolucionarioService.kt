@@ -36,6 +36,22 @@ class SolucionarioService(
         return solucionarioRepository.save(solucionario)
     }
 
+    fun aprobar(id: Long): Solucionario {
+        val solucionario = solucionarioRepository.findById(id).orElseThrow {
+            ResponseStatusException(HttpStatus.NOT_FOUND, "Solucionario no encontrado con el id: $id")
+        }
+
+        if (solucionario.estado != EstadoSolucionario.BORRADOR) {
+            throw ResponseStatusException(
+                HttpStatus.CONFLICT,
+                "Solo se pueden aprobar solucionarios en estado BORRADOR"
+            )
+        }
+
+        solucionario.estado = EstadoSolucionario.APROBADO
+        return solucionarioRepository.save(solucionario)
+    }
+
     private fun resolverEcuacionLineal(pregunta: Pregunta): String {
         val match = ECUACION_LINEAL.find(pregunta.enunciado)
             ?: throw preguntaNoResuelta()

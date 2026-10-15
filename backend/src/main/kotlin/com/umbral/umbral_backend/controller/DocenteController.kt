@@ -60,6 +60,10 @@ class DocenteController(
     fun generarSolucionario(@PathVariable id: Long): ResponseEntity<Solucionario> =
         ResponseEntity.ok(solucionarioService.generarParaPregunta(id))
 
+    @PutMapping("/solucionarios/{id}/aprobar")
+    fun aprobarSolucionario(@PathVariable id: Long): ResponseEntity<Solucionario> =
+        ResponseEntity.ok(solucionarioService.aprobar(id))
+
     @GetMapping("/secciones/{seccionId}/temas-debiles")
     fun obtenerTemasDebiles(@PathVariable seccionId: Long): ResponseEntity<List<TemaDebilDTO>> =
         ResponseEntity.ok(simulacroService.calcularTemasDebiles(seccionId))
