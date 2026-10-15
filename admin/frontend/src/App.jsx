@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { api } from './api'
 import GestionRecurso from './components/GestionRecurso'
 import Login from './components/Login'
 import Dashboard from './components/Dashboard'
@@ -28,6 +29,7 @@ const SECCIONES = [
     titulo: 'Academias',
     campos: [
       { nombre: 'nombre', etiqueta: 'Nombre', tipo: 'text', requerido: true },
+      { nombre: 'logo', etiqueta: 'Logo', tipo: 'file' },
       ACTIVA,
     ],
   },
@@ -122,6 +124,18 @@ export default function App() {
       : null
   })
   const [clave, setClave] = useState('panel')
+  const [logo, setLogo] = useState(null)
+
+  useEffect(() => {
+    if (!sesion) return
+    api
+      .get('/academias/')
+      .then((r) => {
+        const conLogo = r.data.find((a) => a.logo && a.activa)
+        setLogo(conLogo ? conLogo.logo : null)
+      })
+      .catch(() => {})
+  }, [sesion, clave])
 
   if (!sesion) return <Login onLogin={setSesion} />
 
@@ -138,9 +152,12 @@ export default function App() {
   return (
     <div className="app">
       <header className="encabezado">
-        <div>
-          <h1>Umbral · Panel de administración</h1>
-          <p>Infraestructura académica</p>
+        <div className="marca">
+          {logo && <img className="logo-encabezado" src={logo} alt="Logo de la academia" />}
+          <div>
+            <h1>Umbral · Panel de administración</h1>
+            <p>Infraestructura académica</p>
+          </div>
         </div>
         <div className="sesion">
           <span>{sesion.nombre}</span>

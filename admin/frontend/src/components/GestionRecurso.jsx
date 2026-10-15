@@ -13,6 +13,7 @@ export default function GestionRecurso({ titulo, endpoint, campos }) {
   const [editandoId, setEditandoId] = useState(null)
   const [errores, setErrores] = useState(null)
   const [mensaje, setMensaje] = useState('')
+  const [claveArchivo, setClaveArchivo] = useState(0)
 
   const visibles = campos.filter((c) => !c.oculto)
 
@@ -55,6 +56,7 @@ export default function GestionRecurso({ titulo, endpoint, campos }) {
   const limpiar = () => {
     setForm(vacio(campos))
     setEditandoId(null)
+    setClaveArchivo((n) => n + 1)
   }
 
   const guardar = async (e) => {
@@ -65,11 +67,20 @@ export default function GestionRecurso({ titulo, endpoint, campos }) {
     campos.forEach((c) => {
       if (datos[c.nombre] === '' && !c.requerido) delete datos[c.nombre]
     })
+    let cuerpo = datos
+    if (campos.some((c) => c.tipo === 'file')) {
+      cuerpo = new FormData()
+      Object.entries(datos).forEach(([nombre, valor]) => {
+        const campo = campos.find((c) => c.nombre === nombre)
+        if (campo.tipo === 'file' && !(valor instanceof File)) return
+        cuerpo.append(nombre, valor)
+      })
+    }
     try {
       if (editandoId) {
-        await api.put(`/${endpoint}/${editandoId}/`, datos)
+        await api.put(`/${endpoint}/${editandoId}/`, cuerpo)
       } else {
-        await api.post(`/${endpoint}/`, datos)
+        await api.post(`/${endpoint}/`, cuerpo)
       }
       limpiar()
       setMensaje('Guardado correctamente')
@@ -99,6 +110,8 @@ export default function GestionRecurso({ titulo, endpoint, campos }) {
   const celda = (campo, item) => {
     const valor = item[campo.nombre]
     if (campo.tipo === 'checkbox') return valor ? 'Sí' : 'No'
+    if (campo.tipo === 'file')
+      return valor ? <img className="miniatura" src={valor} alt="Logo" /> : '—'
     if (campo.tipo === 'select') {
       const opcion = listaOpciones(campo).find((o) => String(o.id) === String(valor))
       return opcion ? opcion.texto : valor
@@ -132,6 +145,15 @@ export default function GestionRecurso({ titulo, endpoint, campos }) {
                 type="checkbox"
                 checked={Boolean(form[c.nombre])}
                 onChange={(e) => cambiar(c, e)}
+              />
+            ) : c.tipo === 'file' ? (
+              <input
+                key={claveArchivo}
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, [c.nombre]: e.target.files[0] || '' }))
+                }
               />
             ) : (
               <input

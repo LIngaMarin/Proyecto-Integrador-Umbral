@@ -208,3 +208,23 @@ nav button {
 .tarjeta-etiqueta {
   color: #6b7280;
 }
+
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.logo-encabezado {
+  height: 48px;
+  width: auto;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+.miniatura {
+  height: 32px;
+  width: auto;
+  border-radius: 4px;
+  object-fit: contain;
+}
