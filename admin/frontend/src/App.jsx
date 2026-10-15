@@ -3,6 +3,7 @@ import { api } from './api'
 import GestionRecurso from './components/GestionRecurso'
 import Login from './components/Login'
 import Dashboard from './components/Dashboard'
+import Horarios from './components/Horarios'
 import Matriculas from './components/Matriculas'
 import './App.css'
 
@@ -120,6 +121,7 @@ const SECCIONES = [
     ],
   },
   { clave: 'matriculas', titulo: 'Matrículas', campos: [] },
+  { clave: 'horarios', titulo: 'Horarios', campos: [] },
   {
     clave: 'usuarios',
     titulo: 'Usuarios',
@@ -215,6 +217,8 @@ export default function App() {
         <Dashboard />
       ) : actual.clave === 'matriculas' ? (
         <Matriculas />
+      ) : actual.clave === 'horarios' ? (
+        <Horarios />
       ) : (
         <GestionRecurso
           key={actual.clave}
