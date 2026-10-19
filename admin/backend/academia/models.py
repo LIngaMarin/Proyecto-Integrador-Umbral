@@ -181,3 +181,33 @@ class Marca(models.Model):
 
     def __str__(self):
         return f'Marca de {self.academia}'
+
+
+from django.core.validators import MaxValueValidator  # noqa: E402
+
+
+class Simulacro(models.Model):
+    curso = models.ForeignKey(Curso, on_delete=models.CASCADE, related_name='simulacros')
+    nombre = models.CharField(max_length=150)
+    fecha = models.DateField()
+    activa = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'adm_simulacro'
+        ordering = ['-fecha']
+
+    def __str__(self):
+        return f'{self.nombre} ({self.fecha})'
+
+
+class Resultado(models.Model):
+    simulacro = models.ForeignKey(Simulacro, on_delete=models.CASCADE, related_name='resultados')
+    matricula = models.ForeignKey(Matricula, on_delete=models.CASCADE, related_name='resultados')
+    puntaje = models.DecimalField(
+        max_digits=4, decimal_places=2,
+        validators=[MinValueValidator(0), MaxValueValidator(20)],
+    )
+
+    class Meta:
+        db_table = 'adm_resultado'
+        unique_together = [('simulacro', 'matricula')]

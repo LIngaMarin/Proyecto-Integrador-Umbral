@@ -14,6 +14,7 @@ from .matriculas import (
     MatriculaViewSet,
     SeccionViewSet,
 )
+from .rendimiento import RendimientoView, ResultadoViewSet, SimulacroViewSet
 from .usuarios import UsuarioViewSet
 from .views import AulaViewSet, CicloViewSet, CursoViewSet, SedeViewSet
 
@@ -29,6 +30,8 @@ router.register('secciones', SeccionViewSet)
 router.register('matriculas', MatriculaViewSet)
 router.register('alumnos', AlumnoViewSet, basename='alumno')
 router.register('horarios', HorarioViewSet)
+router.register('simulacros', SimulacroViewSet)
+router.register('resultados', ResultadoViewSet)
 router.register('docentes', DocenteViewSet, basename='docente')
 
 urlpatterns = router.urls + [
@@ -37,5 +40,6 @@ urlpatterns = router.urls + [
     path('dashboard/', DashboardView.as_view()),
     path('matricular-nuevo/', MatricularNuevoAlumnoView.as_view()),
     path('sesiones/', SesionesView.as_view()),
+    path('rendimiento/', RendimientoView.as_view()),
     path('marca/', MarcaView.as_view()),
 ]
