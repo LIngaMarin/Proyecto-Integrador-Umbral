@@ -303,3 +303,91 @@ nav button.activa {
   border-color: var(--color-primario);
   color: #ffffff;
 }
+
+.subtitulo {
+  color: #6b7280;
+  margin: 8px 0 0;
+}
+
+.grafico {
+  margin: 16px 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.fila-barra {
+  display: grid;
+  grid-template-columns: 170px 1fr 56px;
+  align-items: center;
+  gap: 12px;
+}
+
+.barra-nombre {
+  color: #374151;
+  font-size: 0.9rem;
+}
+
+.barra-pista {
+  position: relative;
+  height: 22px;
+  background: #f3f4f6;
+  border-radius: 0 4px 4px 0;
+}
+
+.barra {
+  height: 100%;
+  background: var(--color-primario, #2563eb);
+  border-radius: 0 4px 4px 0;
+}
+
+.barra.refuerzo {
+  background: #e34948;
+}
+
+.fila-barra:hover .barra {
+  opacity: 0.85;
+}
+
+.barra-umbral {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  border-left: 2px dashed #6b7280;
+}
+
+.barra-valor {
+  color: #1f2937;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+
+.punto {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: 6px;
+}
+
+.punto.normal {
+  background: var(--color-primario, #2563eb);
+}
+
+.punto.refuerzo {
+  background: #e34948;
+}
+
+@media (max-width: 600px) {
+  .fila-barra {
+    grid-template-columns: 110px 1fr 48px;
+  }
+}

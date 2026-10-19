@@ -158,6 +158,7 @@ export default function GestionRecurso({ titulo, endpoint, campos }) {
             ) : (
               <input
                 type={c.tipo}
+                step={c.paso}
                 value={form[c.nombre]}
                 onChange={(e) => cambiar(c, e)}
                 required={c.requerido || (c.requeridoAlCrear && !editandoId)}

@@ -6,6 +6,7 @@ import Login from './components/Login'
 import Dashboard from './components/Dashboard'
 import Horarios from './components/Horarios'
 import Marca from './components/Marca'
+import Rendimiento from './components/Rendimiento'
 import Matriculas from './components/Matriculas'
 import './App.css'
 
@@ -125,6 +126,44 @@ const SECCIONES = [
   { clave: 'matriculas', titulo: 'Matrículas', campos: [] },
   { clave: 'horarios', titulo: 'Horarios', campos: [] },
   { clave: 'marca', titulo: 'Marca', campos: [], soloAdmin: true },
+  { clave: 'rendimiento', titulo: 'Rendimiento', campos: [] },
+  {
+    clave: 'simulacros',
+    titulo: 'Simulacros',
+    campos: [
+      {
+        nombre: 'curso',
+        etiqueta: 'Curso',
+        tipo: 'select',
+        requerido: true,
+        relacion: { endpoint: 'cursos', mostrar: 'nombre' },
+      },
+      { nombre: 'nombre', etiqueta: 'Nombre', tipo: 'text', requerido: true },
+      { nombre: 'fecha', etiqueta: 'Fecha', tipo: 'date', requerido: true },
+      ACTIVA,
+    ],
+  },
+  {
+    clave: 'resultados',
+    titulo: 'Resultados',
+    campos: [
+      {
+        nombre: 'simulacro',
+        etiqueta: 'Simulacro',
+        tipo: 'select',
+        requerido: true,
+        relacion: { endpoint: 'simulacros', mostrar: 'nombre' },
+      },
+      {
+        nombre: 'alumno',
+        etiqueta: 'Alumno',
+        tipo: 'select',
+        requerido: true,
+        relacion: { endpoint: 'alumnos', mostrar: 'email' },
+      },
+      { nombre: 'puntaje', etiqueta: 'Puntaje (0 a 20)', tipo: 'number', paso: 'any', requerido: true },
+    ],
+  },
   {
     clave: 'usuarios',
     titulo: 'Usuarios',
@@ -231,6 +270,8 @@ export default function App() {
         <Horarios />
       ) : actual.clave === 'marca' ? (
         <Marca />
+      ) : actual.clave === 'rendimiento' ? (
+        <Rendimiento />
       ) : (
         <GestionRecurso
           key={actual.clave}
