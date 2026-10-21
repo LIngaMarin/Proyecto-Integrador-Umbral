@@ -168,3 +168,16 @@ class Horario(models.Model):
 
     def __str__(self):
         return f'{self.seccion} {self.get_dia_semana_display()} {self.hora_inicio:%H:%M}'
+
+
+class Marca(models.Model):
+    academia = models.OneToOneField(Academia, on_delete=models.CASCADE, related_name='marca')
+    color_primario = models.CharField(max_length=7, default='#2563EB')
+    color_secundario = models.CharField(max_length=7, default='#1F2937')
+    actualizado_en = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'adm_marca'
+
+    def __str__(self):
+        return f'Marca de {self.academia}'
