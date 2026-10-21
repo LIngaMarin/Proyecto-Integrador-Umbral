@@ -4,6 +4,7 @@ import GestionRecurso from './components/GestionRecurso'
 import Login from './components/Login'
 import Dashboard from './components/Dashboard'
 import Horarios from './components/Horarios'
+import Marca from './components/Marca'
 import Matriculas from './components/Matriculas'
 import './App.css'
 
@@ -122,6 +123,7 @@ const SECCIONES = [
   },
   { clave: 'matriculas', titulo: 'Matrículas', campos: [] },
   { clave: 'horarios', titulo: 'Horarios', campos: [] },
+  { clave: 'marca', titulo: 'Marca', campos: [], soloAdmin: true },
   {
     clave: 'usuarios',
     titulo: 'Usuarios',
@@ -219,6 +221,8 @@ export default function App() {
         <Matriculas />
       ) : actual.clave === 'horarios' ? (
         <Horarios />
+      ) : actual.clave === 'marca' ? (
+        <Marca />
       ) : (
         <GestionRecurso
           key={actual.clave}
