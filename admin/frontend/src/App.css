@@ -278,3 +278,28 @@ nav {
   gap: 8px;
   align-items: flex-start;
 }
+
+:root {
+  --color-primario: #2563eb;
+  --color-secundario: #1f2937;
+}
+
+.encabezado h1 {
+  color: var(--color-primario);
+}
+
+.encabezado p {
+  color: var(--color-secundario);
+}
+
+nav button.activa {
+  background: var(--color-primario);
+  border-color: var(--color-primario);
+  color: #ffffff;
+}
+
+.acciones button:not(.secundario):not(.peligro) {
+  background: var(--color-primario);
+  border-color: var(--color-primario);
+  color: #ffffff;
+}

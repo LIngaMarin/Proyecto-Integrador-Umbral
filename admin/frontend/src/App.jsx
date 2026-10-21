@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from './api'
+import { aplicarMarca } from './marca'
 import GestionRecurso from './components/GestionRecurso'
 import Login from './components/Login'
 import Dashboard from './components/Dashboard'
@@ -174,6 +175,13 @@ export default function App() {
       })
       .catch(() => {})
   }, [sesion, clave])
+
+  useEffect(() => {
+    api
+      .get('/marca/')
+      .then((r) => aplicarMarca(r.data))
+      .catch(() => {})
+  }, [])
 
   if (!sesion) return <Login onLogin={setSesion} />
 
