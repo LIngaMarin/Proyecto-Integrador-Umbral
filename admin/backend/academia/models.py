@@ -92,6 +92,7 @@ class Perfil(models.Model):
     sede = models.ForeignKey(
         Sede, null=True, blank=True, on_delete=models.SET_NULL, related_name='perfiles'
     )
+    debe_cambiar_clave = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'adm_perfil'

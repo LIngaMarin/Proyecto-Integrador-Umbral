@@ -1,6 +1,15 @@
+import secrets
+import string
+
+from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.mail import send_mail
+from django.db import transaction
 from rest_framework import serializers, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .auth import EsAdministrador
 from .models import Perfil
@@ -78,3 +87,69 @@ class UsuarioViewSet(viewsets.ModelViewSet):
         perfil.user.is_active = False
         perfil.user.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+def generar_clave_temporal(largo=10):
+    alfabeto = string.ascii_letters + string.digits
+    return ''.join(secrets.choice(alfabeto) for _ in range(largo))
+
+
+def restablecer_clave(self, request, pk=None):
+    perfil = self.get_object()
+    temporal = generar_clave_temporal()
+    try:
+        with transaction.atomic():
+            perfil.user.set_password(temporal)
+            perfil.user.save()
+            perfil.debe_cambiar_clave = True
+            perfil.save()
+            send_mail(
+                'Tu contraseña de Umbral fue restablecida',
+                (
+                    f'Hola {perfil.user.first_name or perfil.user.username},\n\n'
+                    'Un administrador restableció tu contraseña.\n'
+                    f'Usuario: {perfil.user.email}\n'
+                    f'Contraseña temporal: {temporal}\n\n'
+                    'Al ingresar se te pedirá crear una contraseña nueva.\n'
+                ),
+                settings.DEFAULT_FROM_EMAIL,
+                [perfil.user.email],
+                fail_silently=False,
+            )
+    except Exception:
+        return Response(
+            {'error': 'No se pudo enviar el correo; la contraseña no fue cambiada.'},
+            status=status.HTTP_502_BAD_GATEWAY,
+        )
+    return Response({'detalle': 'Contraseña restablecida y enviada por correo.'})
+
+
+UsuarioViewSet.restablecer_clave = action(
+    detail=True, methods=['post'], url_path='restablecer-clave'
+)(restablecer_clave)
+
+
+class CambiarClaveSerializer(serializers.Serializer):
+    clave_actual = serializers.CharField()
+    clave_nueva = serializers.CharField(min_length=8)
+
+
+class CambiarClaveView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = CambiarClaveSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        usuario = request.user
+        if not usuario.check_password(serializer.validated_data['clave_actual']):
+            return Response(
+                {'clave_actual': ['La contraseña actual es incorrecta.']},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        usuario.set_password(serializer.validated_data['clave_nueva'])
+        usuario.save()
+        perfil = getattr(usuario, 'perfil', None)
+        if perfil:
+            perfil.debe_cambiar_clave = False
+            perfil.save()
+        return Response({'detalle': 'Contraseña actualizada.'})

@@ -18,6 +18,7 @@ class LoginSerializer(TokenObtainPairSerializer):
         perfil = getattr(self.user, 'perfil', None)
         datos['rol'] = perfil.rol if perfil else None
         datos['nombre'] = self.user.get_full_name() or self.user.username
+        datos['debe_cambiar_clave'] = bool(perfil and perfil.debe_cambiar_clave)
         return datos
 
 

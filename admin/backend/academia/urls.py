@@ -15,7 +15,7 @@ from .matriculas import (
     SeccionViewSet,
 )
 from .rendimiento import RendimientoView, ResultadoViewSet, SimulacroViewSet
-from .usuarios import UsuarioViewSet
+from .usuarios import CambiarClaveView, UsuarioViewSet
 from .views import AulaViewSet, CicloViewSet, CursoViewSet, SedeViewSet
 
 router = DefaultRouter()
@@ -35,6 +35,7 @@ router.register('resultados', ResultadoViewSet)
 router.register('docentes', DocenteViewSet, basename='docente')
 
 urlpatterns = router.urls + [
+    path('auth/cambiar-clave/', CambiarClaveView.as_view()),
     path('auth/login/', LoginView.as_view()),
     path('auth/refresh/', TokenRefreshView.as_view()),
     path('dashboard/', DashboardView.as_view()),
