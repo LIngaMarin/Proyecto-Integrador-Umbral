@@ -174,6 +174,8 @@ class Marca(models.Model):
     academia = models.OneToOneField(Academia, on_delete=models.CASCADE, related_name='marca')
     color_primario = models.CharField(max_length=7, default='#2563EB')
     color_secundario = models.CharField(max_length=7, default='#1F2937')
+    borrador_primario = models.CharField(max_length=7, blank=True, default='')
+    borrador_secundario = models.CharField(max_length=7, blank=True, default='')
     actualizado_en = models.DateTimeField(auto_now=True)
 
     class Meta:

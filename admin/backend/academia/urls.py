@@ -7,7 +7,7 @@ from .auth import LoginView
 from .dashboard import DashboardView
 from .festivos import FestivoViewSet
 from .horarios import DocenteViewSet, HorarioViewSet, SesionesView
-from .marca import MarcaView
+from .marca import MarcaBorradorView, MarcaPublicarView, MarcaView
 from .matriculas import (
     AlumnoViewSet,
     MatricularNuevoAlumnoView,
@@ -42,4 +42,6 @@ urlpatterns = router.urls + [
     path('sesiones/', SesionesView.as_view()),
     path('rendimiento/', RendimientoView.as_view()),
     path('marca/', MarcaView.as_view()),
+    path('marca/borrador/', MarcaBorradorView.as_view()),
+    path('marca/publicar/', MarcaPublicarView.as_view()),
 ]
