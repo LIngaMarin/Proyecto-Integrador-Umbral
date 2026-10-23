@@ -417,3 +417,16 @@ nav button.activa {
   border-radius: 4px;
   border: 1px solid #d1d5db;
 }
+
+.tabla-claves {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+
+.tabla-claves th,
+.tabla-claves td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid #e5e7eb;
+}

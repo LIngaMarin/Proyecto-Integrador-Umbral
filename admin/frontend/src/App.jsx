@@ -7,6 +7,7 @@ import Dashboard from './components/Dashboard'
 import Horarios from './components/Horarios'
 import Marca from './components/Marca'
 import Rendimiento from './components/Rendimiento'
+import RestablecerClave from './components/RestablecerClave'
 import Matriculas from './components/Matriculas'
 import './App.css'
 
@@ -127,6 +128,7 @@ const SECCIONES = [
   { clave: 'horarios', titulo: 'Horarios', campos: [] },
   { clave: 'marca', titulo: 'Marca', campos: [], soloAdmin: true },
   { clave: 'rendimiento', titulo: 'Rendimiento', campos: [] },
+  { clave: 'claves', titulo: 'Contraseñas', campos: [], soloAdmin: true },
   {
     clave: 'simulacros',
     titulo: 'Simulacros',
@@ -272,6 +274,8 @@ export default function App() {
         <Marca />
       ) : actual.clave === 'rendimiento' ? (
         <Rendimiento />
+      ) : actual.clave === 'claves' ? (
+        <RestablecerClave />
       ) : (
         <GestionRecurso
           key={actual.clave}
