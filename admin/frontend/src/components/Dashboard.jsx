@@ -1,8 +1,5 @@
 import { useEffect, useState } from 'react'
-import * as apiModule from '../api'
-
-const api = apiModule.default || apiModule.api
-
+import { api } from '../api'
 const INDICADORES = [
   { clave: 'sedes_activas', etiqueta: 'Sedes activas' },
   { clave: 'aulas_activas', etiqueta: 'Aulas activas' },
