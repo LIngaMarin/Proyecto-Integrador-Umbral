@@ -25,7 +25,8 @@ export default function Login({ onLogin }) {
       localStorage.setItem('umbral_token', data.access)
       localStorage.setItem('umbral_nombre', data.nombre)
       localStorage.setItem('umbral_rol', data.rol)
-      onLogin({ nombre: data.nombre, rol: data.rol })
+      localStorage.setItem('umbral_cambiar', data.debe_cambiar_clave ? '1' : '')
+      onLogin({ nombre: data.nombre, rol: data.rol, cambiar: !!data.debe_cambiar_clave })
     } catch (err) {
       setError(
         err.response?.status === 401

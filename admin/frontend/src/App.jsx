@@ -3,6 +3,7 @@ import { api } from './api'
 import { aplicarMarca } from './marca'
 import GestionRecurso from './components/GestionRecurso'
 import Login from './components/Login'
+import CambiarClave from './components/CambiarClave'
 import Dashboard from './components/Dashboard'
 import Horarios from './components/Horarios'
 import Marca from './components/Marca'
@@ -200,6 +201,7 @@ export default function App() {
       ? {
           nombre: localStorage.getItem('umbral_nombre'),
           rol: localStorage.getItem('umbral_rol'),
+          cambiar: localStorage.getItem('umbral_cambiar') === '1',
         }
       : null
   })
@@ -233,7 +235,20 @@ export default function App() {
     localStorage.removeItem('umbral_token')
     localStorage.removeItem('umbral_nombre')
     localStorage.removeItem('umbral_rol')
+    localStorage.removeItem('umbral_cambiar')
     setSesion(null)
+  }
+
+  if (sesion.cambiar) {
+    return (
+      <CambiarClave
+        onListo={() => {
+          localStorage.removeItem('umbral_cambiar')
+          setSesion({ ...sesion, cambiar: false })
+        }}
+        onSalir={salir}
+      />
+    )
   }
 
   return (
