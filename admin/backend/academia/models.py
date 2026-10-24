@@ -214,3 +214,15 @@ class Resultado(models.Model):
     class Meta:
         db_table = 'adm_resultado'
         unique_together = [('simulacro', 'matricula')]
+
+
+class Apoderado(models.Model):
+    perfil = models.OneToOneField(Perfil, on_delete=models.CASCADE, related_name='apoderado')
+    telefono = models.CharField(max_length=20, blank=True)
+    hijos = models.ManyToManyField(Perfil, related_name='representantes', blank=True)
+
+    class Meta:
+        db_table = 'adm_apoderado'
+
+    def __str__(self):
+        return f'Apoderado {self.perfil.user.username}'
