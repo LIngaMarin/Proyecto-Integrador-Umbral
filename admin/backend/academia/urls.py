@@ -15,6 +15,7 @@ from .matriculas import (
     SeccionViewSet,
 )
 from .rendimiento import RendimientoView, ResultadoViewSet, SimulacroViewSet
+from .apoderados import ApoderadoViewSet
 from .usuarios import CambiarClaveView, UsuarioViewSet
 from .views import AulaViewSet, CicloViewSet, CursoViewSet, SedeViewSet
 
@@ -25,6 +26,7 @@ router.register('aulas', AulaViewSet)
 router.register('ciclos', CicloViewSet)
 router.register('cursos', CursoViewSet)
 router.register('usuarios', UsuarioViewSet)
+router.register('apoderados', ApoderadoViewSet)
 router.register('festivos', FestivoViewSet)
 router.register('secciones', SeccionViewSet)
 router.register('matriculas', MatriculaViewSet)
