@@ -1,6 +1,7 @@
 package com.umbral.umbral_backend.repository
 
 import com.umbral.umbral_backend.model.Dificultad
+import com.umbral.umbral_backend.model.EstadoPregunta
 import com.umbral.umbral_backend.model.Pregunta
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
@@ -8,6 +9,12 @@ import org.springframework.stereotype.Repository
 @Repository
 /** Acceso JPA a preguntas; Spring Data deriva filtros de los nombres de estos métodos. */
 interface PreguntaRepository : JpaRepository<Pregunta, Long> {
+    fun findByEstadoAndTemaAndDificultad(
+        estado: EstadoPregunta,
+        tema: String,
+        dificultad: Dificultad
+    ): List<Pregunta>
+
     /** Busca exclusivamente por el identificador docente. */
     fun findByDocenteId(docenteId: Long): List<Pregunta>
 
