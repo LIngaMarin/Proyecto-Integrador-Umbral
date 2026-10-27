@@ -27,6 +27,13 @@ anticipado 403. El intento puede ser incorrecto. Las rutas docentes originales
 también exigen rol DOCENTE y propiedad de la pregunta o acceso a la sección,
 para impedir que un alumno lea respuestas a través del banco docente.
 
+HU 28 (regla provisional pendiente de criterios Scrum): agrupación por docente,
+sección y pregunta; sin pregunta, por docente, sección y tema normalizado
+(minúsculas, espacios y tildes). No es similitud semántica ni IA. Las dudas de
+distintas secciones no se mezclan. El alumno solo consulta sus propias dudas;
+el docente solo sus agrupaciones de secciones activas asignadas. Una carrera al
+crear por primera vez un grupo produce 409 reintentable y no pierde datos.
+
 H2 se activa únicamente con los perfiles Maven `demo` y Spring `demo`. Las
 tablas académicas ficticias de `db/identity-demo` solo se ejecutan en demo/test;
 no son migraciones del esquema Django real. Las direcciones `example.invalid`

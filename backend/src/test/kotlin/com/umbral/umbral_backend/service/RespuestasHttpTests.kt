@@ -26,6 +26,8 @@ class RespuestasHttpTests {
     @Autowired lateinit var preguntas: PreguntaRepository
     @Autowired lateinit var respuestas: RespuestaPracticaRepository
     @Autowired lateinit var soluciones: SolucionarioRepository
+    @Autowired lateinit var dudas: DudaRepository
+    @Autowired lateinit var grupos: GrupoDudasRepository
 
     companion object {
         val secret = ByteArray(48).also { SecureRandom().nextBytes(it) }.joinToString("") { "%02x".format(it) }
@@ -89,5 +91,28 @@ class RespuestasHttpTests {
         assertEquals(403,request("GET",ruta,user=1).statusCode())
         assertEquals(403,request("PUT","/api/docente/solucionarios/${s.id}/aprobar").statusCode())
         assertEquals(403,request("PUT","/api/docente/preguntas/${p.id}/aprobar",user=5,body="{}").statusCode())
+    }
+
+    @Test fun `dudas persisten y se agrupan por pregunta o tema con aislamiento academico`() {
+        val p=pregunta()
+        val body="""{"docenteId":1,"seccionId":1,"preguntaId":${p.id},"texto":"No entiendo el despeje"}"""
+        val antes=dudas.count()
+        assertEquals(201,request("POST","/api/alumno/dudas",body=body).statusCode())
+        assertEquals(201,request("POST","/api/alumno/dudas",body=body.replace("despeje","primer paso")).statusCode())
+        val g=grupos.findAll().single { it.preguntaId==p.id }
+        assertEquals(2,dudas.findByGrupoIdOrderByFechaAscIdAsc(g.id).size)
+        assertEquals(antes+2,dudas.count())
+        assertEquals(403,request("GET","/api/docente/dudas/grupos/${g.id}",user=5).statusCode())
+        assertEquals(200,request("GET","/api/docente/dudas/grupos/${g.id}",user=1).statusCode())
+        assertEquals(403,request("POST","/api/alumno/dudas",user=4,body=body).statusCode())
+        assertEquals(400,request("POST","/api/alumno/dudas",body=body.replace("No entiendo el despeje"," ")).statusCode())
+        assertEquals(400,request("POST","/api/alumno/dudas",body="""{"docenteId":1,"seccionId":1,"texto":"Duda"}""").statusCode())
+        val tema="""{"docenteId":1,"seccionId":1,"tema":"Tema HTTP Á","texto":"No entiendo"}"""
+        assertEquals(201,request("POST","/api/alumno/dudas",body=tema).statusCode())
+        assertEquals(201,request("POST","/api/alumno/dudas",body=tema.replace("Tema HTTP Á","tema http a")).statusCode())
+        val tg=grupos.findAll().single { it.tema=="Tema HTTP Á" }
+        assertEquals(2,dudas.findByGrupoIdOrderByFechaAscIdAsc(tg.id).size)
+        assertEquals(200,request("GET","/api/alumno/dudas").statusCode())
+        assertFalse(request("GET","/api/alumno/dudas",user=4).body().contains("No entiendo"))
     }
 }

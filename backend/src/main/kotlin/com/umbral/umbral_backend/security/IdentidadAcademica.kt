@@ -36,6 +36,11 @@ class IdentidadAcademica(private val jdbc: JdbcTemplate) {
             AND m.activa=true AND h.activa=true AND s.activa=true""", alumnoId, docenteId)
     }
 
+    fun exigirMatricula(alumnoId: Long, seccionId: Long) {
+        exigir("""SELECT COUNT(*) FROM adm_matricula m JOIN adm_seccion s ON s.id=m.seccion_id
+            WHERE m.alumno_id=? AND m.seccion_id=? AND m.activa=true AND s.activa=true""", alumnoId, seccionId)
+    }
+
     fun exigirHijo(apoderadoId: Long, alumnoId: Long) {
         exigir("""SELECT COUNT(*) FROM adm_apoderado a JOIN adm_apoderado_hijos h ON h.apoderado_id=a.id
             JOIN adm_perfil p ON p.id=h.perfil_id JOIN auth_user u ON u.id=p.user_id
