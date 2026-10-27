@@ -28,6 +28,7 @@ class RespuestasHttpTests {
     @Autowired lateinit var soluciones: SolucionarioRepository
     @Autowired lateinit var dudas: DudaRepository
     @Autowired lateinit var grupos: GrupoDudasRepository
+    @Autowired lateinit var respuestasGrupo: RespuestaGrupoRepository
 
     companion object {
         val secret = ByteArray(48).also { SecureRandom().nextBytes(it) }.joinToString("") { "%02x".format(it) }
@@ -114,5 +115,31 @@ class RespuestasHttpTests {
         assertEquals(2,dudas.findByGrupoIdOrderByFechaAscIdAsc(tg.id).size)
         assertEquals(200,request("GET","/api/alumno/dudas").statusCode())
         assertFalse(request("GET","/api/alumno/dudas",user=4).body().contains("No entiendo"))
+    }
+
+    @Test fun `respuesta agrupada se vincula a dudas existentes y conserva respuestas anteriores`() {
+        val p=pregunta()
+        val body="""{"docenteId":1,"seccionId":1,"preguntaId":${p.id},"texto":"Explicar despeje"}"""
+        repeat(2) { assertEquals(201,request("POST","/api/alumno/dudas",body=body).statusCode()) }
+        val grupo=grupos.findAll().single { it.preguntaId==p.id }
+        val ruta="/api/docente/dudas/grupos/${grupo.id}/respuestas"
+        assertEquals(403,request("POST",ruta,body="""{"texto":"Respuesta"}""").statusCode())
+        assertEquals(403,request("POST",ruta,user=5,body="""{"texto":"Respuesta"}""").statusCode())
+        assertEquals(400,request("POST",ruta,user=1,body="""{"texto":" "}""").statusCode())
+        val primera=request("POST",ruta,user=1,body="""{"texto":"Restar seis y dividir entre dos"}""")
+        assertEquals(201,primera.statusCode(),primera.body())
+        val existentes=dudas.findByGrupoIdOrderByFechaAscIdAsc(grupo.id)
+        val respuestaId=existentes.first().respuestaId
+        assertNotNull(respuestaId)
+        assertTrue(existentes.all { it.respuestaId==respuestaId })
+        assertEquals(409,request("POST",ruta,user=1,body="""{"texto":"Duplicada"}""").statusCode())
+        val consulta="/api/alumno/dudas/${existentes.first().id}/respuesta"
+        assertEquals(200,request("GET",consulta).statusCode())
+        assertEquals(403,request("GET",consulta,user=4).statusCode())
+        assertEquals(201,request("POST","/api/alumno/dudas",body=body).statusCode())
+        assertEquals(201,request("POST",ruta,user=1,body="""{"texto":"Segunda explicación"}""").statusCode())
+        assertEquals(2,respuestasGrupo.findByGrupoIdOrderByFechaAscIdAsc(grupo.id).size)
+        assertEquals(respuestaId,dudas.findById(existentes.first().id).orElseThrow().respuestaId)
+        assertEquals(200,request("GET",ruta,user=1).statusCode())
     }
 }

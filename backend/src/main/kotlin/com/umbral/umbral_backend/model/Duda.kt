@@ -20,5 +20,6 @@ class Duda(
     val alumnoId: Long,
     @Column(length=4000,nullable=false) val texto: String,
     var estado: String = "PENDIENTE",
+    var respuestaId: Long? = null,
     val fecha: LocalDateTime = LocalDateTime.now()
 )

@@ -34,6 +34,12 @@ distintas secciones no se mezclan. El alumno solo consulta sus propias dudas;
 el docente solo sus agrupaciones de secciones activas asignadas. Una carrera al
 crear por primera vez un grupo produce 409 reintentable y no pierde datos.
 
+HU 29: respuesta docente inmutable por lote de dudas pendientes sin respuesta.
+Se guarda el vínculo `dudas.respuesta_id` dentro de la misma transacción. Las
+dudas posteriores necesitan una nueva respuesta; no heredan la anterior.
+Sin dudas elegibles devuelve 409. El alumno consulta la respuesta de su propia
+duda; el docente consulta el historial de respuestas de su agrupación.
+
 H2 se activa únicamente con los perfiles Maven `demo` y Spring `demo`. Las
 tablas académicas ficticias de `db/identity-demo` solo se ejecutan en demo/test;
 no son migraciones del esquema Django real. Las direcciones `example.invalid`
