@@ -1,0 +1,36 @@
+package com.umbral.umbral_backend.service
+
+import org.apache.pdfbox.pdmodel.*
+import org.apache.pdfbox.pdmodel.font.*
+import org.springframework.stereotype.Component
+import java.io.ByteArrayOutputStream
+
+/** Texto sin marcado ejecutable, con ajuste de líneas y paginación. */
+@Component
+class DocumentoPdf {
+    fun generar(lineas: List<String>): ByteArray = PDDocument().use { doc ->
+        val font=PDType1Font(Standard14Fonts.FontName.HELVETICA)
+        val texto=lineas.flatMap { original ->
+            val seguro=buildString {
+                original.codePoints().forEach { cp ->
+                    val s=String(Character.toChars(cp))
+                    append(try { font.encode(s); s } catch (_: IllegalArgumentException) { "?" })
+                }
+            }
+            if(seguro.isEmpty()) listOf("") else seguro.chunked(90)
+        }
+        texto.ifEmpty { listOf("Sin datos") }.chunked(44).forEach { pagina ->
+            val page=PDPage()
+            doc.addPage(page)
+            PDPageContentStream(doc,page).use { stream ->
+                stream.beginText()
+                stream.setFont(font,11f)
+                stream.setLeading(16f)
+                stream.newLineAtOffset(40f,750f)
+                pagina.forEach { stream.showText(it);stream.newLine() }
+                stream.endText()
+            }
+        }
+        ByteArrayOutputStream().use { output -> doc.save(output);output.toByteArray() }
+    }
+}

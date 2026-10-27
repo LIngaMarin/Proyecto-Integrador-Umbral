@@ -30,6 +30,7 @@ class RespuestasHttpTests {
     @Autowired lateinit var grupos: GrupoDudasRepository
     @Autowired lateinit var respuestasGrupo: RespuestaGrupoRepository
     @Autowired lateinit var historialDudas: HistorialDudaRepository
+    @Autowired lateinit var resultados: ResultadoSimulacroRepository
 
     companion object {
         val secret = ByteArray(48).also { SecureRandom().nextBytes(it) }.joinToString("") { "%02x".format(it) }
@@ -180,5 +181,30 @@ class RespuestasHttpTests {
         assertEquals(403,request("GET",ruta.replace("/alumnos/2/","/alumnos/4/"),user=3).statusCode())
         assertEquals(400,request("GET",ruta.replace("desde=2026-11-01","desde=2026-11-04"),user=3).statusCode())
         assertEquals("[]",request("GET", "/api/apoderado/alumnos/2/simulacros?desde=2027-01-01&hasta=2027-01-02",user=3).body())
+    }
+
+    @Test fun `descarga pdf de rendimiento real persistido y verifica apertura y renderizado`() {
+        resultados.saveAllAndFlush(listOf(
+            ResultadoSimulacro(simulacroId=7,alumnoId=4,seccionId=2,puntaje=16.0,temasIncorrectosJson="""["Álgebra"]"""),
+            ResultadoSimulacro(simulacroId=8,alumnoId=4,seccionId=2,puntaje=20.0,temasIncorrectosJson="[]")))
+        val ruta="/api/docente/secciones/2/rendimiento.pdf"
+        val req=HttpRequest.newBuilder(URI("http://localhost:$port$ruta"))
+            .header("Authorization","Bearer ${token(5)}").GET().build()
+        val res=HttpClient.newHttpClient().send(req,HttpResponse.BodyHandlers.ofByteArray())
+        assertEquals(200,res.statusCode())
+        assertEquals("application/pdf",res.headers().firstValue("Content-Type").orElseThrow())
+        assertTrue(res.headers().firstValue("Content-Disposition").orElseThrow().contains("attachment"))
+        java.nio.file.Files.write(java.nio.file.Path.of("target/hu39-rendimiento.pdf"),res.body())
+        org.apache.pdfbox.Loader.loadPDF(res.body()).use { pdf ->
+            val texto=org.apache.pdfbox.text.PDFTextStripper().getText(pdf)
+            assertTrue(texto.contains("Promedio por resultado: 18.00"),texto)
+            assertTrue(texto.contains("16.00"))
+            assertTrue(texto.contains("Álgebra"))
+            val imagen=org.apache.pdfbox.rendering.PDFRenderer(pdf).renderImage(0)
+            assertTrue(imagen.width>0)
+            javax.imageio.ImageIO.write(imagen,"png",java.io.File("target/hu39-rendimiento.png"))
+        }
+        assertEquals(403,request("GET",ruta,user=1).statusCode())
+        assertEquals(403,request("GET",ruta,user=2).statusCode())
     }
 }

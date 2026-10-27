@@ -53,6 +53,14 @@ e `hasta` son inclusivos; sin desde se usa hoy en Lima y sin hasta no hay límit
 superior. El modelo administrativo solo tiene fecha, por lo que no se inventa
 una hora. No se crean nuevas tablas ni se duplican calendarios.
 
+HU 39: PDF descargable de una sección del docente, usando resultados persistidos
+en `resultados_simulacro` y reutilizando `SimulacroService` para temas débiles.
+Incluye número de resultados, alumnos distintos, promedio por resultado y detalle.
+Sin datos produce un PDF válido que lo indica. Solo cifras almacenadas, sin
+generación aleatoria. PDFBox verifica apertura, extracción de texto y renderizado
+en las pruebas. La fuente estándar conserva español; caracteres no representables
+se muestran como `?`. La descarga tiene `Cache-Control: no-store`.
+
 H2 se activa únicamente con los perfiles Maven `demo` y Spring `demo`. Las
 tablas académicas ficticias de `db/identity-demo` solo se ejecutan en demo/test;
 no son migraciones del esquema Django real. Las direcciones `example.invalid`
