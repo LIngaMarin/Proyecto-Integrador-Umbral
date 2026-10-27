@@ -16,6 +16,7 @@ import java.util.Locale
 class DudaService(private val grupos: GrupoDudasRepository, private val dudas: DudaRepository,
     private val preguntas: PreguntaRepository, private val identidad: IdentidadAcademica,
     private val historial: HistorialDudaRepository) {
+    /** Comprueba la matrícula y el docente, agrupa la duda y registra su creación en el historial. */
     @Transactional
     fun registrar(alumno: Actor, dto: RegistrarDudaDTO): Duda {
         identidad.exigirMatricula(alumno.id,dto.seccionId)
@@ -25,6 +26,7 @@ class DudaService(private val grupos: GrupoDudasRepository, private val dudas: D
             throw ResponseStatusException(HttpStatus.NOT_FOUND)
         val tema = pregunta?.tema ?: dto.tema?.trim()?.takeIf { it.isNotBlank() }
             ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST,"Indique tema o pregunta")
+        // Agrupa por pregunta o tema dentro de la misma sección y docente.
         val agrupacion = pregunta?.let { "P:${it.id}" } ?: "T:${normalizarTema(tema)}"
         val clave = MessageDigest.getInstance("SHA-256").digest("${dto.docenteId}:${dto.seccionId}:$agrupacion".toByteArray())
             .joinToString("") { "%02x".format(it) }
@@ -37,10 +39,12 @@ class DudaService(private val grupos: GrupoDudasRepository, private val dudas: D
         return duda
     }
 
+    /** Consulta solo las dudas del alumno y aplica el filtro de estado cuando se indica. */
     @Transactional(readOnly=true)
     fun propias(alumno: Actor,estado: EstadoDuda? = null): List<Duda> = dudas.findByAlumnoIdOrderByFechaDescIdDesc(alumno.id)
         .filter { estado==null || it.estado==estado.name }
 
+    /** Lista las agrupaciones de las secciones a las que el docente mantiene acceso. */
     @Transactional(readOnly=true)
     fun agrupaciones(docente: Actor): List<GrupoDudas> = grupos.findByDocenteIdOrderByIdDesc(docente.id)
         .filter { grupo ->
@@ -48,12 +52,14 @@ class DudaService(private val grupos: GrupoDudasRepository, private val dudas: D
             catch (ex: ResponseStatusException) { if (ex.statusCode.value()==403) false else throw ex }
         }
 
+    /** Comprueba el permiso docente antes de consultar las dudas de una agrupación. */
     @Transactional(readOnly=true)
     fun delGrupo(docente: Actor, grupoId: Long,estado: EstadoDuda? = null): List<Duda> {
         exigirGrupo(docente,grupoId)
         return dudas.findByGrupoIdOrderByFechaAscIdAsc(grupoId).filter { estado==null || it.estado==estado.name }
     }
 
+    /** Exige que la agrupación pertenezca al docente y a una sección que tenga asignada. */
     fun exigirGrupo(docente: Actor, grupoId: Long): GrupoDudas {
         val g = grupos.findById(grupoId).orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND) }
         if (g.docenteId!=docente.id) throw ResponseStatusException(HttpStatus.FORBIDDEN)
@@ -62,6 +68,7 @@ class DudaService(private val grupos: GrupoDudasRepository, private val dudas: D
     }
 
     companion object {
+        /** Unifica tildes, mayúsculas y espacios para agrupar nombres de tema equivalentes. */
         fun normalizarTema(tema: String): String = Normalizer.normalize(tema,Normalizer.Form.NFD)
             .replace(Regex("\\p{M}+"),"").trim().lowercase(Locale.ROOT).replace(Regex("\\s+")," ")
     }

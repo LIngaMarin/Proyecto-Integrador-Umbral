@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.web.server.ResponseStatusException
 import java.time.LocalDate
 
+/** Comprueba la validación de las fechas del calendario. */
 class CalendarioUnitTests {
     @Test fun `rango inclusivo admite un dia y rechaza fechas invertidas`() {
         val fecha=LocalDate.of(2026,11,1)

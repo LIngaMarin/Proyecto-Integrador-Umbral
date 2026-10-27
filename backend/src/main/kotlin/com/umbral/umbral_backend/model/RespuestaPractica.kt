@@ -3,6 +3,7 @@ package com.umbral.umbral_backend.model
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
+/** Intento de práctica que conserva la opción elegida, su evaluación y la fecha. */
 @Entity
 @Table(name = "respuestas_practica")
 class RespuestaPractica(

@@ -9,6 +9,7 @@ import java.time.LocalDate
 
 @RestController
 class ResumenSemanalController(private val service: EstadisticasSemanaService,private val identidad: IdentidadAcademica) {
+    /** GET: consulta las estadísticas del docente; sin semana indicada utiliza la anterior. */
     @GetMapping("/api/docente/resumen-semanal")
     fun consultar(@AuthenticationPrincipal jwt: Jwt,@RequestParam(required=false) semana: LocalDate?) =
         service.calcular(identidad.actor(jwt,"DOCENTE"),semana ?: service.semanaAnterior())

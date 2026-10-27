@@ -12,6 +12,7 @@ import java.time.*
 class ResumenSemanalService(private val repository: ResumenSemanalRepository,
     private val estadisticas: EstadisticasSemanaService,private val identidad: IdentidadAcademica,
     private val correo: CorreoResumen,private val clock: Clock) {
+    /** Valida el correo y guarda un único resumen por docente y semana. */
     @Transactional
     fun preparar(docente: Actor,semana: LocalDate): ResumenSemanal {
         repository.findByDocenteIdAndSemanaInicio(docente.id,semana)?.let { return it }
@@ -22,9 +23,11 @@ class ResumenSemanalService(private val repository: ResumenSemanalRepository,
             destinatario=docente.email,asunto="UMBRAL: resumen semanal $semana",cuerpo=datos.texto(),creado=LocalDateTime.now(clock)))
     }
 
+    /** Procesa el envío, conserva los fallos para reintentar y distingue el correo real del simulado. */
     @Transactional
     fun enviar(id: Long) {
         val r=repository.bloquear(id) ?: return
+        // Evita reenviar un resumen que ya fue enviado o procesado en modo simulado.
         if(r.estado=="ENVIADO" || r.estado=="SIMULADO") return
         r.intentos++
         try {

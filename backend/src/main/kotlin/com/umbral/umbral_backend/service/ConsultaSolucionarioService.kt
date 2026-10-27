@@ -15,6 +15,7 @@ data class SolucionAlumnoDTO(val preguntaId: Long, val respuestaCorrecta: String
 class ConsultaSolucionarioService(private val preguntas: PreguntaRepository,
     private val respuestas: RespuestaPracticaRepository, private val soluciones: SolucionarioService,
     private val identidad: IdentidadAcademica) {
+    /** Consulta la solución aprobada después de comprobar el acceso y un intento propio del alumno. */
     @Transactional(readOnly = true)
     fun consultar(alumno: Actor, preguntaId: Long): SolucionAlumnoDTO {
         val p = preguntas.findById(preguntaId).orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND) }

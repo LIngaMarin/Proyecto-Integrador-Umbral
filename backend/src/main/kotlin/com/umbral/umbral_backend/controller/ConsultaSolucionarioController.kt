@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/api/practicas/preguntas")
 class ConsultaSolucionarioController(private val service: ConsultaSolucionarioService, private val identidad: IdentidadAcademica) {
+    /** GET /{id}/solucionario: delega la consulta y la comprobación del intento previo del alumno. */
     @GetMapping("/{id}/solucionario")
     fun consultar(@AuthenticationPrincipal jwt: Jwt, @PathVariable id: Long) =
         service.consultar(identidad.actor(jwt,"ALUMNO"),id)

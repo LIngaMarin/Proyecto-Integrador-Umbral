@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository
 @Repository
 /** Acceso JPA a solucionarios y comprobación de su asociación con preguntas. */
 interface SolucionarioRepository : JpaRepository<Solucionario, Long> {
+    /** Busca la solución de la pregunta para que el servicio compruebe su aprobación. */
     fun findByPregunta_Id(preguntaId: Long): Solucionario?
     /** Comprueba si existe un solucionario relacionado con el id de pregunta indicado. */
     fun existsByPregunta_Id(preguntaId: Long): Boolean

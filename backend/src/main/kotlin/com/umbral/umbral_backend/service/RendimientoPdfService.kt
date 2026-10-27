@@ -9,6 +9,7 @@ import java.util.Locale
 @Service
 class RendimientoPdfService(private val resultados: ResultadoSimulacroRepository,
     private val simulacroService: SimulacroService,private val identidad: IdentidadAcademica,private val pdf: DocumentoPdf) {
+    /** Genera el informe con resultados y temas débiles de una sección autorizada para el docente. */
     @Transactional(readOnly=true)
     fun generar(docente: Actor,seccionId: Long): ByteArray {
         identidad.exigirSeccion(docente.id,seccionId)

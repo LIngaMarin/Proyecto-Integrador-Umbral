@@ -3,6 +3,7 @@ package com.umbral.umbral_backend.model
 import jakarta.persistence.*
 import java.time.*
 
+/** Resumen único por docente y semana, con contenido y seguimiento de los intentos de envío. */
 @Entity @Table(name="resumenes_semanales",uniqueConstraints=[UniqueConstraint(columnNames=["docente_id","semana_inicio"])])
 class ResumenSemanal(
     @Id @GeneratedValue(strategy=GenerationType.IDENTITY) val id: Long = 0,

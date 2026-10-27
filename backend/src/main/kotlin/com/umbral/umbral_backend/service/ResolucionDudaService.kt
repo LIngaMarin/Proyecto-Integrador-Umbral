@@ -11,22 +11,26 @@ import org.springframework.web.server.ResponseStatusException
 @Service
 class ResolucionDudaService(private val dudas: DudaRepository,private val grupos: GrupoDudasRepository,
     private val historial: HistorialDudaRepository,private val service: DudaService) {
+    /** Marca como resuelta una duda respondida y guarda el actor de la resolución en el historial. */
     @Transactional
     fun resolver(actor: Actor,id: Long): Duda {
         val grupoId=dudas.grupoDe(id) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
         grupos.bloquear(grupoId) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
         val d=exigirAcceso(actor,id)
+        // Repetir la solicitud no agrega otra resolución al historial.
         if(d.estado=="RESUELTA") return d
         if(d.respuestaId==null) throw ResponseStatusException(HttpStatus.CONFLICT,"La duda necesita una respuesta antes de resolverse")
         d.estado="RESUELTA"
         historial.save(HistorialDuda(dudaId=d.id,actorId=actor.id,rol=actor.rol,evento="RESUELTA"))
         return dudas.save(d)
     }
+    /** Consulta los eventos de la duda solo si el actor tiene permiso para verla. */
     @Transactional(readOnly=true)
     fun consultarHistorial(actor: Actor,id: Long): List<HistorialDuda> {
         exigirAcceso(actor,id)
         return historial.findByDudaIdOrderByFechaAscIdAsc(id)
     }
+    /** Autoriza al alumno propietario o al docente asignado a la agrupación. */
     private fun exigirAcceso(actor: Actor,id: Long): Duda {
         val d=dudas.findById(id).orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND) }
         when(actor.rol) {

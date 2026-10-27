@@ -14,6 +14,7 @@ import javax.crypto.spec.SecretKeySpec
 /** Compatible con access tokens HS256 de Django SimpleJWT. Nunca acepta refresh tokens. */
 @Configuration
 class SeguridadConfig {
+    /** Configura la verificación de firma, vencimiento e identidad de los tokens de acceso. */
     @Bean
     fun jwtDecoder(env: Environment): JwtDecoder {
         val configured = env.getProperty("umbral.jwt.secret", env.getProperty("UMBRAL_JWT_SECRET", ""))
@@ -31,6 +32,7 @@ class SeguridadConfig {
         }
     }
 
+    /** Permite el catálogo público y exige autenticación por token para las demás rutas. */
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http.csrf { it.disable() }

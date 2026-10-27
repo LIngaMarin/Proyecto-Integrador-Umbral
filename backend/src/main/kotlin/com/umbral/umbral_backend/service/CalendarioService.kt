@@ -12,6 +12,7 @@ data class SimulacroCalendarioDTO(val id: Long,val nombre: String,val fecha: Loc
 
 @Service
 class CalendarioService(private val jdbc: JdbcTemplate,private val identidad: IdentidadAcademica) {
+    /** Valida el vínculo del apoderado y consulta los simulacros activos de las matrículas del alumno. */
     @Transactional(readOnly=true)
     fun consultar(apoderado: Actor,alumnoId: Long,desde: LocalDate,hasta: LocalDate): List<SimulacroCalendarioDTO> {
         validarRango(desde,hasta)
@@ -27,6 +28,7 @@ class CalendarioService(private val jdbc: JdbcTemplate,private val identidad: Id
         }
     }
     companion object {
+        /** Rechaza un rango cuya fecha final sea anterior a la inicial. */
         fun validarRango(desde: LocalDate,hasta: LocalDate) {
             if(hasta.isBefore(desde)) throw ResponseStatusException(HttpStatus.BAD_REQUEST,"Rango de fechas inválido")
         }

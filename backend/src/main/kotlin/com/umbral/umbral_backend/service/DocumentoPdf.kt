@@ -8,12 +8,14 @@ import java.io.ByteArrayOutputStream
 /** Texto sin marcado ejecutable, con ajuste de líneas y paginación. */
 @Component
 class DocumentoPdf {
+    /** Construye el PDF en memoria, ajusta las líneas y distribuye el contenido en páginas. */
     fun generar(lineas: List<String>): ByteArray = PDDocument().use { doc ->
         val font=PDType1Font(Standard14Fonts.FontName.HELVETICA)
         val texto=lineas.flatMap { original ->
             val seguro=buildString {
                 original.codePoints().forEach { cp ->
                     val s=String(Character.toChars(cp))
+                    // Sustituye caracteres que la fuente no puede representar para permitir la descarga.
                     append(try { font.encode(s); s } catch (_: IllegalArgumentException) { "?" })
                 }
             }

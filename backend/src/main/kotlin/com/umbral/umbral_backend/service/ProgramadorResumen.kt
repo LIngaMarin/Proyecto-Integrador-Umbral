@@ -11,6 +11,7 @@ import java.time.*
 
 @Configuration @EnableScheduling
 class RelojResumenConfig {
+    /** Configura el reloj usado para calcular las semanas del resumen docente. */
     @Bean fun clock(env: Environment): Clock = Clock.system(ZoneId.of(env.getProperty("umbral.resumen.zona","America/Lima")))
 }
 
@@ -19,6 +20,7 @@ class ProgramadorResumen(private val identidad: IdentidadAcademica,private val e
     private val resumenes: ResumenSemanalService,private val repository: ResumenSemanalRepository,private val env: Environment) {
     private val logger=LoggerFactory.getLogger(javaClass)
 
+    /** Prepara los resúmenes de docentes activos y procesa los envíos cuando la tarea está habilitada. */
     @Scheduled(cron="\${umbral.resumen.cron:0 0 8 * * MON}",zone="\${umbral.resumen.zona:America/Lima}")
     fun ejecutar() {
         if(!env.getProperty("umbral.resumen.enabled",Boolean::class.java,false)) return
@@ -36,6 +38,7 @@ class ProgramadorResumen(private val identidad: IdentidadAcademica,private val e
         ejecutar()
     }
 
+    /** Reintenta resúmenes pendientes o fallidos que no hayan alcanzado el límite configurado. */
     private fun procesarPendientes() {
         val max=env.getProperty("umbral.resumen.max-intentos",Int::class.java,3)
         repository.findTop100ByEstadoInAndIntentosLessThanOrderByIdAsc(listOf("PENDIENTE","ERROR"),max).forEach { resumen ->

@@ -10,6 +10,7 @@ import java.time.ZoneId
 
 @RestController
 class CalendarioController(private val service: CalendarioService,private val identidad: IdentidadAcademica) {
+    /** GET: consulta el calendario del hijo vinculado; sin fecha inicial utiliza hoy en Lima. */
     @GetMapping("/api/apoderado/alumnos/{alumnoId}/simulacros")
     fun consultar(@AuthenticationPrincipal jwt: Jwt,@PathVariable alumnoId: Long,
         @RequestParam(required=false) desde: LocalDate?,@RequestParam(required=false) hasta: LocalDate?) =

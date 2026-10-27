@@ -10,6 +10,7 @@ import org.springframework.scheduling.support.CronExpression
 import org.springframework.web.server.ResponseStatusException
 import java.time.*
 
+/** Comprueba la semana del resumen, el horario y los reintentos de correo sin repetir envíos exitosos. */
 class ResumenSemanalUnitTests {
     @Test fun `semana exige lunes completo y cron corresponde al lunes ocho de Lima`() {
         val lunes=LocalDate.of(2026,10,19)

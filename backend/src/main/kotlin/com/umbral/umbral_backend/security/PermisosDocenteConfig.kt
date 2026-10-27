@@ -16,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException
 @Configuration
 class PermisosDocenteConfig(private val identidad: IdentidadAcademica, private val preguntas: PreguntaRepository,
     private val soluciones: SolucionarioRepository) : WebMvcConfigurer {
+    /** Agrega la comprobación de identidad y propiedad a las rutas docentes existentes. */
     override fun addInterceptors(registry: InterceptorRegistry) {
         registry.addInterceptor(object : HandlerInterceptor {
             override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
@@ -23,6 +24,7 @@ class PermisosDocenteConfig(private val identidad: IdentidadAcademica, private v
                 val jwt = SecurityContextHolder.getContext().authentication?.principal as? Jwt
                     ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
                 val actor = identidad.actor(jwt,"DOCENTE")
+                // El identificador recibido no puede representar a otro docente.
                 request.getParameter("docenteId")?.let {
                     if (it.toLongOrNull() != actor.id) throw ResponseStatusException(HttpStatus.FORBIDDEN)
                 }
@@ -30,6 +32,7 @@ class PermisosDocenteConfig(private val identidad: IdentidadAcademica, private v
                 val vars = request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE) as? Map<String,String> ?: emptyMap()
                 vars["seccionId"]?.toLongOrNull()?.let { identidad.exigirSeccion(actor.id,it) }
                 vars["id"]?.toLongOrNull()?.let { id ->
+                    // Valida la propiedad de la pregunta, también al acceder mediante su solucionario.
                     val docenteId = if (request.requestURI.contains("/solucionarios/"))
                         soluciones.findById(id).orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND) }.pregunta.docenteId
                     else preguntas.findById(id).orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND) }.docenteId

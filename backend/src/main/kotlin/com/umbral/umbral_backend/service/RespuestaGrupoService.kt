@@ -12,10 +12,12 @@ import org.springframework.http.HttpStatus
 class RespuestaGrupoService(private val grupos: GrupoDudasRepository,private val dudas: DudaRepository,
     private val respuestas: RespuestaGrupoRepository,private val service: DudaService,
     private val historial: HistorialDudaRepository) {
+    /** Guarda una respuesta del docente y la vincula a las dudas pendientes que aún no tienen respuesta. */
     @Transactional
     fun responder(docente: Actor,grupoId: Long,texto: String): RespuestaGrupo {
         service.exigirGrupo(docente,grupoId)
         grupos.bloquear(grupoId) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+        // Conserva las respuestas anteriores y excluye las dudas que ya fueron atendidas.
         val pendientes=dudas.findByGrupoIdOrderByFechaAscIdAsc(grupoId).filter { it.estado=="PENDIENTE" && it.respuestaId==null }
         if (pendientes.isEmpty()) throw ResponseStatusException(HttpStatus.CONFLICT,"No hay dudas sin respuesta")
         val respuesta=respuestas.saveAndFlush(RespuestaGrupo(grupoId=grupoId,docenteId=docente.id,texto=texto.trim()))
@@ -27,6 +29,7 @@ class RespuestaGrupoService(private val grupos: GrupoDudasRepository,private val
         return respuesta
     }
 
+    /** Permite al alumno consultar únicamente la respuesta asociada a su propia duda. */
     @Transactional(readOnly=true)
     fun consultar(alumno: Actor,dudaId: Long): RespuestaGrupo {
         val d=dudas.findById(dudaId).orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND) }
@@ -35,6 +38,7 @@ class RespuestaGrupoService(private val grupos: GrupoDudasRepository,private val
             ?: throw ResponseStatusException(HttpStatus.NOT_FOUND,"La duda aún no tiene respuesta")
     }
 
+    /** Consulta las respuestas del grupo en orden de fecha después de validar al docente. */
     @Transactional(readOnly=true)
     fun historial(docente: Actor,grupoId: Long): List<RespuestaGrupo> {
         service.exigirGrupo(docente,grupoId)

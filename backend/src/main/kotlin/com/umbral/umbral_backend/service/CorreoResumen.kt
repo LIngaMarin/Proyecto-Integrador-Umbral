@@ -7,11 +7,13 @@ import org.springframework.mail.SimpleMailMessage
 import org.springframework.mail.javamail.JavaMailSenderImpl
 import org.springframework.stereotype.Component
 
+/** Contrato compartido por el envío SMTP y el correo simulado del resumen. */
 interface CorreoResumen {
     val simulado: Boolean
     fun enviar(destinatario: String,asunto: String,cuerpo: String)
 }
 
+/** Registra la simulación del correo en demo y pruebas sin conectarse a SMTP. */
 @Component @Profile("demo","test")
 class CorreoResumenSimulado : CorreoResumen {
     override val simulado=true
@@ -20,6 +22,7 @@ class CorreoResumenSimulado : CorreoResumen {
     }
 }
 
+/** Envía correos reales con la configuración SMTP proporcionada por el entorno. */
 @Component @Profile("!demo & !test")
 class CorreoResumenSmtp(private val env: Environment) : CorreoResumen {
     override val simulado=false

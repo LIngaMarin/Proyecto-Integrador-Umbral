@@ -15,6 +15,7 @@ data class EstadisticasSemanaDTO(
     val intentosPractica: Long,val aciertosPractica: Long,val alumnosPractica: Long,
     val dudasRegistradas: Long,val respuestasAgrupadas: Long,val dudasResueltas: Long
 ) {
+    /** Prepara el texto del correo con las estadísticas calculadas de la semana. */
     fun texto(): String = """
         Resumen UMBRAL del $inicio al ${finExclusivo.minusDays(1)}
         Preguntas creadas: $preguntasCreadas
@@ -30,12 +31,15 @@ data class EstadisticasSemanaDTO(
 
 @Service
 class EstadisticasSemanaService(private val jdbc: JdbcTemplate,private val clock: Clock) {
+    /** Obtiene el lunes de la semana anterior según la zona horaria configurada. */
     fun semanaAnterior(): LocalDate = LocalDate.now(clock).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).minusWeeks(1)
 
+    /** Cuenta la actividad del docente durante una semana completa usando registros persistidos. */
     @Transactional(readOnly=true)
     fun calcular(docente: Actor,inicio: LocalDate): EstadisticasSemanaDTO {
         validarSemana(inicio,LocalDate.now(clock))
         val desde=inicio.atStartOfDay()
+        // Incluye el lunes inicial y excluye el siguiente para no mezclar semanas.
         val hasta=inicio.plusWeeks(1).atStartOfDay()
         fun contar(sql: String): Long = jdbc.queryForObject(sql,Long::class.java,docente.id,desde,hasta) ?: 0L
         val preguntas="FROM preguntas WHERE docente_id=? AND fecha_creacion>=? AND fecha_creacion<?"
@@ -53,6 +57,7 @@ class EstadisticasSemanaService(private val jdbc: JdbcTemplate,private val clock
                 JOIN grupos_dudas g ON g.id=d.grupo_id WHERE g.docente_id=? AND h.fecha>=? AND h.fecha<? AND h.evento='RESUELTA'"""))
     }
     companion object {
+        /** Exige un lunes de inicio y una semana que ya haya terminado. */
         fun validarSemana(inicio: LocalDate,hoy: LocalDate) {
             if(inicio.dayOfWeek!=DayOfWeek.MONDAY || inicio.plusWeeks(1).isAfter(hoy))
                 throw ResponseStatusException(HttpStatus.BAD_REQUEST,"Indique el lunes de una semana completa")

@@ -2,6 +2,7 @@ package com.umbral.umbral_backend.dto
 
 import jakarta.validation.constraints.*
 
+/** Datos para registrar una duda por pregunta o tema, con identificadores positivos y texto obligatorio. */
 data class RegistrarDudaDTO(
     @field:Positive val docenteId: Long,
     @field:Positive val seccionId: Long,

@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.mockito.Mockito.*
 import org.springframework.web.server.ResponseStatusException
 
+/** Verifica que las respuestas inválidas se rechacen antes de consultar o guardar datos. */
 class RespuestaPracticaUnitTests {
     private val preguntas = mock(PreguntaRepository::class.java)
     private val respuestas = mock(RespuestaPracticaRepository::class.java)

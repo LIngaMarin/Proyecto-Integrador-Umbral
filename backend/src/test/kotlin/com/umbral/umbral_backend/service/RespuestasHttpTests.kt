@@ -19,6 +19,7 @@ import java.time.Instant
 import java.util.Date
 import java.security.SecureRandom
 
+/** Comprueba los endpoints con HTTP real, identidad firmada y persistencia en la base de pruebas. */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 class RespuestasHttpTests {
@@ -45,6 +46,7 @@ class RespuestasHttpTests {
         }
     }
 
+    /** Genera tokens de prueba para verificar autenticación, vencimiento y permisos. */
     fun token(user: Long, type: String = "access", expires: Instant = Instant.now().plusSeconds(600)): String {
         val claims = JWTClaimsSet.Builder().claim("user_id", user.toString()).claim("token_type", type)
             .expirationTime(Date.from(expires)).build()

@@ -5,6 +5,7 @@ import org.apache.pdfbox.text.PDFTextStripper
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
+/** Verifica que los informes vacíos o extensos produzcan archivos PDF que puedan abrirse. */
 class DocumentoPdfUnitTests {
     @Test fun `pagina textos extensos y genera documento que puede abrirse`() {
         val bytes=DocumentoPdf().generar(List(100) { "Álgebra y geometría " + "W".repeat(150) + " 😀" })
