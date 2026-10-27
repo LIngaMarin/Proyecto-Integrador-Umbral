@@ -17,7 +17,18 @@ class DocumentoPdf {
                     append(try { font.encode(s); s } catch (_: IllegalArgumentException) { "?" })
                 }
             }
-            if(seguro.isEmpty()) listOf("") else seguro.chunked(90)
+            // Mide el ancho real: una línea de W ocupa más espacio que una de i.
+            buildList {
+                var linea=""
+                seguro.forEach { c ->
+                    if(linea.isNotEmpty() && font.getStringWidth(linea+c)/1000f*11f>532f) {
+                        add(linea)
+                        linea=""
+                    }
+                    linea+=c
+                }
+                add(linea)
+            }
         }
         texto.ifEmpty { listOf("Sin datos") }.chunked(44).forEach { pagina ->
             val page=PDPage()

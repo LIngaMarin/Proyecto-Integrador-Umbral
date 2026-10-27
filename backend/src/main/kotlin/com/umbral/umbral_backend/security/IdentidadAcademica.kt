@@ -27,13 +27,16 @@ class IdentidadAcademica(private val jdbc: JdbcTemplate) {
 
     fun exigirSeccion(docenteId: Long, seccionId: Long) {
         exigir("""SELECT COUNT(*) FROM adm_horario h JOIN adm_seccion s ON s.id=h.seccion_id
-            WHERE h.docente_id=? AND h.seccion_id=? AND h.activa=true AND s.activa=true""", docenteId, seccionId)
+            JOIN adm_perfil p ON p.id=h.docente_id JOIN auth_user u ON u.id=p.user_id
+            WHERE h.docente_id=? AND h.seccion_id=? AND h.activa=true AND s.activa=true
+            AND p.rol='DOCENTE' AND u.is_active=true""", docenteId, seccionId)
     }
 
     fun exigirPregunta(alumnoId: Long, docenteId: Long) {
         exigir("""SELECT COUNT(*) FROM adm_matricula m JOIN adm_horario h ON h.seccion_id=m.seccion_id
-            JOIN adm_seccion s ON s.id=m.seccion_id WHERE m.alumno_id=? AND h.docente_id=?
-            AND m.activa=true AND h.activa=true AND s.activa=true""", alumnoId, docenteId)
+            JOIN adm_seccion s ON s.id=m.seccion_id JOIN adm_perfil p ON p.id=h.docente_id
+            JOIN auth_user u ON u.id=p.user_id WHERE m.alumno_id=? AND h.docente_id=?
+            AND m.activa=true AND h.activa=true AND s.activa=true AND p.rol='DOCENTE' AND u.is_active=true""", alumnoId, docenteId)
     }
 
     fun exigirMatricula(alumnoId: Long, seccionId: Long) {

@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 
 class DocumentoPdfUnitTests {
     @Test fun `pagina textos extensos y genera documento que puede abrirse`() {
-        val bytes=DocumentoPdf().generar(List(100) { "Álgebra y geometría " + "x".repeat(150) + " 😀" })
+        val bytes=DocumentoPdf().generar(List(100) { "Álgebra y geometría " + "W".repeat(150) + " 😀" })
         Loader.loadPDF(bytes).use { pdf ->
             assertTrue(pdf.numberOfPages>=5)
             assertTrue(PDFTextStripper().getText(pdf).contains("Álgebra"))

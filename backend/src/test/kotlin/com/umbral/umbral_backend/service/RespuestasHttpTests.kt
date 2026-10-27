@@ -252,4 +252,23 @@ class RespuestasHttpTests {
         assertEquals(1,resumenes.findByDocenteIdAndSemanaInicio(5,semana)!!.intentos)
         assertEquals(1,jdbc.queryForObject("SELECT COUNT(*) FROM resumenes_semanales WHERE docente_id=5 AND semana_inicio=?",Long::class.java,semana))
     }
+
+    @Test fun `baja de docente matricula y vinculo revoca acceso inmediatamente`() {
+        val p=pregunta()
+        val respuesta="""{"preguntaId":${p.id},"respuesta":"4"}"""
+        try {
+            jdbc.update("UPDATE auth_user SET is_active=false WHERE id=1")
+            assertEquals(403,request("POST","/api/practicas/respuestas",body=respuesta).statusCode())
+            assertEquals(401,request("GET","/api/docente/preguntas?docenteId=1",user=1).statusCode())
+        } finally { jdbc.update("UPDATE auth_user SET is_active=true WHERE id=1") }
+        try {
+            jdbc.update("UPDATE adm_matricula SET activa=false WHERE id=1")
+            assertEquals(403,request("POST","/api/practicas/respuestas",body=respuesta).statusCode())
+            assertEquals("[]",request("GET","/api/apoderado/alumnos/2/simulacros?desde=2026-11-01&hasta=2026-11-03",user=3).body())
+        } finally { jdbc.update("UPDATE adm_matricula SET activa=true WHERE id=1") }
+        try {
+            jdbc.update("DELETE FROM adm_apoderado_hijos WHERE id=1")
+            assertEquals(403,request("GET","/api/apoderado/alumnos/2/simulacros",user=3).statusCode())
+        } finally { jdbc.update("INSERT INTO adm_apoderado_hijos VALUES(1,1,2)") }
+    }
 }
