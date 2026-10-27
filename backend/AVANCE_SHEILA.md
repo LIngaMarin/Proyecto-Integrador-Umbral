@@ -1,67 +1,185 @@
 # Avance de Sheila — backend web UMBRAL
 
-Fecha de trabajo: 25 de octubre de 2026.
+Actualizado: 27 de octubre de 2026. Rama autorizada utilizada: `web`.
 
-## Rama y revisión inicial
+## Estado real
 
-- Repositorio: https://github.com/LIngaMarin/Proyecto-Integrador-Umbral.git.
-- Rama identificada mediante Git: `web`, con seguimiento de `origin/web` y commits anteriores de `SAguirreT`.
-- Referencias actualizadas con `git -c http.sslBackend=schannel fetch origin --prune`.
-- Revisados los últimos commits de `web` (`4767dbb`, `1448170`, `2ca3222`), `main` y `feature/lucas-base-django` (`8e033f7`, `aa3e0f9`, `3089649`), `develop` (`8742a59`, `8d6ad6f`) y `mobiles` (`8492d30`, `edc4bf6`, `41ccf04`).
-- Revisados controlador, servicios, entidades, repositorios, DTO, migraciones y todas las pruebas del backend. El README describe Django, pero el backend de esta rama es Kotlin/Spring Boot.
-- No se encontraron documentos del proyecto integrador ni laboratorio Scrum. Su entrega y la verificación de asignaciones y criterios formales quedan pendientes. Se usaron los requisitos del mensaje de Sheila como alcance provisional.
-- `backend.zip` ya estaba sin seguimiento al comenzar; se inspeccionó su listado, sin extraerlo ni añadirlo a commits.
+Las ocho historias tienen implementación Kotlin/Spring Boot y commits publicados.
+No se declara aceptación Scrum definitiva: los documentos UMBRAL no están en el
+repositorio ni fueron proporcionados durante esta sesión. Se implementó el alcance
+del mensaje de Sheila y se documentaron las políticas provisionales en
+[CONTRATO_ACADEMICO.md](CONTRATO_ACADEMICO.md).
 
-## Implementado y publicado
-
-HU 42 **parcial**, primera entrega: consulta de preguntas por tema y dificultad.
-
-- `GET /api/practicas/preguntas?tema=Algebra&dificultad=FACIL`.
-- Tema y dificultad obligatorios; dificultades: `FACIL`, `INTERMEDIO`, `DIFICIL`. Tema vacío o dificultad inválida producen HTTP 400.
-- Consulta únicamente preguntas `APROBADA`; sin coincidencias devuelve una lista vacía.
-- DTO de salida con id, enunciado, tema, dificultad y opciones. No devuelve respuesta correcta, datos del docente ni revisión.
-- Reutiliza `BancoPreguntasService` y `PreguntaRepository`; conserva los filtros docentes existentes de HU 22.
-- La consulta actual es un catálogo público sin identidad de alumno. No implementa selección por matrícula/sección; esta política debe confirmarse con los documentos y el contrato de identidad.
-- Se añadió V0 para crear `preguntas` y `pregunta_opciones` antes de V1 en bases nuevas y un índice para la consulta. V1 y V2 no fueron modificadas.
-- La prueba de validación del esquema detectó que `pasoAPaso` no coincidía con `paso_a_paso` de V1; se corrigió el nombre explícito de la columna en la entidad existente.
-- H2 solo se usa como dependencia de pruebas, con perfil `test` y validación del esquema por Hibernate. Las migraciones se ejecutan mediante Flyway.
-
-Commit publicado y comprobado con `ls-remote`:
-
-`e618be6f5e5f0d23b2a891ed24f493fad064d479` — `feat(hu42): implementar preguntas por tema`.
-
-## Pruebas y compilación
-
-- JDK usado: `C:\Users\sheil\.jdks\openjdk-26.0.2.1` (el Java predeterminado del terminal era Java 8; el proyecto requiere Java 25).
-- `mvnw.cmd -Dtest=PracticaHu42Tests test`: 4 pruebas, 0 fallos, 0 errores antes de incorporar persistencia.
-- Suite final: `mvnw.cmd -B test`: **25 pruebas, 0 fallos, 0 errores, 0 omitidas; BUILD SUCCESS**. Incluye compilación de código principal y pruebas.
-- Cobertura nueva: filtros y validación del servicio; HTTP y serialización con MockMvc; consulta JPA real que excluye preguntas pendientes, rechazadas, de otro tema y de otra dificultad; migraciones y arranque del contexto.
-- H2 está en modo PostgreSQL; no se ejecutaron pruebas contra un servidor PostgreSQL real.
-- Compilación de los archivos Kotlin modificados mediante IntelliJ: correcta. La compilación global del IDE falló por ausencia del SDK Android; no se modificó ese módulo.
-- Se resolvieron errores TLS locales usando el almacén de certificados Windows para Git y Maven, sin desactivar la verificación de certificados. Para Maven se usó `MAVEN_OPTS=-Djavax.net.ssl.trustStoreType=Windows-ROOT -Djavax.net.ssl.trustStore=NONE` en el proceso.
-- Durante la validación hubo fallos por falta de datasource, mapeo de columna y concurrencia entre compilaciones del IDE/Maven. Se corrigieron el entorno de pruebas y el mapeo y se ejecutó nuevamente la suite hasta obtener el resultado anterior.
-- Revisados `git diff`, `git diff --cached --check` y `git status`. Solo se publicaron archivos específicos del backend. Sin cambios en frontend, Android ni otras ramas.
-
-## Bloqueos y pendientes por historia
-
-| Historia | Estado | Dependencia necesaria |
+| HU | Implementación comprobada | Pendiente para cierre formal |
 | --- | --- | --- |
-| HU 42, registrar respuestas | Pendiente | Identidad autenticada del alumno, existencia/estado del alumno y autorización para acceder a la pregunta. No existen entidades, repositorios ni cliente de identidad/matrícula en este backend. |
-| HU 27 | Pendiente | HU 42 de respuestas y permisos. `SolucionarioService` y estados BORRADOR/APROBADO ya existen; falta acreditar el intento previo del alumno para impedir acceso anticipado. |
-| HU 28, modelo | Pendiente | Contrato de relaciones alumno/docente y reglas de asignación del docente, además de los documentos Scrum. No existe una entidad de dudas para reutilizar. |
-| HU 28, agrupación IA | Bloqueada | No existe una integración IA real en el backend inspeccionado: `generarVariante` usa texto programado y `SolucionarioService` usa una regla de ecuaciones lineales. Faltan proveedor/cliente, contrato y manejo esperado de sus errores. |
-| HU 29 | Pendiente | Modelo y agrupación HU 28; identidad y permisos del docente sobre el grupo. |
-| HU 30 | Pendiente | Modelo de dudas, actores autorizados y reglas de resolución/transición que deben contrastarse con los documentos. |
+| 42 | Preguntas aprobadas por tema/dificultad; respuestas persistidas; validación de opción, identidad, matrícula y docente activo. | Contrastar criterios Scrum y contrato de IDs con despliegue administrativo. |
+| 27 | Respuesta correcta y solución APROBADO solo después de un intento propio, incluso incorrecto. Sin acceso a BORRADOR. Se protegieron rutas docentes que permitían eludir la restricción. | Validación integrada con tokens emitidos por el Django desplegado. |
+| 28 | Registro de dudas; agrupación por docente, sección y pregunta, o tema normalizado; persistencia y aislamiento. | Confirmar criterio de similitud. No se implementó similitud semántica ni IA y no se afirma que existan. |
+| 29 | Respuesta docente inmutable vinculada a las dudas elegibles; historial de respuestas; permisos. Dudas posteriores requieren otra respuesta. | Confirmar política Scrum de agrupación/respuesta. |
+| 30 | Resolución idempotente; filtro PENDIENTE/RESUELTA; historial con actor y fecha; migración conserva eventos previos. | Confirmar política provisional: alumno propietario o docente asignado pueden resolver después de una respuesta. |
+| 38 | Calendario del hijo vinculado usando tablas existentes de Lucas; matrícula/sección activas; filtros de fecha y exclusión de cancelados. | Conexión al esquema administrativo real. El modelo disponible solo registra fecha, no hora. |
+| 39 | Descarga PDF por sección con resultados persistidos, promedio, detalle y temas débiles; permisos; apertura y renderizado verificados. | Confirmar presentación/indicadores del documento Scrum. |
+| 23 | Estadísticas de semana completa; resumen persistido; programación configurable; reintentos; correo simulado obligatorio en demo/test; adaptador SMTP normal. | Confirmar horario/métricas Scrum. Configurar y verificar SMTP real cuando corresponda; no se enviaron correos reales. |
 
-No se crearon endpoints que acepten un `alumnoId` o `docenteId` proporcionado por el cliente como prueba de autorización, ni se presentó un agrupamiento programado como integración IA. No se crearon los commits de estas funcionalidades pendientes.
+## Endpoints
 
-Antes de aplicar V0 a una base existente, revisar su esquema y `flyway_schema_history`: la migración fue verificada para una base nueva. No se conectó ni modificó ninguna base desplegada; no se activó `outOfOrder` automáticamente.
+Salvo el catálogo de preguntas, requieren `Authorization: Bearer <access token>`.
+El rol y los identificadores propios se obtienen de la identidad verificada y del
+esquema académico; los parámetros de ruta no conceden permisos.
 
-## Siguiente paso para mañana
+| HU | Método y ruta | Actor / detalle |
+| --- | --- | --- |
+| 42 | `GET /api/practicas/preguntas?tema=Algebra&dificultad=FACIL` | Público, no revela respuestas. |
+| 42 | `POST /api/practicas/respuestas` | ALUMNO. JSON `{"preguntaId":1,"respuesta":"4"}`. 201. |
+| 27 | `GET /api/practicas/preguntas/{id}/solucionario` | ALUMNO con intento propio; anticipado 403, sin solución aprobada 404. |
+| 28 | `POST /api/alumno/dudas` | ALUMNO. JSON `{"docenteId":1,"seccionId":1,"preguntaId":1,"texto":"Mi duda"}`; sin pregunta, indicar `tema`. 201. |
+| 28/30 | `GET /api/alumno/dudas?estado=PENDIENTE` | Propias; estado opcional PENDIENTE/RESUELTA. |
+| 28 | `GET /api/docente/dudas/grupos` | DOCENTE, solo grupos autorizados. |
+| 28/30 | `GET /api/docente/dudas/grupos/{id}?estado=RESUELTA` | Dudas del grupo; estado opcional. |
+| 29 | `POST /api/docente/dudas/grupos/{id}/respuestas` | DOCENTE. JSON `{"texto":"Explicación"}`. 201; sin dudas elegibles 409. |
+| 29 | `GET /api/docente/dudas/grupos/{id}/respuestas` | Historial de respuestas del grupo. |
+| 29 | `GET /api/alumno/dudas/{id}/respuesta` | Solo alumno propietario. |
+| 30 | `PUT /api/alumno/dudas/{id}/resolver` | Propietario; sin respuesta 409. |
+| 30 | `PUT /api/docente/dudas/{id}/resolver` | Docente asignado. |
+| 30 | `GET /api/alumno/dudas/{id}/historial` | Propietario. |
+| 30 | `GET /api/docente/dudas/{id}/historial` | Docente asignado. |
+| 38 | `GET /api/apoderado/alumnos/{alumnoId}/simulacros?desde=2026-11-01&hasta=2026-11-30` | APODERADO vinculado; fechas inclusivas y opcionales. |
+| 39 | `GET /api/docente/secciones/{id}/rendimiento.pdf` | DOCENTE asignado; application/pdf, attachment, no-store. |
+| 23 | `GET /api/docente/resumen-semanal?semana=2026-10-19` | DOCENTE; lunes de una semana completa. Sin parámetro usa la semana anterior. |
 
-1. Recibir y contrastar los documentos del proyecto y laboratorio Scrum, especialmente actores, asignaciones y criterios de aceptación.
-2. Identificar con el equipo el contrato de autenticación, roles, alumnos/docentes y matrícula, y el cliente IA real. La consulta a Sheila sobre ese contrato quedó pendiente de respuesta.
-3. Implementar y publicar el registro de respuestas de HU 42 con validaciones reales; continuar con HU 27, HU 28, HU 29 y HU 30 en el orden solicitado, con pruebas, commits específicos y verificación de cada push.
-4. Validar las migraciones contra PostgreSQL y contrastar el esquema de cualquier instalación existente antes de desplegar.
+El adaptador de identidad reutiliza por lectura las tablas Django inspeccionadas
+en `origin/feature/lucas-base-django` (`5afd48c`). No se modificó el módulo administrativo de Lucas,
+Darío, frontend ni mobile. Las rutas docentes preexistentes ahora requieren rol y
+propiedad/asignación para impedir lectura anticipada de respuestas.
 
-Este informe se publica en un commit documental separado; su hash se obtiene con `git log -1 -- backend/AVANCE_SHEILA.md` y se comunica al verificar ese push.
+## Migraciones y perfiles
+
+- V0, V1 y V2 existentes no fueron modificadas.
+- V4: respuestas de práctica. V5: grupos y dudas. V6: respuestas agrupadas.
+- V7: historial y recuperación de fechas originales. V8: resúmenes semanales.
+- Migraciones aditivas, sin borrar tablas/datos ni activar clean, baseline u outOfOrder.
+- PostgreSQL normal conserva datasource por variables UMBRAL_DB_* y Hibernate validate.
+- H2 de ejecución solo se incorpora con Maven `-Pdemo` y Spring `demo`.
+- Los fixtures `db/demo` y `db/identity-demo` solo se cargan en demo/test; Kotlin
+  no administra las tablas Django en el perfil normal.
+- JWT: HS256 compatible con SimpleJWT, exige access, exp y user_id. Roles y
+  actividad se consultan en base. Configurar UMBRAL_JWT_SECRET por entorno;
+  sin clave compartida, no se aceptan tokens externos. No hay login duplicado.
+- Normal: correo desactivado por defecto; SMTP y activación exclusivamente por
+  variables. Demo/test: siempre CorreoResumenSimulado, estado SIMULADO.
+
+## Pruebas ejecutadas y evidencia
+
+Por historia se ejecutó Maven antes del commit/push: 28, 29, 31, 32, 33, 35, 38 y
+41 pruebas respectivamente, todas correctas en cada entrega publicada.
+
+Verificación ampliada final:
+
+- `mvnw.cmd -B test`: **43 pruebas, 0 fallos, 0 errores, 0 omitidas; BUILD SUCCESS**, H2 en modo PostgreSQL.
+- Misma suite contra **PostgreSQL 17.4 real**, en instancia temporal local y
+  esquema aislado: **43 pruebas, 0 fallos, 0 errores, 0 omitidas; BUILD SUCCESS**.
+- Incluye peticiones HTTP reales a Tomcat en puerto aleatorio con JWT firmado,
+  repositorios reales, Flyway e Hibernate validate. No solo MockMvc.
+- Verifica 401/403/400/404/409, aislamiento entre alumnos/docentes, bajas de
+  usuario/matrícula/vínculo, intentos propios, agrupación y vínculos de respuestas.
+- Prueba evolutiva V6 → V8 conserva pregunta, duda y respuesta preexistentes y
+  recupera eventos con fechas originales. Usa esquema nuevo, sin limpiar datos.
+- PDF descargado con registros persistidos de 16 y 20: promedio esperado 18.00;
+  apertura, extracción de texto y renderizado correctos. También prueba multipágina.
+- Resumen semanal: límites inclusivo/exclusivo, exclusión de otra semana/docente,
+  correo simulado, ejecución repetida sin reenvío y reintento tras fallo de correo.
+- `mvnw.cmd -B -DskipTests package`: BUILD SUCCESS. Se inspeccionó el JAR normal:
+  driver PostgreSQL presente y H2 ausente. Las pruebas se habían ejecutado antes.
+- `mvnw.cmd -B -Pdemo -DskipTests package`: BUILD SUCCESS; JAR con H2 comprobado.
+- `scripts/Verificar-Demo.ps1`: **17 solicitudes HTTP correctas** contra el JAR
+  demo en 127.0.0.1:18082. Incluye acceso anticipado 403, intento y solucionario,
+  dudas/respuesta/resolución/historial, calendario y vínculo ajeno 403, resumen y PDF.
+- El programador se ejecutó realmente en demo con intervalo de prueba de un
+  segundo y produjo correo SIMULADO, sin conexión SMTP. El intervalo normal
+  configurable conserva 15 minutos; no se modificó para esta verificación.
+- El PDF del demo también se abrió con pypdf: una página, dos resultados,
+  promedio 13.00. Los datos proceden del fixture demo existente.
+- Los procesos de prueba del JAR demo y PostgreSQL temporal fueron detenidos;
+  no se detuvo la instancia demo previa del usuario ni otros procesos Java.
+- JDK utilizado: OpenJDK 26.0.2.1 para el proyecto que requiere Java 25.
+- La nueva prueba evolutiva inicialmente detectó un problema del ciclo de vida de
+  conexiones H2 al usar conexiones físicas independientes. Se ajustó al pool
+  Hikari usado por Spring y se repitieron las suites completas con éxito.
+
+Evidencia local (ignorada por Git):
+`target/hu42-test.log`, `hu27-test.log`, `hu28-test.log`, `hu29-test.log`,
+`hu30-test.log`, `hu38-test.log`, `hu39-test.log`, `hu23-test.log`,
+`verificacion-final-h2.log`, `verificacion-final-postgresql.log`,
+`package-normal.log`, `hu39-rendimiento.pdf` y `hu39-rendimiento.png`.
+Además: `package-demo.log`, `smoke-demo-resultados.json`,
+`smoke-demo-stdout.log`, `smoke-demo-stderr.log`, `smoke-demo-rendimiento.pdf`.
+
+Para repetir el demo con JDK >=25 en JAVA_HOME (primero generar el JAR con
+`mvnw.cmd -B -Pdemo package`), desde backend:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Verificar-Demo.ps1 -JavaHome $env:JAVA_HOME
+```
+
+La opción de ejecución se limita a ese proceso: Windows bloqueaba scripts por
+defecto. No se cambió la política permanente. El script inicia y detiene su propia
+instancia, genera una clave efímera y no guarda tokens ni credenciales. Usa un
+puerto distinto al demo previo; admite `-Port` para cambiarlo.
+
+Para repetir las pruebas PostgreSQL, usar exclusivamente una base/esquema de
+pruebas aislado, nunca una base desplegada. En esta sesión se ejecutó Maven con
+URL `jdbc:postgresql://127.0.0.1:55439/postgres?currentSchema=final_hu43`, driver
+`org.postgresql.Driver`, usuario temporal `umbral_test`, sin contraseña en el
+clúster local efímero, y propiedades Flyway schemas/default-schema `final_hu43`.
+El proceso escuchaba solo en 127.0.0.1. La prueba evolutiva crea otro esquema
+temporal; no ejecuta clean ni borra tablas.
+
+## Commits publicados
+
+Cada entrega se revisó, se probó, se publicó exclusivamente a `origin/web` y se
+comparó HEAD con `git ls-remote origin refs/heads/web`. Sin force push ni push a main.
+
+| HU | Hash publicado |
+| --- | --- |
+| 42 | `c35af18cdbb4620b1457e2cce4fd9100e46f89fa` |
+| 27 | `9753b8ba18155ae85c0016824731f4ce82c8702e` |
+| 28 | `fe66aaa6bda0b050608b39b3aea0d5e343ab755d` |
+| 29 | `8ca084b5b8206c3c9973f3d3d290ce814801fbfa` |
+| 30 | `7d7be66edc457c954cc87acfe72c6fa8ae258eb3` |
+| 38 | `bf5fc67d0fb1765b0f0df54c48ad64cdd1d7ee72` |
+| 39 | `ac309b0e5819193d777a548df49d1d7053c87f10` |
+| 23 | `6f7f91b735af6cfa026f90e96130d0f9035b6dd9` |
+
+Entrega anterior HU 42 catálogo: `e618be6f5e5f0d23b2a891ed24f493fad064d479`.
+
+Verificación final, refuerzo de bajas académicas y ajuste del ancho del PDF:
+`701025643361113f57c02c48b3719250404d9210`, publicado y comprobado con ls-remote.
+El hash de publicación de este informe se obtiene con
+`git log -1 -- backend/AVANCE_SHEILA.md`.
+
+## Dependencias y funcionalidades no acreditadas
+
+1. Entregar criterios Scrum UMBRAL. SITES10.pdf fue inspeccionado: corresponde a
+   Aforo Light; no contiene estas historias. Las consultas a Sheila sobre reglas
+   de agrupación, actores, horario y estadísticas quedaron sin respuesta.
+2. Configurar integración desplegada: esquema Django accesible desde el datasource
+   Kotlin, IDs de Perfil coherentes con datos existentes y secreto de firma
+   compartido. Las pruebas usan tokens firmados y fixtures compatibles; no se
+   hizo login contra un Django real ni se modificó su configuración.
+3. Antes de desplegar en una base existente, revisar esquema e historial Flyway,
+   especialmente V0 y convivencia con tablas Django. No se activó baseline
+   automático ni se modificó una base desplegada.
+4. Confirmar criterio de similitud de HU 28. Una exigencia de IA/semántica requiere
+   proveedor y contrato adicionales: esa funcionalidad no está implementada.
+5. SMTP real requiere configuración y validación posteriores. El cron inicial es
+   lunes 08:00 America/Lima; reintentos cada 15 minutos, máximo 3, configurables.
+   SMTP no garantiza entrega exactamente una vez ante una caída posterior al envío
+   y anterior al commit. ENVIADO significa aceptación SMTP, no recepción en bandeja.
+6. El informe PDF usa resultados del backend Kotlin existente. No se implementó
+   una sincronización nueva con adm_resultado de Django.
+
+Los archivos locales previos `.run/`, `backend.zip`, `SITES10.pdf`,
+`backend/CONEXION_LOCAL.md` y `backend/DEMO_LOCAL.md` se conservaron fuera de los
+commits. La configuración demo previa se revisó, conservó y publicó junto a HU 42.
+La guía demo anterior describe endpoints públicos docentes anteriores al JWT;
+para el comportamiento actual consultar este informe y CONTRATO_ACADEMICO.md.
