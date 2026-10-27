@@ -226,3 +226,19 @@ class Apoderado(models.Model):
 
     def __str__(self):
         return f'Apoderado {self.perfil.user.username}'
+
+
+class ConfiguracionIA(models.Model):
+    academia = models.OneToOneField(
+        Academia, on_delete=models.CASCADE, related_name='config_ia'
+    )
+    activa = models.BooleanField(default=True)
+    limite_por_docente = models.PositiveIntegerField(default=100)
+    actualizado_en = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'adm_configuracion_ia'
+
+    def __str__(self):
+        estado = 'activa' if self.activa else 'desactivada'
+        return f'IA {estado} en {self.academia.nombre} (límite {self.limite_por_docente})'
