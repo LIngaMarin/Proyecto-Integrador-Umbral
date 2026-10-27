@@ -46,6 +46,13 @@ Se filtra por PENDIENTE/RESUELTA; otros valores producen 400. El historial guard
 REGISTRADA, RESPONDIDA y RESUELTA con actor y fecha; V7 recupera fechas de dudas
 y respuestas existentes. No se borran dudas ni se sobrescriben eventos.
 
+HU 38: el apoderado consulta simulacros de cursos de las matrículas activas del
+hijo vinculado, usando `adm_simulacro` de Lucas. Se excluyen simulacros cancelados
+y secciones inactivas, se eliminan duplicados y se ordena por fecha/id. `desde`
+e `hasta` son inclusivos; sin desde se usa hoy en Lima y sin hasta no hay límite
+superior. El modelo administrativo solo tiene fecha, por lo que no se inventa
+una hora. No se crean nuevas tablas ni se duplican calendarios.
+
 H2 se activa únicamente con los perfiles Maven `demo` y Spring `demo`. Las
 tablas académicas ficticias de `db/identity-demo` solo se ejecutan en demo/test;
 no son migraciones del esquema Django real. Las direcciones `example.invalid`

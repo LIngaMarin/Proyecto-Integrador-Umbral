@@ -168,4 +168,17 @@ class RespuestasHttpTests {
         assertEquals(403,request("GET","/api/alumno/dudas/${d.id}/historial",user=4).statusCode())
         assertEquals(200,request("GET","/api/docente/dudas/${d.id}/historial",user=1).statusCode())
     }
+
+    @Test fun `calendario del hijo valida relacion matricula rol y rango`() {
+        val ruta="/api/apoderado/alumnos/2/simulacros?desde=2026-11-01&hasta=2026-11-03"
+        val ok=request("GET",ruta,user=3)
+        assertEquals(200,ok.statusCode(),ok.body())
+        assertTrue(ok.body().contains("Simulacro demo"))
+        assertFalse(ok.body().contains("Otro curso"))
+        assertFalse(ok.body().contains("Cancelado"))
+        assertEquals(403,request("GET",ruta,user=2).statusCode())
+        assertEquals(403,request("GET",ruta.replace("/alumnos/2/","/alumnos/4/"),user=3).statusCode())
+        assertEquals(400,request("GET",ruta.replace("desde=2026-11-01","desde=2026-11-04"),user=3).statusCode())
+        assertEquals("[]",request("GET", "/api/apoderado/alumnos/2/simulacros?desde=2027-01-01&hasta=2027-01-02",user=3).body())
+    }
 }
