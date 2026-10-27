@@ -31,10 +31,18 @@ class RespuestasHttpTests {
     @Autowired lateinit var respuestasGrupo: RespuestaGrupoRepository
     @Autowired lateinit var historialDudas: HistorialDudaRepository
     @Autowired lateinit var resultados: ResultadoSimulacroRepository
+    @Autowired lateinit var resumenes: ResumenSemanalRepository
+    @Autowired lateinit var programador: ProgramadorResumen
+    @Autowired lateinit var estadisticas: EstadisticasSemanaService
+    @Autowired lateinit var jdbc: org.springframework.jdbc.core.JdbcTemplate
+    @Autowired lateinit var correo: CorreoResumen
 
     companion object {
         val secret = ByteArray(48).also { SecureRandom().nextBytes(it) }.joinToString("") { "%02x".format(it) }
-        @JvmStatic @DynamicPropertySource fun config(r: DynamicPropertyRegistry) { r.add("umbral.jwt.secret") { secret } }
+        @JvmStatic @DynamicPropertySource fun config(r: DynamicPropertyRegistry) {
+            r.add("umbral.jwt.secret") { secret }
+            r.add("umbral.resumen.enabled") { "true" }
+        }
     }
 
     fun token(user: Long, type: String = "access", expires: Instant = Instant.now().plusSeconds(600)): String {
@@ -206,5 +214,42 @@ class RespuestasHttpTests {
         }
         assertEquals(403,request("GET",ruta,user=1).statusCode())
         assertEquals(403,request("GET",ruta,user=2).statusCode())
+    }
+
+    @Test fun `resumen semanal usa intervalo real y programador simula envio una sola vez`() {
+        val semana=estadisticas.semanaAnterior()
+        val inicio=semana.atStartOfDay()
+        val fin=inicio.plusWeeks(1)
+        fun guardar(fecha: java.time.LocalDateTime,docente: Long=5)=preguntas.saveAndFlush(Pregunta(
+            enunciado="Pregunta semanal",tema="Semana",dificultad=Dificultad.FACIL,
+            opciones=listOf("4"),respuestaCorrecta="4",estado=EstadoPregunta.APROBADA,docenteId=docente,fechaCreacion=fecha))
+        val primera=guardar(inicio)
+        guardar(fin.minusNanos(1000))
+        guardar(inicio.minusSeconds(1))
+        guardar(fin)
+        guardar(inicio,docente=1)
+        respuestas.saveAndFlush(RespuestaPractica(preguntaId=primera.id,alumnoId=4,respuesta="4",correcta=true,fecha=inicio))
+        respuestas.saveAndFlush(RespuestaPractica(preguntaId=primera.id,alumnoId=4,respuesta="2",correcta=false,fecha=fin))
+        val actor=com.umbral.umbral_backend.security.Actor(5,"DOCENTE","otro-docente@example.invalid")
+        val stats=estadisticas.calcular(actor,semana)
+        assertEquals(2,stats.preguntasCreadas)
+        assertEquals(2,stats.preguntasCreadasActualmenteAprobadas)
+        assertEquals(1,stats.intentosPractica)
+        assertEquals(1,stats.aciertosPractica)
+        assertEquals(1,stats.alumnosPractica)
+        val ok=request("GET","/api/docente/resumen-semanal?semana=$semana",user=5)
+        assertEquals(200,ok.statusCode(),ok.body())
+        assertTrue(ok.body().contains("\"preguntasCreadas\":2"))
+        assertEquals(403,request("GET","/api/docente/resumen-semanal",user=2).statusCode())
+        assertEquals(400,request("GET","/api/docente/resumen-semanal?semana=${semana.plusDays(1)}",user=5).statusCode())
+        assertTrue(correo is CorreoResumenSimulado)
+        programador.ejecutar()
+        val resumen=resumenes.findByDocenteIdAndSemanaInicio(5,semana)!!
+        assertEquals("SIMULADO",resumen.estado)
+        assertEquals(1,resumen.intentos)
+        assertTrue(resumen.cuerpo.contains("Preguntas creadas: 2"))
+        programador.ejecutar()
+        assertEquals(1,resumenes.findByDocenteIdAndSemanaInicio(5,semana)!!.intentos)
+        assertEquals(1,jdbc.queryForObject("SELECT COUNT(*) FROM resumenes_semanales WHERE docente_id=5 AND semana_inicio=?",Long::class.java,semana))
     }
 }
