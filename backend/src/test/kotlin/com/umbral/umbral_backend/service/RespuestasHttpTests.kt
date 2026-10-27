@@ -29,6 +29,7 @@ class RespuestasHttpTests {
     @Autowired lateinit var dudas: DudaRepository
     @Autowired lateinit var grupos: GrupoDudasRepository
     @Autowired lateinit var respuestasGrupo: RespuestaGrupoRepository
+    @Autowired lateinit var historialDudas: HistorialDudaRepository
 
     companion object {
         val secret = ByteArray(48).also { SecureRandom().nextBytes(it) }.joinToString("") { "%02x".format(it) }
@@ -141,5 +142,30 @@ class RespuestasHttpTests {
         assertEquals(2,respuestasGrupo.findByGrupoIdOrderByFechaAscIdAsc(grupo.id).size)
         assertEquals(respuestaId,dudas.findById(existentes.first().id).orElseThrow().respuestaId)
         assertEquals(200,request("GET",ruta,user=1).statusCode())
+    }
+
+    @Test fun `resuelve dudas respondidas filtra estados y conserva historial sin duplicar eventos`() {
+        val p=pregunta()
+        val body="""{"docenteId":1,"seccionId":1,"preguntaId":${p.id},"texto":"Duda a resolver"}"""
+        assertEquals(201,request("POST","/api/alumno/dudas",body=body).statusCode())
+        val grupo=grupos.findAll().single { it.preguntaId==p.id }
+        val d=dudas.findByGrupoIdOrderByFechaAscIdAsc(grupo.id).single()
+        val ruta="/api/alumno/dudas/${d.id}/resolver"
+        assertEquals(409,request("PUT",ruta).statusCode())
+        assertEquals(403,request("PUT",ruta,user=4).statusCode())
+        assertEquals(403,request("PUT","/api/docente/dudas/${d.id}/resolver",user=5).statusCode())
+        assertEquals(201,request("POST","/api/docente/dudas/grupos/${grupo.id}/respuestas",user=1,
+            body="""{"texto":"Explicación verificada por docente"}""").statusCode())
+        assertEquals(200,request("PUT",ruta).statusCode())
+        assertEquals(200,request("PUT",ruta).statusCode())
+        val eventos=historialDudas.findByDudaIdOrderByFechaAscIdAsc(d.id)
+        assertEquals(listOf("REGISTRADA","RESPONDIDA","RESUELTA"),eventos.map { it.evento })
+        assertEquals(listOf(2L,1L,2L),eventos.map { it.actorId })
+        assertTrue(request("GET","/api/alumno/dudas?estado=RESUELTA").body().contains("Duda a resolver"))
+        assertFalse(request("GET","/api/alumno/dudas?estado=PENDIENTE").body().contains("Duda a resolver"))
+        assertEquals(400,request("GET","/api/alumno/dudas?estado=INVALIDO").statusCode())
+        assertEquals(200,request("GET","/api/alumno/dudas/${d.id}/historial").statusCode())
+        assertEquals(403,request("GET","/api/alumno/dudas/${d.id}/historial",user=4).statusCode())
+        assertEquals(200,request("GET","/api/docente/dudas/${d.id}/historial",user=1).statusCode())
     }
 }

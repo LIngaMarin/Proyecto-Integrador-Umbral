@@ -40,6 +40,12 @@ dudas posteriores necesitan una nueva respuesta; no heredan la anterior.
 Sin dudas elegibles devuelve 409. El alumno consulta la respuesta de su propia
 duda; el docente consulta el historial de respuestas de su agrupación.
 
+HU 30 (política provisional): el alumno propietario o el docente asignado pueden
+resolver una duda que ya tenga respuesta. Una segunda resolución es idempotente.
+Se filtra por PENDIENTE/RESUELTA; otros valores producen 400. El historial guarda
+REGISTRADA, RESPONDIDA y RESUELTA con actor y fecha; V7 recupera fechas de dudas
+y respuestas existentes. No se borran dudas ni se sobrescriben eventos.
+
 H2 se activa únicamente con los perfiles Maven `demo` y Spring `demo`. Las
 tablas académicas ficticias de `db/identity-demo` solo se ejecutan en demo/test;
 no son migraciones del esquema Django real. Las direcciones `example.invalid`

@@ -13,6 +13,8 @@ interface GrupoDudasRepository : JpaRepository<GrupoDudas,Long> {
 }
 
 interface DudaRepository : JpaRepository<Duda,Long> {
+    @Query("select d.grupoId from Duda d where d.id=:id")
+    fun grupoDe(id: Long): Long?
     fun findByAlumnoIdOrderByFechaDescIdDesc(alumnoId: Long): List<Duda>
     fun findByGrupoIdOrderByFechaAscIdAsc(grupoId: Long): List<Duda>
 }

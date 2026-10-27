@@ -1,6 +1,7 @@
 package com.umbral.umbral_backend.controller
 
 import com.umbral.umbral_backend.dto.RegistrarDudaDTO
+import com.umbral.umbral_backend.model.EstadoDuda
 import com.umbral.umbral_backend.security.IdentidadAcademica
 import com.umbral.umbral_backend.service.DudaService
 import jakarta.validation.Valid
@@ -15,9 +16,11 @@ class DudaController(private val service: DudaService, private val identidad: Id
     fun registrar(@AuthenticationPrincipal jwt: Jwt,@Valid @RequestBody dto: RegistrarDudaDTO) =
         service.registrar(identidad.actor(jwt,"ALUMNO"),dto)
     @GetMapping("/api/alumno/dudas")
-    fun propias(@AuthenticationPrincipal jwt: Jwt) = service.propias(identidad.actor(jwt,"ALUMNO"))
+    fun propias(@AuthenticationPrincipal jwt: Jwt,@RequestParam(required=false) estado: EstadoDuda?) =
+        service.propias(identidad.actor(jwt,"ALUMNO"),estado)
     @GetMapping("/api/docente/dudas/grupos")
     fun grupos(@AuthenticationPrincipal jwt: Jwt) = service.agrupaciones(identidad.actor(jwt,"DOCENTE"))
     @GetMapping("/api/docente/dudas/grupos/{id}")
-    fun detalle(@AuthenticationPrincipal jwt: Jwt,@PathVariable id: Long) = service.delGrupo(identidad.actor(jwt,"DOCENTE"),id)
+    fun detalle(@AuthenticationPrincipal jwt: Jwt,@PathVariable id: Long,@RequestParam(required=false) estado: EstadoDuda?) =
+        service.delGrupo(identidad.actor(jwt,"DOCENTE"),id,estado)
 }

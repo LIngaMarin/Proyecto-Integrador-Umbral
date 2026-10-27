@@ -14,7 +14,8 @@ import java.util.Locale
 
 @Service
 class DudaService(private val grupos: GrupoDudasRepository, private val dudas: DudaRepository,
-    private val preguntas: PreguntaRepository, private val identidad: IdentidadAcademica) {
+    private val preguntas: PreguntaRepository, private val identidad: IdentidadAcademica,
+    private val historial: HistorialDudaRepository) {
     @Transactional
     fun registrar(alumno: Actor, dto: RegistrarDudaDTO): Duda {
         identidad.exigirMatricula(alumno.id,dto.seccionId)
@@ -31,11 +32,14 @@ class DudaService(private val grupos: GrupoDudasRepository, private val dudas: D
             seccionId=dto.seccionId,tema=tema,preguntaId=pregunta?.id))
         // Serializa registro y respuesta docente para no perder dudas concurrentes.
         grupos.bloquear(grupo.id)
-        return dudas.save(Duda(grupoId=grupo.id,alumnoId=alumno.id,texto=dto.texto.trim()))
+        val duda=dudas.saveAndFlush(Duda(grupoId=grupo.id,alumnoId=alumno.id,texto=dto.texto.trim()))
+        historial.save(HistorialDuda(dudaId=duda.id,actorId=alumno.id,rol=alumno.rol,evento="REGISTRADA"))
+        return duda
     }
 
     @Transactional(readOnly=true)
-    fun propias(alumno: Actor): List<Duda> = dudas.findByAlumnoIdOrderByFechaDescIdDesc(alumno.id)
+    fun propias(alumno: Actor,estado: EstadoDuda? = null): List<Duda> = dudas.findByAlumnoIdOrderByFechaDescIdDesc(alumno.id)
+        .filter { estado==null || it.estado==estado.name }
 
     @Transactional(readOnly=true)
     fun agrupaciones(docente: Actor): List<GrupoDudas> = grupos.findByDocenteIdOrderByIdDesc(docente.id)
@@ -45,9 +49,9 @@ class DudaService(private val grupos: GrupoDudasRepository, private val dudas: D
         }
 
     @Transactional(readOnly=true)
-    fun delGrupo(docente: Actor, grupoId: Long): List<Duda> {
+    fun delGrupo(docente: Actor, grupoId: Long,estado: EstadoDuda? = null): List<Duda> {
         exigirGrupo(docente,grupoId)
-        return dudas.findByGrupoIdOrderByFechaAscIdAsc(grupoId)
+        return dudas.findByGrupoIdOrderByFechaAscIdAsc(grupoId).filter { estado==null || it.estado==estado.name }
     }
 
     fun exigirGrupo(docente: Actor, grupoId: Long): GrupoDudas {

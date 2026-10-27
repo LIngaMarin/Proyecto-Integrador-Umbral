@@ -10,7 +10,8 @@ import org.springframework.http.HttpStatus
 
 @Service
 class RespuestaGrupoService(private val grupos: GrupoDudasRepository,private val dudas: DudaRepository,
-    private val respuestas: RespuestaGrupoRepository,private val service: DudaService) {
+    private val respuestas: RespuestaGrupoRepository,private val service: DudaService,
+    private val historial: HistorialDudaRepository) {
     @Transactional
     fun responder(docente: Actor,grupoId: Long,texto: String): RespuestaGrupo {
         service.exigirGrupo(docente,grupoId)
@@ -18,7 +19,10 @@ class RespuestaGrupoService(private val grupos: GrupoDudasRepository,private val
         val pendientes=dudas.findByGrupoIdOrderByFechaAscIdAsc(grupoId).filter { it.estado=="PENDIENTE" && it.respuestaId==null }
         if (pendientes.isEmpty()) throw ResponseStatusException(HttpStatus.CONFLICT,"No hay dudas sin respuesta")
         val respuesta=respuestas.saveAndFlush(RespuestaGrupo(grupoId=grupoId,docenteId=docente.id,texto=texto.trim()))
-        pendientes.forEach { it.respuestaId=respuesta.id }
+        pendientes.forEach {
+            it.respuestaId=respuesta.id
+            historial.save(HistorialDuda(dudaId=it.id,actorId=docente.id,rol=docente.rol,evento="RESPONDIDA"))
+        }
         dudas.saveAll(pendientes)
         return respuesta
     }
