@@ -20,6 +20,13 @@ en una sección activa en que tiene matrícula activa. El catálogo sigue públi
 y no contiene respuestas. Las respuestas admiten intentos sucesivos y conservan
 fecha, opción y evaluación de cada intento.
 
+HU 27: `GET /api/practicas/preguntas/{id}/solucionario` exige rol ALUMNO,
+matrícula vigente y al menos una respuesta propia persistida. Retorna únicamente
+soluciones APROBADO de preguntas APROBADA; BORRADOR devuelve 404 y el acceso
+anticipado 403. El intento puede ser incorrecto. Las rutas docentes originales
+también exigen rol DOCENTE y propiedad de la pregunta o acceso a la sección,
+para impedir que un alumno lea respuestas a través del banco docente.
+
 H2 se activa únicamente con los perfiles Maven `demo` y Spring `demo`. Las
 tablas académicas ficticias de `db/identity-demo` solo se ejecutan en demo/test;
 no son migraciones del esquema Django real. Las direcciones `example.invalid`

@@ -25,6 +25,7 @@ class RespuestasHttpTests {
     @LocalServerPort var port: Int = 0
     @Autowired lateinit var preguntas: PreguntaRepository
     @Autowired lateinit var respuestas: RespuestaPracticaRepository
+    @Autowired lateinit var soluciones: SolucionarioRepository
 
     companion object {
         val secret = ByteArray(48).also { SecureRandom().nextBytes(it) }.joinToString("") { "%02x".format(it) }
@@ -66,5 +67,27 @@ class RespuestasHttpTests {
     @Test fun `rechaza firma invalida tokens expirados y refresh`() {
         for (jwt in listOf(token(2,"refresh"),token(2,expires=Instant.now().minusSeconds(120)),token(2).dropLast(10)+"aaaaaaaaaa"))
             assertEquals(401, request("POST","/api/practicas/respuestas",bearer=jwt,body="{}").statusCode())
+    }
+
+    @Test fun `solucion aprobada exige intento propio y bloquea rutas docentes alternativas`() {
+        val p = pregunta()
+        val ruta = "/api/practicas/preguntas/${p.id}/solucionario"
+        assertEquals(403,request("GET",ruta).statusCode())
+        assertEquals(403,request("GET","/api/docente/preguntas?docenteId=1").statusCode())
+        assertEquals(403,request("GET","/api/docente/preguntas?docenteId=1",user=5).statusCode())
+        assertEquals(200,request("GET","/api/docente/preguntas?docenteId=1",user=1).statusCode())
+        val s = soluciones.saveAndFlush(Solucionario(pregunta=p,pasoAPaso="Restar 6 y dividir entre 2"))
+        request("POST","/api/practicas/respuestas",body="""{"preguntaId":${p.id},"respuesta":"2"}""")
+        assertEquals(404,request("GET",ruta).statusCode())
+        s.estado=EstadoSolucionario.APROBADO
+        soluciones.saveAndFlush(s)
+        val ok=request("GET",ruta)
+        assertEquals(200,ok.statusCode(),ok.body())
+        assertTrue(ok.body().contains("\"respuestaCorrecta\":\"4\""))
+        assertTrue(ok.body().contains("Restar 6"))
+        assertEquals(403,request("GET",ruta,user=4).statusCode())
+        assertEquals(403,request("GET",ruta,user=1).statusCode())
+        assertEquals(403,request("PUT","/api/docente/solucionarios/${s.id}/aprobar").statusCode())
+        assertEquals(403,request("PUT","/api/docente/preguntas/${p.id}/aprobar",user=5,body="{}").statusCode())
     }
 }
