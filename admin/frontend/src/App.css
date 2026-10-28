@@ -446,3 +446,8 @@ nav button.activa {
   align-items: center;
   gap: 8px;
 }
+
+.limite-alcanzado {
+  color: #b91c1c;
+  font-weight: 600;
+}
