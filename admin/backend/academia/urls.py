@@ -17,6 +17,7 @@ from .matriculas import (
 from .rendimiento import RendimientoView, ResultadoViewSet, SimulacroViewSet
 from .apoderados import ApoderadoViewSet, MiHijoView, MisHijosView
 from .configuracion_ia import ConfiguracionIAView
+from .ia import MiUsoIAView, UsarIAView, UsoDocentesView
 from .usuarios import CambiarClaveView, UsuarioViewSet
 from .views import AulaViewSet, CicloViewSet, CursoViewSet, SedeViewSet
 
@@ -42,6 +43,9 @@ urlpatterns = router.urls + [
     path('mis-hijos/', MisHijosView.as_view()),
     path('mis-hijos/<int:pk>/', MiHijoView.as_view()),
     path('configuracion-ia/', ConfiguracionIAView.as_view()),
+    path('ia/usar/', UsarIAView.as_view()),
+    path('ia/uso/', MiUsoIAView.as_view()),
+    path('ia/uso-docentes/', UsoDocentesView.as_view()),
     path('auth/login/', LoginView.as_view()),
     path('auth/refresh/', TokenRefreshView.as_view()),
     path('dashboard/', DashboardView.as_view()),

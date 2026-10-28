@@ -242,3 +242,14 @@ class ConfiguracionIA(models.Model):
     def __str__(self):
         estado = 'activa' if self.activa else 'desactivada'
         return f'IA {estado} en {self.academia.nombre} (límite {self.limite_por_docente})'
+
+
+class UsoIA(models.Model):
+    docente = models.ForeignKey(Perfil, on_delete=models.CASCADE, related_name='usos_ia')
+    creado_en = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'adm_uso_ia'
+
+    def __str__(self):
+        return f'Uso de IA de {self.docente.user.username} el {self.creado_en:%d/%m/%Y}'
