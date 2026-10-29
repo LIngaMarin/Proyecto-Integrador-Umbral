@@ -2,10 +2,12 @@ package com.umbral.umbral_backend.service
 
 import com.umbral.umbral_backend.dto.ActualizarPreguntaDTO
 import com.umbral.umbral_backend.dto.AprobarRechazarDTO
+import com.umbral.umbral_backend.dto.PreguntaPracticaDTO
 import com.umbral.umbral_backend.model.*
 import com.umbral.umbral_backend.repository.PreguntaRepository
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.server.ResponseStatusException
 import org.springframework.web.multipart.MultipartFile
 
@@ -14,6 +16,21 @@ import org.springframework.web.multipart.MultipartFile
 class BancoPreguntasService(
     private val preguntaRepository: PreguntaRepository
 ) {
+    /** HU 42: consulta solo preguntas publicadas sin revelar su solución. */
+    @Transactional(readOnly = true)
+    fun obtenerPreguntasPractica(tema: String, dificultad: Dificultad): List<PreguntaPracticaDTO> {
+        if (tema.isBlank()) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "El tema es obligatorio")
+        }
+        return preguntaRepository.findByEstadoAndTemaAndDificultad(
+            EstadoPregunta.APROBADA, tema.trim(), dificultad
+        ).map {
+            PreguntaPracticaDTO(
+                it.id, it.enunciado, it.tema, it.dificultad, it.opciones.toList()
+            )
+        }
+    }
+
     // HU 22: Consultar las preguntas de un docente con filtros opcionales.
     /** Mantiene el filtro docente y combina los filtros opcionales presentes. */
     fun obtenerPreguntas(docenteId: Long, tema: String?, dificultad: Dificultad?): List<Pregunta> =

@@ -16,6 +16,11 @@ class SolucionarioService(
     private val preguntaRepository: PreguntaRepository,
     private val solucionarioRepository: SolucionarioRepository
 ) {
+    /** Devuelve el solucionario aprobado de la pregunta; si falta o sigue en borrador, responde con 404. */
+    fun aprobadoParaPregunta(preguntaId: Long): Solucionario =
+        solucionarioRepository.findByPregunta_Id(preguntaId)?.takeIf { it.estado == EstadoSolucionario.APROBADO }
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "No hay solución aprobada")
+
     /** Busca la pregunta, evita duplicados y guarda como borrador los pasos que puede verificar. */
     fun generarParaPregunta(preguntaId: Long): Solucionario {
         val pregunta = preguntaRepository.findById(preguntaId).orElseThrow {
