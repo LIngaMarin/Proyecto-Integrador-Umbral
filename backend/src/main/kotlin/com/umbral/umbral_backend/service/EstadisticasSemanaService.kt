@@ -59,7 +59,8 @@ class EstadisticasSemanaService(private val jdbc: JdbcTemplate,private val clock
     companion object {
         /** Exige un lunes de inicio y una semana que ya haya terminado. */
         fun validarSemana(inicio: LocalDate,hoy: LocalDate) {
-            if(inicio.dayOfWeek!=DayOfWeek.MONDAY || inicio.plusWeeks(1).isAfter(hoy))
+            // Rechaza fechas futuras antes de sumar días para evitar desbordamientos.
+            if(inicio.dayOfWeek!=DayOfWeek.MONDAY || inicio.isAfter(hoy) || inicio.plusWeeks(1).isAfter(hoy))
                 throw ResponseStatusException(HttpStatus.BAD_REQUEST,"Indique el lunes de una semana completa")
         }
     }

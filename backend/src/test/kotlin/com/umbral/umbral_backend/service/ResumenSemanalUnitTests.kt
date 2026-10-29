@@ -12,6 +12,15 @@ import java.time.*
 
 /** Comprueba la semana del resumen, el horario y los reintentos de correo sin repetir envíos exitosos. */
 class ResumenSemanalUnitTests {
+    @Test fun `fecha futura extrema se rechaza como solicitud invalida sin desbordamiento`() {
+        val hoy=LocalDate.of(2026,10,29)
+        val lunesExtremo=LocalDate.MAX.with(java.time.temporal.TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+        val error=assertThrows(ResponseStatusException::class.java) {
+            EstadisticasSemanaService.validarSemana(lunesExtremo,hoy)
+        }
+        assertEquals(400,error.statusCode.value())
+    }
+
     @Test fun `semana exige lunes completo y cron corresponde al lunes ocho de Lima`() {
         val lunes=LocalDate.of(2026,10,19)
         assertDoesNotThrow { EstadisticasSemanaService.validarSemana(lunes,lunes.plusWeeks(1)) }

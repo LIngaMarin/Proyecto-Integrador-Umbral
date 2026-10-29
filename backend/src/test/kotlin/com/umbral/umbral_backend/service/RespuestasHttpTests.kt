@@ -64,6 +64,13 @@ class RespuestasHttpTests {
         enunciado = "2x + 6 = 14", tema = "HTTP", dificultad = Dificultad.FACIL,
         opciones = listOf("2","4"), respuestaCorrecta = "4", estado = estado, docenteId = docenteId))
 
+    @Test fun `resumen admite semana anterior y rechaza fecha extrema por HTTP`() {
+        assertEquals(200,request("GET","/api/docente/resumen-semanal",user=1).statusCode())
+        val extremo=java.time.LocalDate.MAX.with(java.time.temporal.TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY))
+        val fecha=java.net.URLEncoder.encode(extremo.toString(),java.nio.charset.StandardCharsets.UTF_8)
+        assertEquals(400,request("GET","/api/docente/resumen-semanal?semana=$fecha",user=1).statusCode())
+    }
+
     @Test fun `registra respuestas usando identidad verificada y valida permisos y opciones`() {
         val p = pregunta()
         val body = """{"preguntaId":${p.id},"respuesta":"4"}"""
