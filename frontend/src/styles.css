@@ -1,0 +1,31 @@
+/* Paleta y tipografía compartidas por todas las vistas académicas. */
+:root { --forest: #183e35; --lime: #e4f29d; --ink: #213c35; --muted: #65736d; }
+body { background: #f6f7f2; color: var(--ink); font-family: 'Segoe UI', system-ui, sans-serif; }
+.navbar-brand { font-weight: 800; letter-spacing: .1em; color: var(--forest); }
+.brand-mark { background: var(--forest); color: var(--lime); border-radius: 10px 10px 3px 3px; padding: 4px 12px; font-family: Georgia, serif; }
+.brand-caption { font-size: .55rem; letter-spacing: .12em; border-left: 1px solid #d6ddd8; padding-left: 14px; margin-left: 10px; }
+.nav-link { color: #55655f; font-size: .9rem; }.nav-link.active { color: var(--forest); font-weight: 700; }
+.session-link { border: 1px solid #d4ded7; border-radius: 8px; padding-inline: 15px !important; }
+/* El bloque de bienvenida usa formas CSS y no necesita imágenes externas. */
+.hero { background: var(--forest); color: white; border-radius: 22px; padding: clamp(28px, 5vw, 65px); position: relative; overflow: hidden; }
+.eyebrow { text-transform: uppercase; letter-spacing: .16em; font-size: .72rem; font-weight: 700; }
+.hero .eyebrow { color: var(--lime); }.hero h1 { font-family: Georgia, serif; font-size: clamp(2.4rem, 5vw, 4.3rem); line-height: 1.08; font-weight: 400; }.hero h1 em { color: var(--lime); }
+.hero p { color: #d4e1da; max-width: 470px; line-height: 1.8; }
+.arch { height: 270px; width: 220px; border: 1px solid #8da883; border-radius: 130px 130px 0 0; position: relative; margin: 0 auto; background: linear-gradient(135deg,#547358,#1d493c); }
+.arch::before,.arch::after { content: ''; position: absolute; inset: 22px; border: 1px solid #91ac85; border-radius: inherit; }.arch::after { inset: 44px; background: linear-gradient(160deg,#d6e79c55,transparent); }
+.arch-label { position: absolute; bottom: 25px; left: -30px; z-index: 1; background: var(--lime); color: var(--forest); padding: 15px 25px; border-radius: 12px; font-size: .85rem; box-shadow: 0 8px 25px #0002; }
+/* Tarjetas reutilizables, botones y campos mantienen contraste y foco visibles. */
+.card { border: 1px solid #dfe5dd; border-radius: 16px; box-shadow: 0 3px 10px #183e3503; }.card-body { padding: 26px; }
+.module-icon { display: inline-flex; background: #ecf1e3; color: var(--forest); width: 44px; height: 44px; border-radius: 12px; align-items: center; justify-content: center; font-size: 1.3rem; margin-bottom: 22px; }
+.btn-primary { --bs-btn-bg: #183e35; --bs-btn-border-color: #183e35; --bs-btn-hover-bg: #285b4d; --bs-btn-hover-border-color: #285b4d; --bs-btn-disabled-bg: #65736d; --bs-btn-disabled-border-color: #65736d; }
+.btn-lime { background: var(--lime); color: var(--forest); border-color: var(--lime); }.btn-lime:hover { background: #d1e480; }
+.btn { border-radius: 8px; padding: 10px 18px; font-weight: 600; }.text-secondary { color: var(--muted) !important; }
+.page-title { font-family: Georgia, serif; font-size: clamp(2rem,4vw,2.8rem); }.section-label { color: var(--muted); font-size: .8rem; }
+.empty-state { border: 1px dashed #c7d2c7; padding: 36px 20px; border-radius: 14px; text-align: center; background: #f9faf6; }
+.option { display: flex; gap: 12px; align-items: baseline; padding: 14px; border: 1px solid #dfe5dd; border-radius: 8px; cursor: pointer; }.option:has(input:checked) { border-color: var(--forest); background: #edf3e5; }
+.form-control:focus,.form-select:focus { border-color: #477e64; box-shadow: 0 0 0 .2rem #477e6425; }
+.question-text,.user-text { white-space: pre-wrap; overflow-wrap: anywhere; }footer { color: var(--muted); font-size: .8rem; }
+.skip-link { position: absolute; z-index: 2000; background: white; padding: 12px; }
+/* La grilla Bootstrap se complementa con ajustes para pantallas pequeñas. */
+@media (max-width: 575.98px) { .hero { border-radius: 14px; }.card-body { padding: 20px; }.navbar-brand { font-size: 1rem; }footer { line-height: 1.8; }.btn { white-space: normal; } }
+@media (prefers-reduced-motion: reduce) { *,*::before,*::after { scroll-behavior: auto !important; transition: none !important; } }
