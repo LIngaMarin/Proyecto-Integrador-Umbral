@@ -43,7 +43,6 @@ export default function Login({ onLogin }) {
     <div className="login">
       <form className="panel login-caja" onSubmit={entrar}>
         <div className="login-marca">
-          <span className="sello">U</span>
           <strong>Umbral</strong>
         </div>
         <h1>Ingresa a tu cuenta</h1>

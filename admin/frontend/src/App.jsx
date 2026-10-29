@@ -224,18 +224,6 @@ export default function App() {
       : null
   })
   const [clave, setClave] = useState('panel')
-  const [logo, setLogo] = useState(null)
-
-  useEffect(() => {
-    if (!sesion) return
-    api
-      .get('/academias/')
-      .then((r) => {
-        const conLogo = r.data.find((a) => a.logo && a.activa)
-        setLogo(conLogo ? conLogo.logo : null)
-      })
-      .catch(() => {})
-  }, [sesion, clave])
 
   useEffect(() => {
     api
@@ -280,11 +268,6 @@ export default function App() {
     <div className="shell">
       <aside className="lateral">
         <div className="lateral-marca">
-          {logo ? (
-            <img className="logo-encabezado" src={logo} alt="Logo de la academia" />
-          ) : (
-            <span className="sello">U</span>
-          )}
           <div>
             <strong>Umbral</strong>
             <span>Panel de administración</span>
