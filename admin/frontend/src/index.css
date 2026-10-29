@@ -1,7 +1,30 @@
+@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap');
+
 :root {
-  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-  color: #1f2937;
-  background: #f3f4f6;
+  --fuente: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Colores de marca: los reemplaza la configuración de la academia (marca.js). */
+  --color-primario: #2563eb;
+  --color-secundario: #1f2937;
+  --primario-suave: color-mix(in srgb, var(--color-primario) 10%, white);
+
+  --fondo: #f4f6f8;
+  --superficie: #ffffff;
+  --borde: #dde3e9;
+  --borde-campo: #c3ccd5;
+  --texto: #26343f;
+  --texto-suave: #66757f;
+  --hover: #f1f4f7;
+  --exito: #15803d;
+  --error: #b42318;
+  --error-fondo: #fef3f2;
+  --error-borde: #fda29b;
+  --radio: 8px;
+
+  font-family: var(--fuente);
+  color: var(--texto);
+  background: var(--fondo);
+  line-height: 1.5;
 }
 
 * {
@@ -10,4 +33,16 @@
 
 body {
   margin: 0;
+  background: var(--fondo);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-primario);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
 }
