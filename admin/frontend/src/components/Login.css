@@ -1,0 +1,44 @@
+.login {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: 24px 16px;
+  background: var(--fondo);
+}
+
+.login-caja {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: 400px;
+  padding: 32px 28px;
+  overflow: visible;
+}
+
+.login-marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.login-marca strong {
+  font-size: 1.25rem;
+}
+
+.login-caja h1 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.login-caja p {
+  margin: 0;
+  color: var(--texto-suave);
+}
+
+.login-caja button[type='submit'] {
+  width: 100%;
+  margin-top: 4px;
+  padding: 11px;
+}

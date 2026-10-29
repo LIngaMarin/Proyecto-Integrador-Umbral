@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { api } from '../api'
+import './Login.css'
 
 const ROLES_PERMITIDOS = ['ADMIN', 'COORDINADOR']
 
@@ -41,8 +42,12 @@ export default function Login({ onLogin }) {
   return (
     <div className="login">
       <form className="panel login-caja" onSubmit={entrar}>
-        <h1>Umbral</h1>
-        <p>Panel de administración</p>
+        <div className="login-marca">
+          <span className="sello">U</span>
+          <strong>Umbral</strong>
+        </div>
+        <h1>Ingresa a tu cuenta</h1>
+        <p>Panel de administración de tu academia</p>
         <label>
           <span>Correo</span>
           <input
