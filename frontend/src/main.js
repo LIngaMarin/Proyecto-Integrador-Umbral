@@ -1,6 +1,9 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Collapse } from 'bootstrap';
 import './styles.css';
+import { practicas, verResultados } from './practicas.js';
+import { dudas } from './dudas.js';
+import { sesion } from './sesion.js';
 
 const main = document.querySelector('main');
 
@@ -30,7 +33,11 @@ function navegar() {
   });
   Collapse.getInstance(document.querySelector('#menu'))?.hide();
   if (ruta === 'inicio') inicio();
-  else main.innerHTML = `<h1 class="page-title">${({practicas:'Prácticas académicas',dudas:'Mis dudas',resultados:'Resultados',sesion:'Acceso de alumno'})[ruta] || 'Página no encontrada'}</h1><p>Este módulo está en preparación.</p><a href="#inicio">Volver al inicio</a>`;
+  else if (ruta === 'practicas') practicas(main);
+  else if (ruta === 'dudas') dudas(main);
+  else if (ruta === 'resultados') verResultados(main);
+  else if (ruta === 'sesion') sesion(main);
+  else main.innerHTML = '<h1 class="page-title">Página no encontrada</h1><a href="#inicio">Volver al inicio</a>';
   document.title = `UMBRAL · ${ruta === 'inicio' ? 'Espacio académico' : main.querySelector('h1').textContent}`;
   main.focus({ preventScroll: true });
 }
