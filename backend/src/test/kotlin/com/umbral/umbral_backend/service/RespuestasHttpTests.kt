@@ -71,6 +71,74 @@ class RespuestasHttpTests {
         assertEquals(400,request("GET","/api/docente/resumen-semanal?semana=$fecha",user=1).statusCode())
     }
 
+    @Test fun `errores de formato opcion y referencia no guardan intentos de practica`() {
+        val p=pregunta()
+        val antes=respuestas.count()
+        val invalidos=listOf(
+            "{" to 400,
+            """{"respuesta":"4"}""" to 400,
+            """{"preguntaId":"abc","respuesta":"4"}""" to 400,
+            """{"preguntaId":-1,"respuesta":"4"}""" to 400,
+            """{"preguntaId":${p.id},"respuesta":"9"}""" to 400,
+            """{"preguntaId":${p.id},"respuesta":"${"x".repeat(256)}"}""" to 400,
+            """{"preguntaId":${Long.MAX_VALUE},"respuesta":"4"}""" to 404)
+        // Las solicitudes rechazadas no deben dejar intentos parciales en la base de datos.
+        invalidos.forEach { (body,status) ->
+            val respuesta=request("POST","/api/practicas/respuestas",body=body)
+            assertEquals(status,respuesta.statusCode(),respuesta.body())
+            assertEquals(antes,respuestas.count())
+        }
+        assertEquals(201,request("POST","/api/practicas/respuestas",
+            body="""{"preguntaId":${p.id},"respuesta":"4"}""").statusCode())
+        assertEquals(antes+1,respuestas.count())
+    }
+
+    @Test fun `dudas invalidas no crean grupos ni historial y admiten el limite de texto`() {
+        val p=pregunta()
+        val antes=dudas.count()
+        val gruposAntes=grupos.count()
+        val eventosAntes=historialDudas.count()
+        val invalidos=listOf(
+            """{"docenteId":0,"seccionId":1,"tema":"Tema","texto":"Duda"}""" to 400,
+            """{"docenteId":1,"seccionId":0,"tema":"Tema","texto":"Duda"}""" to 400,
+            """{"docenteId":1,"seccionId":1,"tema":"  ","texto":"Duda"}""" to 400,
+            """{"docenteId":1,"seccionId":1,"preguntaId":${p.id},"texto":"${"x".repeat(4001)}"}""" to 400,
+            """{"docenteId":1,"seccionId":1,"preguntaId":${Long.MAX_VALUE},"texto":"Duda"}""" to 404)
+        invalidos.forEach { (body,status) ->
+            val respuesta=request("POST","/api/alumno/dudas",body=body)
+            assertEquals(status,respuesta.statusCode(),respuesta.body())
+            assertEquals(antes,dudas.count())
+            assertEquals(gruposAntes,grupos.count())
+            assertEquals(eventosAntes,historialDudas.count())
+        }
+        assertEquals(201,request("POST","/api/alumno/dudas",
+            body="""{"docenteId":1,"seccionId":1,"preguntaId":${p.id},"texto":"${"x".repeat(4000)}"}""").statusCode())
+        assertEquals(antes+1,dudas.count())
+        assertEquals(gruposAntes+1,grupos.count())
+        assertEquals(eventosAntes+1,historialDudas.count())
+    }
+
+    @Test fun `respuesta docente valida longitud referencia y guardado sin efectos parciales`() {
+        val p=pregunta()
+        assertEquals(201,request("POST","/api/alumno/dudas",
+            body="""{"docenteId":1,"seccionId":1,"preguntaId":${p.id},"texto":"Duda para validar respuesta"}""").statusCode())
+        val grupo=grupos.findAll().single { it.preguntaId==p.id }
+        val ruta="/api/docente/dudas/grupos/${grupo.id}/respuestas"
+        val antes=respuestasGrupo.count()
+        val eventosAntes=historialDudas.count()
+        for(texto in listOf(" ","x".repeat(10001))) {
+            assertEquals(400,request("POST",ruta,user=1,body="""{"texto":"$texto"}""").statusCode())
+            assertEquals(antes,respuestasGrupo.count())
+            assertEquals(eventosAntes,historialDudas.count())
+        }
+        assertEquals(404,request("POST","/api/docente/dudas/grupos/${Long.MAX_VALUE}/respuestas",user=1,
+            body="""{"texto":"Explicación"}""").statusCode())
+        assertEquals(antes,respuestasGrupo.count())
+        assertEquals(201,request("POST",ruta,user=1,body="""{"texto":"Restar seis y dividir entre dos"}""").statusCode())
+        assertEquals(antes+1,respuestasGrupo.count())
+        assertNotNull(dudas.findByGrupoIdOrderByFechaAscIdAsc(grupo.id).single().respuestaId)
+    }
+
     @Test fun `registra respuestas usando identidad verificada y valida permisos y opciones`() {
         val p = pregunta()
         val body = """{"preguntaId":${p.id},"respuesta":"4"}"""
