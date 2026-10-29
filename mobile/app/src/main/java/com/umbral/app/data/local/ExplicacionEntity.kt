@@ -12,5 +12,7 @@ data class ExplicacionEntity(
     val respuestaAlumno: String,
     val respuestaCorrecta: String,
     val explicacionIa: String,
-    val fechaConsulta: String
+    val fechaConsulta: String,
+    val fotoUrl: String? = null,
+    val estadoEnvio: String = "Enviado"
 )

@@ -13,6 +13,9 @@ interface ClaseDocenteDao {
     @Query("SELECT * FROM clases_docente WHERE diaSemana = :dia ORDER BY horaInicio ASC")
     fun obtenerClasesPorDia(dia: String): Flow<List<ClaseDocenteEntity>>
 
+    @Query("SELECT * FROM clases_docente ORDER BY horaInicio ASC")
+    fun obtenerTodasLasClases(): Flow<List<ClaseDocenteEntity>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertarClases(clases: List<ClaseDocenteEntity>)
 }
