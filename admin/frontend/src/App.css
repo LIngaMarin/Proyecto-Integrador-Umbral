@@ -137,6 +137,12 @@
   color: var(--acento);
 }
 
+.lateral-pie {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+
 .principal {
   display: flex;
   flex-direction: column;
@@ -635,6 +641,11 @@ tbody tr:hover {
     gap: 14px;
     padding: 14px 12px 0;
     border-right: 0;
+  }
+
+  .lateral-pie {
+    margin-top: 0;
+    padding: 6px 0 8px;
   }
 
   .menu {

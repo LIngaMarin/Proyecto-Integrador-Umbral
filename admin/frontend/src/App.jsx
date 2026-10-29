@@ -295,6 +295,12 @@ export default function App() {
             )
           })}
         </nav>
+        <nav className="menu lateral-pie" aria-label="Sesión">
+          <button className="item" onClick={salir}>
+            <Icono nombre="salir" />
+            <span>Cerrar sesión</span>
+          </button>
+        </nav>
       </aside>
       <div className="principal">
         <header className="barra">
@@ -306,10 +312,6 @@ export default function App() {
               {iniciales}
             </span>
             <span className="sesion-nombre">{sesion.nombre}</span>
-            <button className="secundario boton-salir" onClick={salir}>
-              <Icono nombre="salir" tamano={16} />
-              Salir
-            </button>
           </div>
         </header>
         <main className="contenido">
