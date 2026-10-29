@@ -26,6 +26,8 @@ body { background: #f6f7f2; color: var(--ink); font-family: 'Segoe UI', system-u
 .form-control:focus,.form-select:focus { border-color: #477e64; box-shadow: 0 0 0 .2rem #477e6425; }
 .question-text,.user-text { white-space: pre-wrap; overflow-wrap: anywhere; }footer { color: var(--muted); font-size: .8rem; }
 .skip-link { position: absolute; z-index: 2000; background: white; padding: 12px; }
+/* El foco del destino de navegación no enmarca toda la página; los controles conservan su foco visible. */
+main:focus { outline: none; }
 /* La grilla Bootstrap se complementa con ajustes para pantallas pequeñas. */
 @media (max-width: 575.98px) { .hero { border-radius: 14px; }.card-body { padding: 20px; }.navbar-brand { font-size: 1rem; }footer { line-height: 1.8; }.btn { white-space: normal; } }
 @media (prefers-reduced-motion: reduce) { *,*::before,*::after { scroll-behavior: auto !important; transition: none !important; } }

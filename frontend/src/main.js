@@ -40,6 +40,7 @@ function navegar() {
   else main.innerHTML = '<h1 class="page-title">Página no encontrada</h1><a href="#inicio">Volver al inicio</a>';
   document.title = `UMBRAL · ${ruta === 'inicio' ? 'Espacio académico' : main.querySelector('h1').textContent}`;
   main.focus({ preventScroll: true });
+  window.scrollTo({ top: 0, behavior: 'instant' });
 }
 window.addEventListener('hashchange', navegar);
 navegar();
