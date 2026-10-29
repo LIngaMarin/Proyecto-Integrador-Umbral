@@ -18,6 +18,7 @@ class CalendarioService(private val jdbc: JdbcTemplate,private val identidad: Id
         validarRango(desde,hasta)
         identidad.exigirHijo(apoderado.id,alumnoId)
         return identidad.consulta {
+            // Evita repetir un simulacro si el alumno tiene varias matrículas del mismo curso.
             jdbc.query("""SELECT DISTINCT s.id,s.nombre,s.fecha FROM adm_simulacro s
                 JOIN adm_seccion sec ON sec.curso_id=s.curso_id
                 JOIN adm_matricula m ON m.seccion_id=sec.id

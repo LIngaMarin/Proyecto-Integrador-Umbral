@@ -183,3 +183,35 @@ Los archivos locales previos `.run/`, `backend.zip`, `SITES10.pdf`,
 commits. La configuración demo previa se revisó, conservó y publicó junto a HU 42.
 La guía demo anterior describe endpoints públicos docentes anteriores al JWT;
 para el comportamiento actual consultar este informe y CONTRATO_ACADEMICO.md.
+
+## Mejoras verificadas el 29/10/2026
+
+- La revisión inicial pasó las 43 pruebas existentes, antes de modificar archivos.
+- Una prueba de regresión nueva reprodujo un fallo previo con fechas futuras
+  extremas del resumen semanal: DateTimeException en vez del rechazo esperado.
+  Se añadió una comprobación previa a la suma de días, conservando la regla de
+  semanas completas. Los casos unitario y HTTP ahora reciben 400.
+- Se añadieron motivos seguros a los errores 404 de práctica y solucionarios.
+  No se alteraron los códigos, los DTO ni el formato público de las respuestas.
+- Se ampliaron las pruebas de JSON inválido, referencias inexistentes y límites
+  de longitud. Comprueban que los errores no dejen datos parciales y que una
+  solicitud válida posterior siga funcionando. Suite: 52 pruebas correctas.
+- Se verificaron compilación y empaquetado demo, más 17 comprobaciones HTTP del
+  script existente, incluida descarga PDF y correo programado simulado.
+- No se modificaron configuración PostgreSQL/H2, migraciones, dependencias de
+  la aplicación, frontend ni mobile. Los archivos locales previos se conservaron.
+- Guía actualizada de ejecución y exposición: [GUIA_DEMOSTRACION.md](GUIA_DEMOSTRACION.md).
+
+Commits publicados y comprobados en origin/web:
+
+| Mejora | Commit |
+| --- | --- |
+| Validaciones y regresión de fechas | `ca5cbdf2d3e4ba42e8cfa7f81d5ff786cafcc99a` |
+| Motivos de error y pruebas de servicio | `6ed828315ec30cc6f476076165500db37722a306` |
+| Pruebas HTTP de límites y persistencia | `063c480c9cbf0eecf3fe8469d67deb04c29b1731` |
+
+Evidencia local: target/revision-29-baseline.log (43 pruebas),
+revision-29-fecha-antes.log (fallo previo reproducido), revision-29-validaciones.log
+(45 pruebas), revision-29-errores.log (49), revision-29-pruebas.log (52) y
+revision-29-documentacion.log (52 y empaquetado demo). Todos estos archivos se
+conservan en target, fuera de Git.
