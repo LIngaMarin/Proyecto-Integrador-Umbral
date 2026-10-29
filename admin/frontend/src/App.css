@@ -446,3 +446,29 @@ nav button.activa {
   align-items: center;
   gap: 8px;
 }
+
+.limite-alcanzado {
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.resumen-carga {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.resumen-carga div {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.resumen-carga strong {
+  font-size: 1.6rem;
+  color: var(--color-primario, #2563eb);
+}

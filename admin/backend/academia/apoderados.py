@@ -1,8 +1,11 @@
 from django.contrib.auth.models import User
 from django.db import transaction
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import BasePermission
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .auth import EsAdministrador
 from .models import Apoderado, Perfil
@@ -120,3 +123,39 @@ class ApoderadoViewSet(viewsets.ModelViewSet):
             )
         apoderado.hijos.remove(alumno)
         return Response(self.get_serializer(apoderado).data)
+
+
+class EsApoderado(BasePermission):
+    def has_permission(self, request, view):
+        usuario = request.user
+        if not usuario or not usuario.is_authenticated:
+            return False
+        perfil = getattr(usuario, 'perfil', None)
+        return bool(
+            perfil and perfil.rol == Perfil.Rol.APODERADO and hasattr(perfil, 'apoderado')
+        )
+
+
+def _datos_hijo(perfil):
+    return {
+        'id': perfil.id,
+        'email': perfil.user.email,
+        'first_name': perfil.user.first_name,
+        'last_name': perfil.user.last_name,
+    }
+
+
+class MisHijosView(APIView):
+    permission_classes = [EsApoderado]
+
+    def get(self, request):
+        hijos = request.user.perfil.apoderado.hijos.select_related('user').order_by('id')
+        return Response([_datos_hijo(h) for h in hijos])
+
+
+class MiHijoView(APIView):
+    permission_classes = [EsApoderado]
+
+    def get(self, request, pk):
+        hijos = request.user.perfil.apoderado.hijos.select_related('user')
+        return Response(_datos_hijo(get_object_or_404(hijos, pk=pk)))

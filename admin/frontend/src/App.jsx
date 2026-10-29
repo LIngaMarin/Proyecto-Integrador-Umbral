@@ -10,6 +10,8 @@ import Marca from './components/Marca'
 import Rendimiento from './components/Rendimiento'
 import RestablecerClave from './components/RestablecerClave'
 import Apoderados from './components/Apoderados'
+import ConfiguracionIA from './components/ConfiguracionIA'
+import CargaMasiva from './components/CargaMasiva'
 import Matriculas from './components/Matriculas'
 import './App.css'
 
@@ -132,6 +134,8 @@ const SECCIONES = [
   { clave: 'rendimiento', titulo: 'Rendimiento', campos: [] },
   { clave: 'claves', titulo: 'Contraseñas', campos: [], soloAdmin: true },
   { clave: 'apoderados', titulo: 'Apoderados', campos: [], soloAdmin: true },
+  { clave: 'ia', titulo: 'Inteligencia artificial', campos: [], soloAdmin: true },
+  { clave: 'carga', titulo: 'Carga masiva', campos: [], soloAdmin: true },
   {
     clave: 'simulacros',
     titulo: 'Simulacros',
@@ -295,6 +299,10 @@ export default function App() {
         <RestablecerClave />
       ) : actual.clave === 'apoderados' ? (
         <Apoderados />
+      ) : actual.clave === 'ia' ? (
+        <ConfiguracionIA />
+      ) : actual.clave === 'carga' ? (
+        <CargaMasiva />
       ) : (
         <GestionRecurso
           key={actual.clave}

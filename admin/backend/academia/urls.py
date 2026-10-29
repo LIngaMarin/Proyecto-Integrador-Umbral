@@ -15,7 +15,11 @@ from .matriculas import (
     SeccionViewSet,
 )
 from .rendimiento import RendimientoView, ResultadoViewSet, SimulacroViewSet
-from .apoderados import ApoderadoViewSet
+from .apoderados import ApoderadoViewSet, MiHijoView, MisHijosView
+from .configuracion_ia import ConfiguracionIAView
+from .carga_masiva import PlantillaAlumnosView
+from .ia import MiUsoIAView, UsarIAView, UsoDocentesView
+from .importar_alumnos import CargarAlumnosView
 from .usuarios import CambiarClaveView, UsuarioViewSet
 from .views import AulaViewSet, CicloViewSet, CursoViewSet, SedeViewSet
 
@@ -38,6 +42,14 @@ router.register('docentes', DocenteViewSet, basename='docente')
 
 urlpatterns = router.urls + [
     path('auth/cambiar-clave/', CambiarClaveView.as_view()),
+    path('mis-hijos/', MisHijosView.as_view()),
+    path('mis-hijos/<int:pk>/', MiHijoView.as_view()),
+    path('configuracion-ia/', ConfiguracionIAView.as_view()),
+    path('ia/usar/', UsarIAView.as_view()),
+    path('ia/uso/', MiUsoIAView.as_view()),
+    path('ia/uso-docentes/', UsoDocentesView.as_view()),
+    path('alumnos-masivo/plantilla/', PlantillaAlumnosView.as_view()),
+    path('alumnos-masivo/cargar/', CargarAlumnosView.as_view()),
     path('auth/login/', LoginView.as_view()),
     path('auth/refresh/', TokenRefreshView.as_view()),
     path('dashboard/', DashboardView.as_view()),
