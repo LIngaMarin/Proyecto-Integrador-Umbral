@@ -15,8 +15,8 @@
   flex-direction: column;
   gap: 22px;
   padding: 20px 12px 28px;
-  background: var(--superficie);
-  border-right: 1px solid var(--borde);
+  background: var(--lateral-fondo);
+  color: var(--lateral-texto);
 }
 
 .lateral-marca {
@@ -36,9 +36,18 @@
   font-size: 1.1rem;
 }
 
+.lateral-marca div strong {
+  color: #ffffff;
+}
+
 .lateral-marca div span {
   font-size: 0.8rem;
-  color: var(--texto-suave);
+  color: var(--lateral-suave);
+}
+
+.lateral .sello {
+  background: var(--acento);
+  color: #0f3d3b;
 }
 
 .sello {
@@ -86,7 +95,7 @@
   padding: 0 12px;
   font-size: 0.78rem;
   font-weight: 600;
-  color: var(--texto-suave);
+  color: var(--lateral-suave);
 }
 
 .menu .item {
@@ -99,7 +108,7 @@
   border-left: 3px solid transparent;
   border-radius: 0 6px 6px 0;
   background: transparent;
-  color: var(--texto);
+  color: var(--lateral-texto);
   font-size: 0.92rem;
   font-weight: 500;
   text-align: left;
@@ -109,23 +118,23 @@
 
 .menu .item svg {
   flex: none;
-  color: var(--texto-suave);
+  color: var(--lateral-suave);
 }
 
 .menu .item:hover {
-  background: var(--hover);
+  background: var(--lateral-hover);
   filter: none;
 }
 
 .menu .item.activa {
-  background: var(--primario-suave);
-  border-left-color: var(--color-primario);
-  color: var(--color-primario);
+  background: var(--lateral-activo);
+  border-left-color: var(--acento);
+  color: #ffffff;
   font-weight: 600;
 }
 
 .menu .item.activa svg {
-  color: var(--color-primario);
+  color: var(--acento);
 }
 
 .principal {
@@ -626,7 +635,6 @@ tbody tr:hover {
     gap: 14px;
     padding: 14px 12px 0;
     border-right: 0;
-    border-bottom: 1px solid var(--borde);
   }
 
   .menu {
@@ -654,7 +662,7 @@ tbody tr:hover {
   }
 
   .menu .item.activa {
-    border-bottom-color: var(--color-primario);
+    border-bottom-color: var(--acento);
   }
 
   .principal > .barra {

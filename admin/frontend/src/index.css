@@ -4,17 +4,23 @@
   --fuente: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
   /* Colores de marca: los reemplaza la configuración de la academia (marca.js). */
-  --color-primario: #2563eb;
+  --color-primario: #0f766e;
   --color-secundario: #1f2937;
   --primario-suave: color-mix(in srgb, var(--color-primario) 10%, white);
 
-  --fondo: #f4f6f8;
+  --fondo: #eef6f5;
+  --lateral-fondo: #0f4c4a;
+  --lateral-texto: #d7ece9;
+  --lateral-suave: #8fc2bd;
+  --lateral-hover: rgba(255, 255, 255, 0.08);
+  --lateral-activo: rgba(255, 255, 255, 0.14);
+  --acento: #5eead4;
   --superficie: #ffffff;
-  --borde: #dde3e9;
+  --borde: #d5e3e1;
   --borde-campo: #c3ccd5;
   --texto: #26343f;
   --texto-suave: #66757f;
-  --hover: #f1f4f7;
+  --hover: #eef5f4;
   --exito: #15803d;
   --error: #b42318;
   --error-fondo: #fef3f2;
