@@ -13,6 +13,7 @@ import Apoderados from './components/Apoderados'
 import ConfiguracionIA from './components/ConfiguracionIA'
 import CargaMasiva from './components/CargaMasiva'
 import Matriculas from './components/Matriculas'
+import Icono from './iconos'
 import './App.css'
 
 const ACTIVA = { nombre: 'activa', etiqueta: 'Activa', tipo: 'checkbox' }
@@ -200,6 +201,17 @@ const SECCIONES = [
   },
 ]
 
+const GRUPOS = [
+  { titulo: 'General', claves: ['panel'] },
+  { titulo: 'Institución', claves: ['academias', 'sedes', 'aulas', 'ciclos', 'festivos'] },
+  {
+    titulo: 'Académico',
+    claves: ['cursos', 'secciones', 'matriculas', 'horarios', 'simulacros', 'resultados', 'rendimiento'],
+  },
+  { titulo: 'Personas', claves: ['usuarios', 'apoderados', 'carga', 'claves'] },
+  { titulo: 'Ajustes', claves: ['marca', 'ia'] },
+]
+
 export default function App() {
   const [sesion, setSesion] = useState(() => {
     const token = localStorage.getItem('umbral_token')
@@ -257,60 +269,95 @@ export default function App() {
     )
   }
 
+  const iniciales = (sesion.nombre || '?')
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0].toUpperCase())
+    .join('')
+
   return (
-    <div className="app">
-      <header className="encabezado">
-        <div className="marca">
-          {logo && <img className="logo-encabezado" src={logo} alt="Logo de la academia" />}
+    <div className="shell">
+      <aside className="lateral">
+        <div className="lateral-marca">
+          {logo ? (
+            <img className="logo-encabezado" src={logo} alt="Logo de la academia" />
+          ) : (
+            <span className="sello">U</span>
+          )}
           <div>
-            <h1>Umbral · Panel de administración</h1>
-            <p>Infraestructura académica</p>
+            <strong>Umbral</strong>
+            <span>Panel de administración</span>
           </div>
         </div>
-        <div className="sesion">
-          <span>{sesion.nombre}</span>
-          <button className="secundario" onClick={salir}>
-            Salir
-          </button>
-        </div>
-      </header>
-      <nav>
-        {secciones.map((s) => (
-          <button
-            key={s.clave}
-            className={s.clave === actual.clave ? 'activa' : ''}
-            onClick={() => setClave(s.clave)}
-          >
-            {s.titulo}
-          </button>
-        ))}
-      </nav>
-      {actual.clave === 'panel' ? (
-        <Dashboard />
-      ) : actual.clave === 'matriculas' ? (
-        <Matriculas />
-      ) : actual.clave === 'horarios' ? (
-        <Horarios />
-      ) : actual.clave === 'marca' ? (
-        <Marca />
-      ) : actual.clave === 'rendimiento' ? (
-        <Rendimiento />
-      ) : actual.clave === 'claves' ? (
-        <RestablecerClave />
-      ) : actual.clave === 'apoderados' ? (
-        <Apoderados />
-      ) : actual.clave === 'ia' ? (
-        <ConfiguracionIA />
-      ) : actual.clave === 'carga' ? (
-        <CargaMasiva />
-      ) : (
-        <GestionRecurso
-          key={actual.clave}
-          titulo={actual.titulo}
-          endpoint={actual.clave}
-          campos={actual.campos}
-        />
-      )}
+        <nav className="menu" aria-label="Secciones del panel">
+          {GRUPOS.map((g) => {
+            const items = secciones.filter((s) => g.claves.includes(s.clave))
+            if (items.length === 0) return null
+            return (
+              <div className="grupo" key={g.titulo}>
+                <p className="grupo-titulo">{g.titulo}</p>
+                {items.map((s) => (
+                  <button
+                    key={s.clave}
+                    className={s.clave === actual.clave ? 'item activa' : 'item'}
+                    aria-current={s.clave === actual.clave ? 'page' : undefined}
+                    onClick={() => setClave(s.clave)}
+                  >
+                    <Icono nombre={s.clave} />
+                    <span>{s.titulo}</span>
+                  </button>
+                ))}
+              </div>
+            )
+          })}
+        </nav>
+      </aside>
+      <div className="principal">
+        <header className="barra">
+          <p className="migas">
+            Umbral <span>/</span> <strong>{actual.titulo}</strong>
+          </p>
+          <div className="sesion">
+            <span className="avatar" aria-hidden="true">
+              {iniciales}
+            </span>
+            <span className="sesion-nombre">{sesion.nombre}</span>
+            <button className="secundario boton-salir" onClick={salir}>
+              <Icono nombre="salir" tamano={16} />
+              Salir
+            </button>
+          </div>
+        </header>
+        <main className="contenido">
+          {actual.clave === 'panel' ? (
+            <Dashboard />
+          ) : actual.clave === 'matriculas' ? (
+            <Matriculas />
+          ) : actual.clave === 'horarios' ? (
+            <Horarios />
+          ) : actual.clave === 'marca' ? (
+            <Marca />
+          ) : actual.clave === 'rendimiento' ? (
+            <Rendimiento />
+          ) : actual.clave === 'claves' ? (
+            <RestablecerClave />
+          ) : actual.clave === 'apoderados' ? (
+            <Apoderados />
+          ) : actual.clave === 'ia' ? (
+            <ConfiguracionIA />
+          ) : actual.clave === 'carga' ? (
+            <CargaMasiva />
+          ) : (
+            <GestionRecurso
+              key={actual.clave}
+              titulo={actual.titulo}
+              endpoint={actual.clave}
+              campos={actual.campos}
+            />
+          )}
+        </main>
+      </div>
     </div>
   )
 }
