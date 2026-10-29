@@ -18,8 +18,9 @@ class ConsultaSolucionarioService(private val preguntas: PreguntaRepository,
     /** Consulta la solución aprobada después de comprobar el acceso y un intento propio del alumno. */
     @Transactional(readOnly = true)
     fun consultar(alumno: Actor, preguntaId: Long): SolucionAlumnoDTO {
-        val p = preguntas.findById(preguntaId).orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND) }
-        if (p.estado != EstadoPregunta.APROBADA) throw ResponseStatusException(HttpStatus.NOT_FOUND)
+        // Evita revelar si una pregunta no publicada existe en el banco docente.
+        val p = preguntas.findById(preguntaId).orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "La pregunta no está disponible") }
+        if (p.estado != EstadoPregunta.APROBADA) throw ResponseStatusException(HttpStatus.NOT_FOUND, "La pregunta no está disponible")
         identidad.exigirPregunta(alumno.id, p.docenteId)
         if (!respuestas.existsByAlumnoIdAndPreguntaId(alumno.id, p.id))
             throw ResponseStatusException(HttpStatus.FORBIDDEN, "Debe responder primero")
