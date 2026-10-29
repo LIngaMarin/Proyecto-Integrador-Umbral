@@ -209,9 +209,27 @@ Commits publicados y comprobados en origin/web:
 | Validaciones y regresión de fechas | `ca5cbdf2d3e4ba42e8cfa7f81d5ff786cafcc99a` |
 | Motivos de error y pruebas de servicio | `6ed828315ec30cc6f476076165500db37722a306` |
 | Pruebas HTTP de límites y persistencia | `063c480c9cbf0eecf3fe8469d67deb04c29b1731` |
+| Comentarios y guía de demostración | `91ccca3c0eae083be1cf14623851996c6f48ff10` |
 
 Evidencia local: target/revision-29-baseline.log (43 pruebas),
 revision-29-fecha-antes.log (fallo previo reproducido), revision-29-validaciones.log
 (45 pruebas), revision-29-errores.log (49), revision-29-pruebas.log (52) y
 revision-29-documentacion.log (52 y empaquetado demo). Todos estos archivos se
 conservan en target, fuera de Git.
+
+Colección Postman añadida en la entrega del 29/10:
+[postman/README.md](postman/README.md). Contiene 30 solicitudes en ocho carpetas,
+con ejemplos de respuestas capturadas del demo y variables de tokens vacías.
+Ejecución real mediante Newman: 30 solicitudes, 40 comprobaciones, 0 fallos.
+Validación del archivo contra el esquema oficial Postman v2.1: correcta.
+Verificación Maven posterior: target/revision-29-final.log, 52 pruebas, 0 fallos,
+0 errores, BUILD SUCCESS.
+Evidencia local: target/revision-29-postman-resultados.json y
+target/revision-29-postman-rendimiento.pdf. Newman solo se instaló como herramienta
+temporal dentro de target; no cambió dependencias de la aplicación.
+
+Hallazgo pendiente de esa ejecución: el catálogo público con dificultad inválida
+y sin token devuelve 401 durante el despacho de errores; con token válido devuelve
+400. Se conservó la seguridad actual y se documentó el caso, porque corregir ese
+comportamiento puede alterar los códigos compartidos. No se expusieron mensajes
+internos, credenciales ni trazas en las respuestas.
