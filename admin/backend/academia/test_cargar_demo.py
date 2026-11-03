@@ -3,9 +3,10 @@ from io import StringIO
 from django.core.management import call_command
 from django.test import TestCase
 
+from academia.temas_criticos import temas_por_seccion
 from academia.models import (
-    Apoderado, Aula, Curso, Horario, Matricula, Perfil, Resultado, Seccion,
-    Sede, Simulacro,
+    Apoderado, Aula, Curso, ErrorTema, Horario, Matricula, Perfil, Resultado,
+    Seccion, Sede, Simulacro, Tema,
 )
 
 
@@ -29,17 +30,26 @@ class CargarDemoTests(TestCase):
         self.assertEqual(Matricula.objects.count(), 48)
         self.assertEqual(Simulacro.objects.count(), 8)
         self.assertEqual(Resultado.objects.count(), 96)
+        self.assertEqual(Tema.objects.count(), 13)
+        self.assertEqual(ErrorTema.objects.count(), 24 * 13)
+
+    def test_el_salon_debil_tiene_mas_errores_en_el_primer_tema(self):
+        cargar()
+        simulacro = Simulacro.objects.get(curso__nombre='Matemática', nombre='Simulacro 2')
+        salones = temas_por_seccion(simulacro)
+        self.assertEqual(salones[0]['nombre'], 'Matemática - B')
+        self.assertEqual(salones[0]['temas'][0]['tema'], 'Álgebra')
 
     def test_es_idempotente(self):
         cargar()
         antes = (
             Perfil.objects.count(), Matricula.objects.count(),
-            Horario.objects.count(), Resultado.objects.count(),
+            Horario.objects.count(), Resultado.objects.count(), ErrorTema.objects.count(),
         )
         cargar()
         despues = (
             Perfil.objects.count(), Matricula.objects.count(),
-            Horario.objects.count(), Resultado.objects.count(),
+            Horario.objects.count(), Resultado.objects.count(), ErrorTema.objects.count(),
         )
         self.assertEqual(antes, despues)
 

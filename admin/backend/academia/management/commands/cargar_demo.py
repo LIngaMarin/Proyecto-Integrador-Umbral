@@ -14,8 +14,8 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from academia.models import (
-    Academia, Apoderado, Aula, Ciclo, ConfiguracionIA, Curso, Festivo,
-    Horario, Marca, Matricula, Perfil, Resultado, Seccion, Sede, Simulacro,
+    Academia, Apoderado, Aula, Ciclo, ConfiguracionIA, Curso, ErrorTema, Festivo,
+    Horario, Marca, Matricula, Perfil, Resultado, Seccion, Sede, Simulacro, Tema,
     UsoIA,
 )
 
@@ -69,6 +69,15 @@ FESTIVOS = [
 ]
 
 SIMULACROS = [('Simulacro 1', date(2026, 9, 26)), ('Simulacro 2', date(2026, 10, 17))]
+
+# Temas de cada curso, del más al menos problemático (el primero concentra más errores).
+TEMAS = {
+    'Matemática': ['Álgebra', 'Geometría', 'Aritmética', 'Trigonometría'],
+    'Física': ['Cinemática', 'Dinámica', 'Energía y trabajo'],
+    'Química': ['Estequiometría', 'Enlace químico', 'Soluciones'],
+    'Comunicación': ['Comprensión lectora', 'Razonamiento verbal', 'Ortografía'],
+}
+PESO_ERRORES = [4, 3, 2, 1]
 
 # Secciones con rendimiento bajo, para que el reporte muestre "refuerzo".
 RENDIMIENTO_BAJO = {('Matemática', 'B'): 9.5, ('Química', 'B'): 10.0}
@@ -164,10 +173,11 @@ class Command(BaseCommand):
                     base = RENDIMIENTO_BAJO.get((nombre_curso, letra), 14.5)
                     variacion = ((i * 7 + indice_curso * 3 + indice_sim * 2) % 5) - 2
                     puntaje = min(20.0, max(0.0, base + variacion))
-                    Resultado.objects.get_or_create(
+                    resultado, _ = Resultado.objects.get_or_create(
                         simulacro=simulacro, matricula=matriculas[(i, nombre_curso)],
                         defaults={'puntaje': Decimal(str(puntaje))},
                     )
+                    self._errores_por_tema(curso, resultado, puntaje)
 
         for nombre, apellido, telefono, hijos in APODERADOS:
             perfil = self._usuario(nombre, apellido, Perfil.Rol.APODERADO, None)
@@ -186,6 +196,15 @@ class Command(BaseCommand):
                 UsoIA.objects.bulk_create([UsoIA(docente=docente) for _ in range(usos)])
 
         self._resumen(academia)
+
+    def _errores_por_tema(self, curso, resultado, puntaje):
+        """Reparte los puntos perdidos entre los temas, con más peso en los primeros."""
+        for orden, nombre in enumerate(TEMAS[curso.nombre]):
+            tema, _ = Tema.objects.get_or_create(curso=curso, nombre=nombre)
+            cantidad = round((20 - puntaje) * PESO_ERRORES[orden] / 10)
+            ErrorTema.objects.get_or_create(
+                resultado=resultado, tema=tema, defaults={'cantidad': cantidad}
+            )
 
     def _usuario(self, nombre, apellido, rol, sede):
         email = correo(nombre, apellido)
