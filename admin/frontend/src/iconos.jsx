@@ -94,6 +94,13 @@ const RUTAS = {
       <path d="M21 13v2a4 4 0 0 1-4 4H3" />
     </>
   ),
+  temas: (
+    <>
+      <circle cx="12" cy="12" r="10" />
+      <circle cx="12" cy="12" r="6" />
+      <circle cx="12" cy="12" r="2" />
+    </>
+  ),
   usuarios: (
     <>
       <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />

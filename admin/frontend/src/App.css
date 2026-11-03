@@ -738,6 +738,68 @@ tbody tr:hover {
   background: #b7ccc9;
 }
 
+/* ---------- Temas con más errores ---------- */
+
+.temas-lista {
+  display: grid;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.tema-salon {
+  padding: 18px 20px;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-left: 4px solid #e34948;
+  border-radius: var(--radio);
+}
+
+.tema-salon header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.tema-salon h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.tema-salon header span {
+  font-size: 0.85rem;
+  color: var(--texto-suave);
+}
+
+.tema-resumen {
+  margin: 8px 0 14px;
+  max-width: 75ch;
+}
+
+.etiqueta-ia {
+  margin-right: 8px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--primario-suave);
+  color: var(--color-primario);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.tema-fila {
+  display: grid;
+  grid-template-columns: 170px 1fr 190px;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.tema-dato {
+  font-size: 0.85rem;
+  color: var(--texto-suave);
+}
+
 /* ---------- Pantallas pequeñas ---------- */
 
 @media (max-width: 860px) {
@@ -805,6 +867,11 @@ tbody tr:hover {
   .cmp-fila {
     grid-template-columns: 1fr;
     gap: 6px;
+  }
+
+  .tema-fila {
+    grid-template-columns: 1fr;
+    gap: 4px;
   }
 
   .fila-barra {
