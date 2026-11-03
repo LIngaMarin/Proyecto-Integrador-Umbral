@@ -8,6 +8,7 @@ from .dashboard import DashboardView
 from .festivos import FestivoViewSet
 from .horarios import DocenteViewSet, HorarioViewSet, SesionesView
 from .marca import MarcaBorradorView, MarcaPublicarView, MarcaView
+from .logo_publico import LogoPublicoView
 from .matriculas import (
     AlumnoViewSet,
     MatricularNuevoAlumnoView,
@@ -58,6 +59,7 @@ urlpatterns = router.urls + [
     path('sesiones/', SesionesView.as_view()),
     path('rendimiento/comparar/', ComparacionView.as_view()),
     path('rendimiento/', RendimientoView.as_view()),
+    path('logo/', LogoPublicoView.as_view()),
     path('marca/', MarcaView.as_view()),
     path('marca/borrador/', MarcaBorradorView.as_view()),
     path('marca/publicar/', MarcaPublicarView.as_view()),
