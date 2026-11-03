@@ -151,3 +151,7 @@ import os  # noqa: E402
 
 EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'Umbral <no-reply@umbral.pe>')
+
+# Gemini (HU 6): sin clave, el análisis de temas usa un resumen automático básico.
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
+GEMINI_MODEL = os.getenv('GEMINI_MODEL', 'gemini-2.5-flash')
