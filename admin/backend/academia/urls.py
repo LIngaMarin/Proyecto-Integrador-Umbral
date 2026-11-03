@@ -14,6 +14,7 @@ from .matriculas import (
     MatriculaViewSet,
     SeccionViewSet,
 )
+from .comparacion_api import ComparacionView
 from .rendimiento import RendimientoView, ResultadoViewSet, SimulacroViewSet
 from .apoderados import ApoderadoViewSet, MiHijoView, MisHijosView
 from .configuracion_ia import ConfiguracionIAView
@@ -55,6 +56,7 @@ urlpatterns = router.urls + [
     path('dashboard/', DashboardView.as_view()),
     path('matricular-nuevo/', MatricularNuevoAlumnoView.as_view()),
     path('sesiones/', SesionesView.as_view()),
+    path('rendimiento/comparar/', ComparacionView.as_view()),
     path('rendimiento/', RendimientoView.as_view()),
     path('marca/', MarcaView.as_view()),
     path('marca/borrador/', MarcaBorradorView.as_view()),
