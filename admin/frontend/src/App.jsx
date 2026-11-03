@@ -8,6 +8,7 @@ import Dashboard from './components/Dashboard'
 import Horarios from './components/Horarios'
 import Marca from './components/Marca'
 import Rendimiento from './components/Rendimiento'
+import Comparacion from './components/Comparacion'
 import RestablecerClave from './components/RestablecerClave'
 import Apoderados from './components/Apoderados'
 import ConfiguracionIA from './components/ConfiguracionIA'
@@ -133,6 +134,7 @@ const SECCIONES = [
   { clave: 'horarios', titulo: 'Horarios', campos: [] },
   { clave: 'marca', titulo: 'Marca', campos: [], soloAdmin: true },
   { clave: 'rendimiento', titulo: 'Rendimiento', campos: [] },
+  { clave: 'comparacion', titulo: 'Comparar simulacros', campos: [] },
   { clave: 'claves', titulo: 'Contraseñas', campos: [], soloAdmin: true },
   { clave: 'apoderados', titulo: 'Apoderados', campos: [], soloAdmin: true },
   { clave: 'ia', titulo: 'Inteligencia artificial', campos: [], soloAdmin: true },
@@ -206,7 +208,7 @@ const GRUPOS = [
   { titulo: 'Institución', claves: ['academias', 'sedes', 'aulas', 'ciclos', 'festivos'] },
   {
     titulo: 'Académico',
-    claves: ['cursos', 'secciones', 'matriculas', 'horarios', 'simulacros', 'resultados', 'rendimiento'],
+    claves: ['cursos', 'secciones', 'matriculas', 'horarios', 'simulacros', 'resultados', 'rendimiento', 'comparacion'],
   },
   { titulo: 'Personas', claves: ['usuarios', 'apoderados', 'carga', 'claves'] },
   { titulo: 'Ajustes', claves: ['marca', 'ia'] },
@@ -325,6 +327,8 @@ export default function App() {
             <Marca />
           ) : actual.clave === 'rendimiento' ? (
             <Rendimiento />
+          ) : actual.clave === 'comparacion' ? (
+            <Comparacion />
           ) : actual.clave === 'claves' ? (
             <RestablecerClave />
           ) : actual.clave === 'apoderados' ? (
