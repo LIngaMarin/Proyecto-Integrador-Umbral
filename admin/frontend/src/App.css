@@ -627,6 +627,117 @@ tbody tr:hover {
   background: #e34948;
 }
 
+/* ---------- Comparar simulacros ---------- */
+
+.comparacion {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin: 20px 0 24px;
+}
+
+.cmp-fila {
+  display: grid;
+  grid-template-columns: 170px 1fr 190px;
+  align-items: center;
+  gap: 12px;
+}
+
+.cmp-pistas {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.cmp-pista {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 18px;
+  background: var(--hover);
+  border-radius: 0 4px 4px 0;
+}
+
+.cmp-relleno {
+  height: 100%;
+  border-radius: 0 4px 4px 0;
+}
+
+.cmp-relleno.antes {
+  background: #b7ccc9;
+}
+
+.cmp-relleno.ahora {
+  background: var(--color-primario);
+}
+
+.cmp-relleno.ahora.refuerzo {
+  background: #e34948;
+}
+
+.cmp-umbral {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  border-left: 2px dashed var(--texto-suave);
+}
+
+.cmp-valor {
+  position: absolute;
+  right: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--texto-suave);
+}
+
+.cmp-cambio {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.cambio {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.cambio.mejora {
+  color: var(--exito);
+}
+
+.cambio.baja {
+  color: var(--error);
+}
+
+.cambio.igual,
+.cambio.sin-datos {
+  color: var(--texto-suave);
+  font-weight: 500;
+}
+
+.etiqueta-ok,
+.etiqueta-alerta {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.etiqueta-ok {
+  background: #dcfce7;
+  color: var(--exito);
+}
+
+.etiqueta-alerta {
+  background: var(--error-fondo);
+  color: var(--error);
+}
+
+.punto.antes {
+  background: #b7ccc9;
+}
+
 /* ---------- Pantallas pequeñas ---------- */
 
 @media (max-width: 860px) {
@@ -691,6 +802,11 @@ tbody tr:hover {
 }
 
 @media (max-width: 600px) {
+  .cmp-fila {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
   .fila-barra {
     grid-template-columns: 110px 1fr 48px;
   }
