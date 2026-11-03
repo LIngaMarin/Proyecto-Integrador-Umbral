@@ -253,3 +253,38 @@ class UsoIA(models.Model):
 
     def __str__(self):
         return f'Uso de IA de {self.docente.user.username} el {self.creado_en:%d/%m/%Y}'
+
+
+class Tema(models.Model):
+    curso = models.ForeignKey(Curso, on_delete=models.CASCADE, related_name='temas')
+    nombre = models.CharField(max_length=100)
+
+    class Meta:
+        db_table = 'adm_tema'
+        unique_together = [('curso', 'nombre')]
+        ordering = ['nombre']
+
+    def __str__(self):
+        return f'{self.nombre} ({self.curso.nombre})'
+
+
+class ErrorTema(models.Model):
+    """Preguntas falladas por un alumno en un tema de un simulacro."""
+
+    resultado = models.ForeignKey(
+        Resultado, on_delete=models.CASCADE, related_name='errores_tema'
+    )
+    tema = models.ForeignKey(Tema, on_delete=models.CASCADE, related_name='errores')
+    cantidad = models.PositiveSmallIntegerField()
+
+    class Meta:
+        db_table = 'adm_error_tema'
+        unique_together = [('resultado', 'tema')]
+
+    def clean(self):
+        if self.tema_id and self.resultado_id:
+            if self.tema.curso_id != self.resultado.simulacro.curso_id:
+                raise ValidationError('El tema debe pertenecer al curso del simulacro.')
+
+    def __str__(self):
+        return f'{self.tema.nombre}: {self.cantidad} errores'
