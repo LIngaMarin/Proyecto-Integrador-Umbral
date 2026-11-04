@@ -16,13 +16,19 @@ import javax.crypto.spec.SecretKeySpec
 class SeguridadConfig {
     /** Configura la verificación de firma, vencimiento e identidad de los tokens de acceso. */
     @Bean
-    fun jwtDecoder(env: Environment): JwtDecoder {
+    fun jwtKey(env: Environment): SecretKeySpec {
         val configured = env.getProperty("umbral.jwt.secret", env.getProperty("UMBRAL_JWT_SECRET", ""))
         // Sin secreto compartido configurado, ningún token externo será aceptado.
         val key = if (configured.isBlank()) ByteArray(64).also { SecureRandom().nextBytes(it) }
             else configured.toByteArray(Charsets.UTF_8)
         require(key.size >= 32) { "UMBRAL_JWT_SECRET debe tener al menos 32 bytes" }
-        return NimbusJwtDecoder.withSecretKey(SecretKeySpec(key, "HmacSHA256")).build().also {
+        return SecretKeySpec(key, "HmacSHA256")
+    }
+
+    /** Emisor y verificador comparten la misma clave; los tokens móviles externos siguen siendo válidos. */
+    @Bean
+    fun jwtDecoder(jwtKey: SecretKeySpec): JwtDecoder {
+        return NimbusJwtDecoder.withSecretKey(jwtKey).build().also {
             it.setJwtValidator(DelegatingOAuth2TokenValidator(JwtValidators.createDefault(), OAuth2TokenValidator<Jwt> { jwt ->
                 if (jwt.getClaimAsString("token_type") == "access" && jwt.expiresAt != null &&
                     jwt.getClaimAsString("user_id")?.toLongOrNull()?.let { id -> id > 0 } == true)
@@ -38,7 +44,9 @@ class SeguridadConfig {
         http.csrf { it.disable() }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests {
-                it.requestMatchers("/api/practicas/preguntas").permitAll()
+                // Conserva el estado original de errores del login público; el despacho interno no expone otra API.
+                it.dispatcherTypeMatchers(jakarta.servlet.DispatcherType.ERROR).permitAll()
+                    .requestMatchers("/api/practicas/preguntas", "/api/auth/login").permitAll()
                     .anyRequest().authenticated()
             }
             .oauth2ResourceServer { it.jwt { } }
