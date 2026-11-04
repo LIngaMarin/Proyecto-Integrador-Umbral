@@ -14,6 +14,16 @@ class RespuestaPracticaService(
     private val respuestas: RespuestaPracticaRepository,
     private val identidad: IdentidadAcademica
 ) {
+    /** Recupera respuestas propias persistidas, sin incluir soluciones ni registros de otros alumnos. */
+    @Transactional(readOnly=true)
+    fun historial(alumno: Actor): List<Map<String,Any>> {
+        val intentos=respuestas.findByAlumnoIdOrderByFechaDescIdDesc(alumno.id)
+        val banco=preguntas.findAllById(intentos.map{it.preguntaId}.distinct()).associateBy{it.id}
+        return intentos.map{r -> mapOf("id" to r.id,"preguntaId" to r.preguntaId,
+            "enunciado" to banco.getValue(r.preguntaId).enunciado,"tema" to banco.getValue(r.preguntaId).tema,
+            "respuesta" to r.respuesta,"correcta" to r.correcta,"fecha" to r.fecha)}
+    }
+
     /** Valida el acceso a una pregunta aprobada y guarda la respuesta del alumno con su evaluación. */
     @Transactional
     fun registrar(alumno: Actor, preguntaId: Long, respuesta: String): RespuestaPractica {

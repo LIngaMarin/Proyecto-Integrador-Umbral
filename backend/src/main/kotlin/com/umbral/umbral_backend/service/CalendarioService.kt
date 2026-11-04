@@ -17,6 +17,15 @@ class CalendarioService(private val jdbc: JdbcTemplate,private val identidad: Id
     fun consultar(apoderado: Actor,alumnoId: Long,desde: LocalDate,hasta: LocalDate): List<SimulacroCalendarioDTO> {
         validarRango(desde,hasta)
         identidad.exigirHijo(apoderado.id,alumnoId)
+        return leer(alumnoId,desde,hasta)
+    }
+    /** El alumno consulta únicamente simulacros de sus propias matrículas activas. */
+    @Transactional(readOnly=true)
+    fun consultarAlumno(alumno:Actor,desde:LocalDate,hasta:LocalDate):List<SimulacroCalendarioDTO>{
+        validarRango(desde,hasta)
+        return leer(alumno.id,desde,hasta)
+    }
+    private fun leer(alumnoId:Long,desde:LocalDate,hasta:LocalDate):List<SimulacroCalendarioDTO>{
         return identidad.consulta {
             // Evita repetir un simulacro si el alumno tiene varias matrículas del mismo curso.
             jdbc.query("""SELECT DISTINCT s.id,s.nombre,s.fecha FROM adm_simulacro s

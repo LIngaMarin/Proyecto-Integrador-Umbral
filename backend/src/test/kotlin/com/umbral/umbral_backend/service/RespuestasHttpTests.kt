@@ -65,6 +65,31 @@ class RespuestasHttpTests {
         enunciado = "2x + 6 = 14", tema = "HTTP", dificultad = Dificultad.FACIL,
         opciones = listOf("2","4"), respuestaCorrecta = "4", estado = estado, docenteId = docenteId))
 
+    /** El nuevo historial persiste entre solicitudes y nunca incluye intentos ni soluciones ajenos. */
+    @Test fun `historial de practicas devuelve solo intentos propios persistidos`() {
+        val propia=pregunta();propia.enunciado="Historial propio "+java.util.UUID.randomUUID();preguntas.saveAndFlush(propia)
+        val otra=pregunta(docenteId=5);otra.enunciado="Historial ajeno "+java.util.UUID.randomUUID();preguntas.saveAndFlush(otra)
+        assertEquals(201,request("POST","/api/practicas/respuestas",user=2,body="""{"preguntaId":${propia.id},"respuesta":"4"}""").statusCode())
+        assertEquals(201,request("POST","/api/practicas/respuestas",user=4,body="""{"preguntaId":${otra.id},"respuesta":"4"}""").statusCode())
+        val historial=request("GET","/api/practicas/respuestas",user=2)
+        assertEquals(200,historial.statusCode())
+        assertTrue(historial.body().contains(propia.enunciado))
+        assertFalse(historial.body().contains(otra.enunciado))
+        assertFalse(historial.body().contains("respuestaCorrecta"))
+        assertEquals(403,request("GET","/api/practicas/respuestas",user=1).statusCode())
+        assertEquals(401,request("GET","/api/practicas/respuestas",user=null).statusCode())
+    }
+
+    /** El calendario del alumno deriva de su propia identidad y de las matrículas activas. */
+    @Test fun `alumno consulta solo simulacros de sus cursos`() {
+        val r=request("GET","/api/alumno/simulacros?desde=2026-11-01&hasta=2026-11-30",user=2)
+        assertEquals(200,r.statusCode())
+        assertTrue(r.body().contains("Simulacro demo"))
+        assertFalse(r.body().contains("Otro curso"));assertFalse(r.body().contains("Cancelado"))
+        assertEquals(403,request("GET","/api/alumno/simulacros",user=3).statusCode())
+        assertEquals(400,request("GET","/api/alumno/simulacros?desde=2026-11-30&hasta=2026-11-01",user=2).statusCode())
+    }
+
     /** Verifica identidad real y relaciones del portal, incluso cuando el JWT no trae un rol. */
     @Test fun `cuenta exige autenticacion y devuelve relaciones autorizadas`() {
         assertEquals(401,request("GET","/api/cuenta",user=null).statusCode())

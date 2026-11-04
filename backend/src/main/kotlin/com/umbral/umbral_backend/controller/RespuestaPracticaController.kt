@@ -16,6 +16,10 @@ data class RegistrarRespuestaDTO(@field:Positive val preguntaId: Long,
 @RestController
 @RequestMapping("/api/practicas/respuestas")
 class RespuestaPracticaController(private val service: RespuestaPracticaService, private val identidad: IdentidadAcademica) {
+    /** GET: historial académico propio; la identidad no se recibe como parámetro manipulable. */
+    @GetMapping
+    fun historial(@AuthenticationPrincipal jwt: Jwt) = service.historial(identidad.actor(jwt,"ALUMNO"))
+
     /** POST: valida el cuerpo y registra la respuesta del alumno identificado por el token. */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
