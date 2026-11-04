@@ -1,19 +1,22 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './style.css';
 import { api, session, esc, query } from './api.js';
+import { validar } from './componentes.js';
+import { resultados as intentos, limpiarResultados, verResultados } from './practicas.js';
 
 // La cuenta confirmada por el backend decide las vistas; ocultar enlaces no sustituye sus permisos.
 const app = document.querySelector('#app');
 let account;
 let generation = 0;
-const roles = { DOCENTE: 'Docente', ALUMNO: 'Alumno', APODERADO: 'Apoderado' };
+const roles = { DOCENTE: 'Docente', ALUMNO: 'Alumno', APODERADO: 'Apoderado', VISITANTE: 'Visitante' };
 const empty = message => `<div class="empty">${esc(message)}</div>`;
 const button = (label, attrs = '') => `<button class="btn btn-primary" ${attrs}>${label}</button>`;
 const field = (label, name, type = 'text', attrs = '') => `<label>${label}<input class="form-control" name="${name}" type="${type}" ${attrs}></label>`;
 const states = '<option value="">Todos los estados</option><option>PENDIENTE</option><option>RESUELTA</option>';
 const levels = '<option>FACIL</option><option>INTERMEDIO</option><option>DIFICIL</option>';
 const badge = state => `<span class="status ${state === 'PENDIENTE' ? 'pending' : ''}">${esc(state)}</span>`;
-const date = value => value ? new Date(value).toLocaleString('es-PE') : '';
+// Las fechas sin desplazamiento proceden del calendario académico de Lima, no de la zona del navegador.
+const date = value => value ? new Date(/[zZ]$|[+-]\d{2}:\d{2}$/.test(String(value)) ? value : `${value}-05:00`).toLocaleString('es-PE', { timeZone: 'America/Lima' }) : '';
 const sectionOptions = () => account.secciones.map((s, i) => `<option value="${i}">${esc(s.nombre)}${s.docente_id ? ` · Docente ${esc(s.docente_id)}` : ''}</option>`).join('');
 
 /** Presenta errores en una región anunciada por lectores de pantalla. */
@@ -24,26 +27,46 @@ function notice(message, success = false) {
 
 /** Bloquea reenvíos durante una operación y restaura controles también si falla la red. */
 async function perform(element, operation) {
+  const original = element.innerHTML;
+  const isButton = element.tagName === 'BUTTON';
   element.disabled = true;
+  element.setAttribute('aria-busy', 'true');
+  if (isButton) element.textContent = 'Procesando…';
   try { await operation(); } catch (error) { notice(error.message); }
-  finally { if (element.isConnected) element.disabled = false; }
+  finally {
+    if (element.isConnected) {
+      element.disabled = false;
+      element.removeAttribute('aria-busy');
+      if (isButton) element.innerHTML = original;
+    }
+  }
 }
 
 function login() {
   generation++;
   account = null;
+  limpiarResultados();
   app.innerHTML = `<main class="login panel"><div class="brand">UMBRAL</div><p class="eyebrow mt-3">Campus académico</p><h1>Bienvenido de nuevo.</h1><p class="muted">Accede a tus herramientas académicas con el acceso proporcionado por tu academia.</p><div id="notice" aria-live="polite"></div><form id="login"><label class="w-100">Token de acceso<textarea class="form-control" name="token" required autocomplete="off" spellcheck="false"></textarea></label>${button('Ingresar al campus', 'id="login-submit"')}</form><p class="muted small mt-3">Solicita un acceso vigente a la administración de tu academia.</p></main>`;
   document.querySelector('#login').onsubmit = event => {
     event.preventDefault();
     perform(event.submitter, async () => {
       session.set(new FormData(event.target).get('token'));
+      history.replaceState(null, '', '#inicio');
       try { await start(); } catch (error) { session.clear(); notice(error.message); }
     });
+  };
+  const explore = document.createElement('button');
+  explore.className = 'btn btn-outline-secondary mt-3';
+  explore.textContent = 'Explorar prácticas públicas';
+  document.querySelector('.login').append(explore);
+  explore.onclick = () => {
+    account = { rol: 'VISITANTE', email: 'Catálogo público', secciones: [], hijos: [] };
+    if (location.hash === '#practicas') render(); else location.hash = 'practicas';
   };
 }
 
 function shell(page) {
-  const links = [['inicio', 'Inicio'], ...(account.rol === 'ALUMNO' ? [['practicas', 'Prácticas'], ['consultas', 'Mis consultas']] : account.rol === 'DOCENTE' ? [['consultas', 'Consultas académicas'], ['clases', 'Clases y asistencia'], ['banco', 'Banco de preguntas'], ['resultados', 'Resultados']] : [['calendario', 'Calendario'], ['notificaciones', 'Notificaciones']]), ['cuenta', 'Mi cuenta']];
+  const links = [['inicio', 'Inicio'], ...(account.rol === 'ALUMNO' ? [['practicas', 'Prácticas'], ['consultas', 'Mis consultas'], ['resultados', 'Resultados']] : account.rol === 'DOCENTE' ? [['consultas', 'Consultas académicas'], ['clases', 'Clases y asistencia'], ['banco', 'Banco de preguntas'], ['resultados', 'Resultados']] : account.rol === 'VISITANTE' ? [['practicas', 'Prácticas'], ['acceso', 'Ingresar']] : [['calendario', 'Calendario'], ['notificaciones', 'Notificaciones']]), ...(account.rol === 'VISITANTE' ? [] : [['cuenta', 'Mi cuenta']])];
   app.innerHTML = `<div class="shell"><aside class="sidebar"><div><div class="brand">UMBRAL</div><div class="eyebrow mt-2">Campus académico</div></div><nav aria-label="Navegación principal">${links.map(([id, label]) => `<a href="#${id}" class="${page === id ? 'active' : ''}" ${page === id ? 'aria-current="page"' : ''}>${label}</a>`).join('')}</nav><footer>Tu siguiente paso,<br>cada día más cerca.</footer></aside><div class="workspace"><header class="topbar"><div>${esc(roles[account.rol])}<br><small>${esc(account.email)}</small></div><button id="logout" class="btn btn-outline-secondary">Cerrar sesión</button></header><main><div id="notice" aria-live="polite"></div><section id="content" aria-live="polite"></section></main></div></div>`;
   document.querySelector('#logout').onclick = () => { session.clear(); login(); };
 }
@@ -52,7 +75,9 @@ function shell(page) {
 async function render() {
   if (!account) return;
   const current = ++generation;
-  const page = location.hash.slice(1) || 'inicio';
+  const route = location.hash.slice(1) || 'inicio';
+  const page = ({ dudas: 'consultas', sesion: 'cuenta' })[route] || route;
+  if (page === 'acceso') { login(); return; }
   shell(page);
   const content = document.querySelector('#content');
   content.innerHTML = '<p role="status">Cargando información académica…</p>';
@@ -60,7 +85,13 @@ async function render() {
     const html = await ({ inicio: home, practicas, consultas, banco, resultados, calendario, cuenta, clases, notificaciones }[page] || home)();
     if (current !== generation) return;
     content.innerHTML = html;
+    // Conserva el componente de resultados confirmados de la implementación remota.
+    if (page === 'resultados' && account.rol === 'ALUMNO') verResultados(content);
     bind(page);
+    content.tabIndex = -1;
+    content.focus({ preventScroll: true });
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    document.title = `UMBRAL · ${content.querySelector('h1')?.textContent || 'Campus académico'}`;
   } catch (error) { if (current === generation) { content.innerHTML = empty('No se pudo cargar esta sección.'); notice(error.message); } }
 }
 
@@ -81,7 +112,7 @@ async function cuenta() {
 }
 
 async function practicas() {
-  if (account.rol !== 'ALUMNO') return empty('Esta sección está disponible para alumnos.');
+  if (!['ALUMNO', 'VISITANTE'].includes(account.rol)) return empty('Esta sección está disponible para alumnos.');
   return `<p class="eyebrow">Aprende a tu ritmo</p><h1>Prácticas</h1><p class="muted">Elige un tema y pon a prueba lo que aprendiste.</p><form id="practice-search" class="panel filters">${field('Tema', 'tema', 'text', 'required maxlength="255" placeholder="Nombre del tema"')}<label>Dificultad<select class="form-select" name="dificultad">${levels}</select></label>${button('Buscar preguntas')}</form><div id="questions">${empty('Selecciona un tema para comenzar.')}</div>`;
 }
 
@@ -118,6 +149,7 @@ function bankHtml(questions) {
 }
 
 async function resultados() {
+  if (account.rol === 'ALUMNO') return '';
   if (account.rol !== 'DOCENTE') return empty('Esta sección está disponible para docentes.');
   const summary = await api('/docente/resumen-semanal');
   return `<p class="eyebrow">Seguimiento del aprendizaje</p><h1>Resultados y reportes</h1><article class="panel"><h2>Resumen semanal</h2><form id="weekly" class="filters">${field('Semana (lunes)', 'semana', 'date', `required value="${summary.inicio}" step="7"`)}${button('Consultar')}</form><div id="weekly-result" class="mt-3">${summaryHtml(summary)}</div></article><article class="panel"><h2>Rendimiento por sección</h2>${account.secciones.length ? `<form id="section-results" class="filters"><label>Sección<select class="form-select" name="seccion">${sectionOptions()}</select></label>${button('Consultar temas por reforzar')}<button type="button" class="btn btn-outline-secondary" id="download-pdf">Descargar informe PDF</button></form><div id="weak-topics" class="mt-3"></div>` : empty('No tienes secciones asignadas.')}</article>`;
@@ -149,7 +181,7 @@ async function notificaciones() {
 
 /** Conecta únicamente controles de la vista actual con sus operaciones reales. */
 function bind(page) {
-  const form = (selector, callback) => document.querySelectorAll(selector).forEach(f => { f.onsubmit = event => { event.preventDefault(); const values = Object.fromEntries(new FormData(f)); perform(event.submitter, () => callback(values, f)); }; });
+  const form = (selector, callback) => document.querySelectorAll(selector).forEach(f => { f.onsubmit = event => { event.preventDefault(); if (!validar(f)) return; const values = Object.fromEntries(new FormData(f)); perform(event.submitter, () => callback(values, f)); }; });
   const click = (selector, callback) => document.querySelectorAll(selector).forEach(b => { b.onclick = () => perform(b, () => callback(b)); });
   form('#new-class', async values => { const s = account.secciones[Number(values.seccion)]; await api('/docente/clases', { method: 'POST', body: { seccionId: s.id, titulo: values.titulo, fin: values.fin + ':00' } }); await render(); notice('La clase fue programada.', true); });
   click('[data-close-class]', async b => { await api(`/docente/clases/${b.dataset.closeClass}/cerrar`, { method: 'PUT' }); await render(); notice('Asistencia cerrada. Los avisos están disponibles para los apoderados vinculados.', true); });
@@ -165,7 +197,9 @@ function bind(page) {
     bind('practice-list');
   });
   form('[data-practice]', async (values, f) => {
+    if (account.rol === 'VISITANTE') throw new Error('Ingresa con tu acceso de alumno para enviar respuestas.');
     const r = await api('/practicas/respuestas', { method: 'POST', body: { preguntaId: Number(f.dataset.practice), respuesta: values.respuesta } });
+    intentos.push({ ...r, enunciado: f.closest('article').querySelector('h2').textContent });
     document.querySelector(`#attempt-${f.dataset.practice}`).textContent = r.correcta ? 'Respuesta correcta. ¡Sigue avanzando!' : 'Respuesta registrada. Revisa el solucionario para reforzar el tema.';
   });
   click('[data-student-solution]', async b => { const s = await api(`/practicas/preguntas/${b.dataset.studentSolution}/solucionario`); document.querySelector(`#attempt-${b.dataset.studentSolution}`).textContent = `${s.pasoAPaso}${s.explicacionErroresComunes ? '\n' + s.explicacionErroresComunes : ''}`; });

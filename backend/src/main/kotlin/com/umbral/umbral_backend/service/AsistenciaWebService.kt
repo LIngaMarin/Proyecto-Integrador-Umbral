@@ -15,7 +15,7 @@ class AsistenciaWebService(private val jdbc: JdbcTemplate, private val identidad
     /** Conserva fechas de clase en hora local académica; evita que JDBC les agregue una zona UTC ficticia. */
     private fun filas(sql: String, vararg args: Any) = jdbc.queryForList(sql, *args).map { row ->
         row.mapKeys { it.key.lowercase() }.mapValues { (_, value) ->
-            if (value is java.sql.Timestamp) value.toLocalDateTime() else value
+            if (value is java.sql.Timestamp) value.toLocalDateTime().toString() else value
         }
     }
 
@@ -72,7 +72,7 @@ class AsistenciaWebService(private val jdbc: JdbcTemplate, private val identidad
     fun cerrar(actor: Actor, id: Long) {
         val c = clase(actor,id)
         if (c["cerrada"] == true) return
-        val fin = c["fin"] as LocalDateTime
+        val fin = LocalDateTime.parse(c["fin"] as String)
         if (fin.isAfter(LocalDateTime.now(clock))) throw ResponseStatusException(HttpStatus.CONFLICT,"La clase todavía no ha finalizado")
         identidad.consulta {
             jdbc.update("""INSERT INTO notificaciones_academicas(clase_id,alumno_id,apoderado_id,descripcion,fecha)
