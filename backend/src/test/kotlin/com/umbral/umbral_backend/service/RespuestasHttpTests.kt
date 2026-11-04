@@ -37,6 +37,7 @@ class RespuestasHttpTests {
     @Autowired lateinit var estadisticas: EstadisticasSemanaService
     @Autowired lateinit var jdbc: org.springframework.jdbc.core.JdbcTemplate
     @Autowired lateinit var correo: CorreoResumen
+    @Autowired lateinit var cierreAsistencia: ProgramadorAsistencia
 
     companion object {
         val secret = ByteArray(48).also { SecureRandom().nextBytes(it) }.joinToString("") { "%02x".format(it) }
@@ -63,6 +64,58 @@ class RespuestasHttpTests {
     fun pregunta(estado: EstadoPregunta = EstadoPregunta.APROBADA, docenteId: Long = 1): Pregunta = preguntas.saveAndFlush(Pregunta(
         enunciado = "2x + 6 = 14", tema = "HTTP", dificultad = Dificultad.FACIL,
         opciones = listOf("2","4"), respuestaCorrecta = "4", estado = estado, docenteId = docenteId))
+
+    /** Verifica identidad real y relaciones del portal, incluso cuando el JWT no trae un rol. */
+    @Test fun `cuenta exige autenticacion y devuelve relaciones autorizadas`() {
+        assertEquals(401,request("GET","/api/cuenta",user=null).statusCode())
+        val docente=request("GET","/api/cuenta",user=1)
+        assertEquals(200,docente.statusCode())
+        assertTrue(docente.body().contains("DOCENTE"))
+        assertTrue(docente.body().contains("Demo A"))
+        assertFalse(docente.body().contains("Demo B"))
+        val alumno=request("GET","/api/cuenta",user=2)
+        assertEquals(200,alumno.statusCode())
+        assertTrue(alumno.body().contains("docente_id"))
+        val apoderado=request("GET","/api/cuenta",user=3)
+        assertEquals(200,apoderado.statusCode())
+        assertTrue(apoderado.body().contains("alumno@example.invalid"))
+        assertFalse(apoderado.body().contains("otro-alumno"))
+    }
+
+    /** Cierre programado real: ausencias persistidas, presencia excluida y privacidad entre familias. */
+    @Test fun `cierre programado notifica ausentes una sola vez y respeta vinculos`() {
+        val titulo="Asistencia HTTP " + java.util.UUID.randomUUID()
+        val fin=java.time.LocalDateTime.now(java.time.ZoneId.of("America/Lima")).plusHours(1)
+        val body="""{"seccionId":1,"titulo":"$titulo","fin":"$fin"}"""
+        assertEquals(403,request("POST","/api/docente/clases",user=2,body=body).statusCode())
+        assertEquals(403,request("POST","/api/docente/clases",user=5,body=body).statusCode())
+        assertEquals(201,request("POST","/api/docente/clases",user=1,body=body).statusCode())
+        val id=jdbc.queryForObject("SELECT id FROM clases_web WHERE titulo=?",Long::class.java,titulo)!!
+        assertEquals(403,request("GET","/api/docente/clases/$id/alumnos",user=5).statusCode())
+        assertEquals(200,request("GET","/api/docente/clases/$id/alumnos",user=1).statusCode())
+        assertEquals(409,request("PUT","/api/docente/clases/$id/cerrar",user=1).statusCode())
+        // Adelanta solo la fecha de la clase de prueba; evita esperas y no modifica el reloj global.
+        jdbc.update("UPDATE clases_web SET fin=? WHERE id=?",fin.minusHours(2),id)
+        cierreAsistencia.ejecutar()
+        assertEquals(1,jdbc.queryForObject("SELECT COUNT(*) FROM notificaciones_academicas WHERE clase_id=?",Int::class.java,id))
+        cierreAsistencia.ejecutar()
+        assertEquals(1,jdbc.queryForObject("SELECT COUNT(*) FROM notificaciones_academicas WHERE clase_id=?",Int::class.java,id))
+        assertEquals(204,request("PUT","/api/docente/clases/$id/cerrar",user=1).statusCode())
+        assertEquals(409,request("PUT","/api/docente/clases/$id/presentes/2",user=1).statusCode())
+        val avisos=request("GET","/api/apoderado/alumnos/2/notificaciones",user=3)
+        assertEquals(200,avisos.statusCode()); assertTrue(avisos.body().contains(titulo))
+        assertEquals(403,request("GET","/api/apoderado/alumnos/4/notificaciones",user=3).statusCode())
+        assertEquals(403,request("GET","/api/apoderado/alumnos/2/notificaciones",user=2).statusCode())
+        val tituloPresente=titulo+" presente"
+        assertEquals(201,request("POST","/api/docente/clases",user=1,body=body.replace(titulo,tituloPresente)).statusCode())
+        val presenteId=jdbc.queryForObject("SELECT id FROM clases_web WHERE titulo=?",Long::class.java,tituloPresente)!!
+        assertEquals(403,request("PUT","/api/docente/clases/$presenteId/presentes/4",user=1).statusCode())
+        assertEquals(204,request("PUT","/api/docente/clases/$presenteId/presentes/2",user=1).statusCode())
+        assertEquals(204,request("PUT","/api/docente/clases/$presenteId/presentes/2",user=1).statusCode())
+        jdbc.update("UPDATE clases_web SET fin=? WHERE id=?",fin.minusHours(2),presenteId)
+        cierreAsistencia.ejecutar()
+        assertEquals(0,jdbc.queryForObject("SELECT COUNT(*) FROM notificaciones_academicas WHERE clase_id=?",Int::class.java,presenteId))
+    }
 
     @Test fun `resumen admite semana anterior y rechaza fecha extrema por HTTP`() {
         assertEquals(200,request("GET","/api/docente/resumen-semanal",user=1).statusCode())
