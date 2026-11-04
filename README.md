@@ -1,11 +1,13 @@
-# Umbral - Panel de Administración
+# UMBRAL
 
-Plataforma de gestión académica con IA para academias preuniversitarias.
-Proyecto integrador - Tecsup, curso Construcción y Pruebas de Software.
+Plataforma académica para academias preuniversitarias.
 
-## Perfil Administrador
-- backend/: Django + Django REST Framework + PostgreSQL
-- frontend/: React + Vite
+Esta rama contiene el backend Kotlin/Spring Boot en `backend/`, el portal JavaScript/Vite/Bootstrap en `frontend/` y el cliente Android en `mobile/`. La identidad y las relaciones académicas se leen del esquema administrativo Django compartido, según `backend/CONTRATO_ACADEMICO.md`.
 
-## Integrante
-- Lucas Inga
+La guía de esta entrega está en [ENTREGA_WEB.md](ENTREGA_WEB.md): funcionalidades por rol, inventario completo de endpoints, historias HU31/32/33/36, accesos demo, ejecución exacta, pruebas y límites conocidos.
+
+El portal conserva JWT y ofrece prácticas, consultas académicas, banco docente, asistencia, reportes y seguimiento familiar. La demo usa H2 con datos ficticios exclusivamente bajo su perfil; PostgreSQL utiliza configuración por entorno. No se incluyen claves ni tokens en el repositorio.
+
+Para iniciar el frontend, consultar [frontend/README.md](frontend/README.md). Para el contrato del backend, consultar [backend/CONTRATO_ACADEMICO.md](backend/CONTRATO_ACADEMICO.md).
+
+El módulo administrativo original documentado en este repositorio corresponde a Lucas Inga.
