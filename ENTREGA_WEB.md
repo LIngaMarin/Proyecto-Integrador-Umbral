@@ -1,5 +1,7 @@
 # UMBRAL — entrega del portal académico
 
+> Cierre vigente del Sprint 3: [CIERRE_SPRINT3_WEB.md](CIERRE_SPRINT3_WEB.md), con HU41, inventario de 37 rutas, pruebas y comandos actuales. Las secciones siguientes conservan el historial de la primera entrega.
+
 > Documento histórico del 03/11/2026. El acceso actual es con usuario y contraseña; consultar [ENTREGA_LOGIN_Y_DISENO.md](ENTREGA_LOGIN_Y_DISENO.md) para ejecución, seguridad, endpoints y funciones actualizadas. Ya no se introducen tokens manualmente y el historial de prácticas ahora es persistido.
 
 ## Estado y alcance

@@ -1,5 +1,7 @@
 # UMBRAL — acceso convencional y campus preuniversitario
 
+> Actualización de Sprint 3: [CIERRE_SPRINT3_WEB.md](CIERRE_SPRINT3_WEB.md). Añade Reportes académicos/HU41, filtro por simulacro y compilación aislada; conserva el acceso y las cuentas descritos aquí.
+
 Actualización del 04/11/2026 en la rama `web`. Este documento sustituye las instrucciones de acceso manual con tokens de la entrega anterior.
 
 ## Cambios entregados

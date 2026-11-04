@@ -1,5 +1,7 @@
 # Integración del backend web con administración
 
+Actualización HU41 (04/11/2026): la descarga PDF antes referida como HU39 se amplió con plantilla A4 y consulta previa en `GET /api/docente/secciones/{id}/rendimiento`. Esta consulta y la ruta `.pdf` admiten `simulacroId` opcional, verifican la sección del docente y comparten datos e indicadores. No se cambian esquemas ni rutas existentes. El contrato completo y las pruebas actuales están en `../CIERRE_SPRINT3_WEB.md`.
+
 El backend Kotlin lee el contrato de `origin/feature/lucas-base-django`, commit
 `5afd48c`: `auth_user`, `adm_perfil`, `adm_matricula`, `adm_seccion`, `adm_horario`,
 `adm_apoderado`, `adm_apoderado_hijos` y `adm_simulacro`. No crea ni modifica esas

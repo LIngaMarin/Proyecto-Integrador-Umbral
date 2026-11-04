@@ -1,5 +1,7 @@
 # UMBRAL · Campus preuniversitario
 
+> Guía vigente: [CIERRE_SPRINT3_WEB.md](../CIERRE_SPRINT3_WEB.md). El cierre añade Reportes académicos y utiliza un artefacto aislado; contiene los comandos actuales para no bloquear un JAR abierto en Windows.
+
 Portal JavaScript, Vite 7 y Bootstrap 5 conectado a Kotlin/Spring Boot. Incluye portada pública con carrusel, login convencional, catálogo público y paneles de alumno, docente y apoderado.
 
 La guía vigente está en [ENTREGA_LOGIN_Y_DISENO.md](../ENTREGA_LOGIN_Y_DISENO.md): inventario completo de endpoints, seguridad, archivos, historias, pruebas, ejecución y límites conocidos. Sustituye el acceso manual con tokens.
