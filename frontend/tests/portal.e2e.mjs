@@ -3,7 +3,7 @@ import { chromium, expect } from '@playwright/test';
 import { spawn } from 'node:child_process';
 import { randomBytes, createHmac } from 'node:crypto';
 import { resolve } from 'node:path';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile, readFile } from 'node:fs/promises';
 
 const root = resolve(import.meta.dirname, '..');
 const secret = randomBytes(48).toString('base64url');
@@ -48,7 +48,9 @@ function bulletinPdf(){
 }
 try {
   const java = process.env.JAVA_HOME ? resolve(process.env.JAVA_HOME, 'bin/java.exe') : 'java';
-  const backend = spawn(java, ['-jar', resolve(root, '../backend/target/umbral-backend-0.0.1-SNAPSHOT.jar'), '--spring.profiles.active=demo', '--server.port=18089', '--umbral.resumen.enabled=false', '--umbral.asistencia.intervalo-ms=1000'], { env: { ...process.env, UMBRAL_JWT_SECRET: secret, UMBRAL_DEMO_TEST_PASSWORD: testPassword }, windowsHide: true });
+  // Una ruta alternativa permite verificar otro artefacto sin tocar el servidor del usuario.
+  const jar=process.env.UMBRAL_BACKEND_JAR || resolve(root, '../backend/target/umbral-backend-0.0.1-SNAPSHOT.jar');
+  const backend = spawn(java, ['-jar', jar, '--spring.profiles.active=demo', '--server.port=18089', '--umbral.resumen.enabled=false', '--umbral.asistencia.intervalo-ms=1000'], { env: { ...process.env, UMBRAL_JWT_SECRET: secret, UMBRAL_DEMO_TEST_PASSWORD: testPassword }, windowsHide: true });
   processes.push(backend);
   backend.stdout.on('data', data => { backendLog += data; });
   backend.stderr.on('data', data => { backendLog += data; });
@@ -143,6 +145,22 @@ try {
   const downloaded = teacher.waitForEvent('download');
   await teacher.getByRole('button', { name: 'Descargar informe PDF' }).click();
   expect((await downloaded).suggestedFilename()).toBe('rendimiento-seccion-1.pdf');
+  // HU41: consulta previa, filtro y descarga desde la sección nueva, manteniendo la descarga anterior.
+  await link(teacher,'Reportes académicos','Reportes académicos');
+  await expect(teacher.locator('#report-preview')).toContainText('Demo A');
+  await teacher.locator('#report-filters [name=simulacro]').selectOption('1');
+  await expect(teacher.locator('#report-status')).toHaveText('Resultados actualizados.');
+  const reporteDescargado=teacher.waitForEvent('download');
+  await teacher.getByRole('button',{name:'Exportar PDF',exact:true}).click();
+  const reporte=await reporteDescargado;
+  await mkdir(resolve(root,'test-results'),{recursive:true});
+  await reporte.saveAs(resolve(root,'test-results/hu41-flujo.pdf'));
+  expect((await readFile(resolve(root,'test-results/hu41-flujo.pdf'))).subarray(0,5).toString()).toBe('%PDF-');
+  await teacher.screenshot({path:resolve(root,'test-results/hu41-reportes.png'),fullPage:true});
+  await teacher.setViewportSize({width:390,height:844});
+  expect(await teacher.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await teacher.screenshot({path:resolve(root,'test-results/hu41-reportes-movil.png'),fullPage:true});
+  await teacher.setViewportSize({width:1280,height:900});
   await link(teacher,'Banco de preguntas','Banco de preguntas');
   await teacher.locator('[data-variant]').first().click();
   await expect(teacher.getByText('La variante se guardó para revisión.')).toBeVisible();
