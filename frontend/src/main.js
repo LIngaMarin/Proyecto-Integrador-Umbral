@@ -2,12 +2,18 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './style.css';
 import { api, session, esc, query } from './api.js';
 import { validar } from './componentes.js';
-import { resultados as intentos, limpiarResultados, verResultados } from './practicas.js';
+import { resultados as intentos, limpiarResultados } from './practicas.js';
+import { landing } from './landing.js';
+import { icon } from './icons.js';
 
 // La cuenta confirmada por el backend decide las vistas; ocultar enlaces no sustituye sus permisos.
 const app = document.querySelector('#app');
 let account;
 let generation = 0;
+let academicResults=[];
+let disposeLanding=()=>{};
+// La limpieza es idempotente: Bootstrap no debe disponer dos veces el mismo carrusel.
+function clearLanding(){const dispose=disposeLanding;disposeLanding=()=>{};dispose();}
 const roles = { DOCENTE: 'Docente', ALUMNO: 'Alumno', APODERADO: 'Apoderado', VISITANTE: 'Visitante' };
 const empty = message => `<div class="empty">${esc(message)}</div>`;
 const button = (label, attrs = '') => `<button class="btn btn-primary" ${attrs}>${label}</button>`;
@@ -42,33 +48,53 @@ async function perform(element, operation) {
   }
 }
 
+/** Acceso convencional: únicamente el backend valida la contraseña y devuelve la identidad autorizada. */
 function login() {
+  clearLanding();
   generation++;
   account = null;
+  session.clear();
   limpiarResultados();
-  app.innerHTML = `<main class="login panel"><div class="brand">UMBRAL</div><p class="eyebrow mt-3">Campus académico</p><h1>Bienvenido de nuevo.</h1><p class="muted">Accede a tus herramientas académicas con el acceso proporcionado por tu academia.</p><div id="notice" aria-live="polite"></div><form id="login"><label class="w-100">Token de acceso<textarea class="form-control" name="token" required autocomplete="off" spellcheck="false"></textarea></label>${button('Ingresar al campus', 'id="login-submit"')}</form><p class="muted small mt-3">Solicita un acceso vigente a la administración de tu academia.</p></main>`;
+  document.title='UMBRAL · Iniciar sesión';
+  app.innerHTML = `<main class="access-page"><section class="access-visual"><a href="#portada" class="wordmark">${icon('cap')} UMBRAL</a><img src="/images/estudio.webp" alt="Apuntes de estudio para la preparación universitaria" width="1280" height="740"><div><p class="eyebrow">Tu camino a la universidad</p><h2>Tu esfuerzo de hoy.<br>Tu siguiente oportunidad.</h2><p>Retoma tus prácticas y sigue avanzando hacia tu meta.</p></div></section><section class="access-form"><a class="back-link" href="#portada">← Volver al inicio</a><p class="eyebrow">Campus académico</p><h1>Qué bueno verte.</h1><p class="muted">Ingresa para continuar tu preparación.</p><div id="notice" aria-live="polite"></div><form id="login"><label for="usuario">Correo electrónico o usuario</label><input id="usuario" class="form-control" name="usuario" required maxlength="254" autocomplete="username" autocapitalize="none" spellcheck="false"><label for="password" class="mt-4">Contraseña</label><div class="password-field"><input id="password" class="form-control" name="password" type="password" required maxlength="128" autocomplete="current-password"><button id="toggle-password" type="button" aria-label="Mostrar contraseña" aria-pressed="false">Mostrar</button></div>${button('Iniciar sesión', 'id="login-submit" type="submit"')}</form><p class="muted small mt-4">Si necesitas recuperar tu acceso, comunícate con la administración de tu academia.</p><a href="#practicas">Explorar prácticas públicas ${icon('arrow')}</a></section></main>`;
+  document.querySelector('#toggle-password').onclick=event=>{
+    const input=document.querySelector('#password');
+    const visible=input.type==='password';
+    input.type=visible?'text':'password';
+    event.currentTarget.textContent=visible?'Ocultar':'Mostrar';
+    event.currentTarget.setAttribute('aria-label',visible?'Ocultar contraseña':'Mostrar contraseña');
+    event.currentTarget.setAttribute('aria-pressed',String(visible));
+  };
   document.querySelector('#login').onsubmit = event => {
     event.preventDefault();
+    if(!validar(event.target))return;
     perform(event.submitter, async () => {
-      session.set(new FormData(event.target).get('token'));
-      history.replaceState(null, '', '#inicio');
-      try { await start(); } catch (error) { session.clear(); notice(error.message); }
+      const values=Object.fromEntries(new FormData(event.target));
+      const access=await api('/auth/login',{method:'POST',body:values});
+      session.set(access.accessToken);
+      // El rol se vuelve a obtener con /cuenta; no se confía en campos manipulados del navegador.
+      try { account=await api('/cuenta'); } catch(error){session.clear();throw error;}
+      event.target.reset();
+      history.replaceState(null,'','#inicio');
+      await render();
     });
-  };
-  const explore = document.createElement('button');
-  explore.className = 'btn btn-outline-secondary mt-3';
-  explore.textContent = 'Explorar prácticas públicas';
-  document.querySelector('.login').append(explore);
-  explore.onclick = () => {
-    account = { rol: 'VISITANTE', email: 'Catálogo público', secciones: [], hijos: [] };
-    if (location.hash === '#practicas') render(); else location.hash = 'practicas';
   };
 }
 
+/** Portada pública independiente de los paneles: no inventa actividad ni datos académicos. */
+function publicHome(){
+  generation++;
+  clearLanding();
+  account=null;
+  disposeLanding=landing(app);
+}
+
 function shell(page) {
-  const links = [['inicio', 'Inicio'], ...(account.rol === 'ALUMNO' ? [['practicas', 'Prácticas'], ['consultas', 'Mis consultas'], ['resultados', 'Resultados']] : account.rol === 'DOCENTE' ? [['consultas', 'Consultas académicas'], ['clases', 'Clases y asistencia'], ['banco', 'Banco de preguntas'], ['resultados', 'Resultados']] : account.rol === 'VISITANTE' ? [['practicas', 'Prácticas'], ['acceso', 'Ingresar']] : [['calendario', 'Calendario'], ['notificaciones', 'Notificaciones']]), ...(account.rol === 'VISITANTE' ? [] : [['cuenta', 'Mi cuenta']])];
+  clearLanding();
+  const links = [['inicio', 'Inicio'], ...(account.rol === 'ALUMNO' ? [['practicas', 'Prácticas'], ['consultas', 'Mis consultas'], ['resultados', 'Resultados'], ['calendario', 'Simulacros']] : account.rol === 'DOCENTE' ? [['consultas', 'Consultas académicas'], ['clases', 'Clases y asistencia'], ['banco', 'Banco de preguntas'], ['resultados', 'Resultados']] : account.rol === 'VISITANTE' ? [['practicas', 'Prácticas'], ['acceso', 'Ingresar']] : [['calendario', 'Calendario'], ['notificaciones', 'Notificaciones']]), ...(account.rol === 'VISITANTE' ? [] : [['cuenta', 'Mi cuenta']])];
   app.innerHTML = `<div class="shell"><aside class="sidebar"><div><div class="brand">UMBRAL</div><div class="eyebrow mt-2">Campus académico</div></div><nav aria-label="Navegación principal">${links.map(([id, label]) => `<a href="#${id}" class="${page === id ? 'active' : ''}" ${page === id ? 'aria-current="page"' : ''}>${label}</a>`).join('')}</nav><footer>Tu siguiente paso,<br>cada día más cerca.</footer></aside><div class="workspace"><header class="topbar"><div>${esc(roles[account.rol])}<br><small>${esc(account.email)}</small></div><button id="logout" class="btn btn-outline-secondary">Cerrar sesión</button></header><main><div id="notice" aria-live="polite"></div><section id="content" aria-live="polite"></section></main></div></div>`;
-  document.querySelector('#logout').onclick = () => { session.clear(); login(); };
+  document.querySelector('#logout').textContent=account.rol==='VISITANTE'?'Iniciar sesión':'Cerrar sesión';
+  document.querySelector('#logout').onclick = () => { session.clear(); limpiarResultados(); history.replaceState(null,'',account.rol==='VISITANTE'?'#acceso':'#portada'); if(account.rol==='VISITANTE')login();else publicHome(); };
 }
 
 /** Descarta respuestas de una navegación anterior para que no sobrescriban otra pantalla. */
@@ -77,6 +103,7 @@ async function render() {
   const current = ++generation;
   const route = location.hash.slice(1) || 'inicio';
   const page = ({ dudas: 'consultas', sesion: 'cuenta' })[route] || route;
+  if(page==='portada' || (page==='inicio' && account.rol==='VISITANTE')){publicHome();return;}
   if (page === 'acceso') { login(); return; }
   shell(page);
   const content = document.querySelector('#content');
@@ -85,8 +112,7 @@ async function render() {
     const html = await ({ inicio: home, practicas, consultas, banco, resultados, calendario, cuenta, clases, notificaciones }[page] || home)();
     if (current !== generation) return;
     content.innerHTML = html;
-    // Conserva el componente de resultados confirmados de la implementación remota.
-    if (page === 'resultados' && account.rol === 'ALUMNO') verResultados(content);
+    // Las respuestas se consultan de nuevo al navegar para reflejar su persistencia real.
     bind(page);
     content.tabIndex = -1;
     content.focus({ preventScroll: true });
@@ -104,7 +130,8 @@ async function home() {
     const groups = await api('/docente/dudas/grupos');
     metrics = `<article class="panel"><p class="eyebrow">Temas de consulta</p><div class="metric">${groups.length}</div></article><article class="panel"><p class="eyebrow">Secciones asignadas</p><div class="metric">${account.secciones.length}</div></article>`;
   } else metrics = `<article class="panel"><p class="eyebrow">Alumnos vinculados</p><div class="metric">${account.hijos.length}</div></article>`;
-  return `<p class="eyebrow">Tu espacio académico</p><h1>Bienvenido a UMBRAL.</h1><p class="muted">${esc(account.email)}</p><div class="hero"><h2>Cada paso cuenta.</h2><p>${account.rol === 'ALUMNO' ? 'Continúa practicando, comparte tus dudas y aprende con la orientación de tus docentes.' : account.rol === 'DOCENTE' ? 'Acompaña el aprendizaje de tus alumnos y atiende las consultas de tus secciones.' : 'Acompaña la preparación de tu familia y consulta sus próximas actividades.'}</p><a class="btn btn-primary" href="#${account.rol === 'APODERADO' ? 'calendario' : 'consultas'}">${account.rol === 'APODERADO' ? 'Ver calendario' : 'Ver consultas'}</a></div><div class="cards">${metrics}</div>`;
+  const tools=account.rol==='ALUMNO'?[['book','Prácticas','Refuerza un tema y resuelve tu siguiente pregunta.','practicas'],['chat','Mis consultas','Revisa las respuestas y continúa aprendiendo.','consultas'],['chart','Mis resultados','Revisa tus respuestas y el historial de tus prácticas.','resultados'],['calendar','Simulacros','Consulta las fechas de tu preparación académica.','calendario']]:account.rol==='DOCENTE'?[['chat','Consultas académicas','Atiende los temas que necesitan tus alumnos.','consultas'],['book','Banco de preguntas','Revisa y publica material académico.','banco'],['calendar','Clases y asistencia','Organiza tus clases y registra la presencia.','clases'],['chart','Resultados y reportes','Consulta estadísticas y descarga informes.','resultados']]:[['calendar','Calendario','Consulta los simulacros de alumnos vinculados.','calendario'],['bell','Notificaciones','Revisa avisos académicos de asistencia.','notificaciones']];
+  return `<p class="eyebrow">Tu espacio académico · ${esc(roles[account.rol])}</p><h1>Bienvenido a UMBRAL.</h1><p class="muted">${esc(account.email)}</p><div class="hero"><div><p class="eyebrow">${account.rol==='ALUMNO'?'Tu próximo objetivo está más cerca':'Acompañamiento académico'}</p><h2>${account.rol==='ALUMNO'?'Sigue construyendo tu camino.':account.rol==='DOCENTE'?'Enseñar también es abrir caminos.':'Sigue su preparación.'}</h2><p>${account.rol==='ALUMNO'?'Retoma tus prácticas, comparte tus dudas y fortalece lo que aprendes.':account.rol==='DOCENTE'?'Revisa las consultas de tus secciones y orienta el siguiente paso de tus alumnos.':'Consulta las actividades y avisos de los alumnos vinculados a tu cuenta.'}</p><a class="btn btn-primary" href="#${tools[0][3]}">${account.rol==='ALUMNO'?'Continuar practicando':account.rol==='DOCENTE'?'Atender consultas':'Ver calendario'} ${icon('arrow')}</a></div><span class="hero-symbol">${icon('cap')}</span></div><div class="cards">${metrics}</div><div class="section-intro mt-5"><div><p class="eyebrow">A un paso</p><h2>Tus herramientas académicas</h2></div></div><div class="tool-grid">${tools.map(([symbol,title,text,href])=>`<article class="tool-card"><span class="tool-icon">${icon(symbol)}</span><h3>${title}</h3><p>${text}</p><a href="#${href}">Abrir ${icon('arrow')}</a></article>`).join('')}</div>`;
 }
 
 async function cuenta() {
@@ -141,15 +168,26 @@ function groupsHtml(groups, term = '', state = '') {
 async function banco() {
   if (account.rol !== 'DOCENTE') return empty('Esta sección está disponible para docentes.');
   const questions = await api(`/docente/preguntas?${query({ docenteId: account.id })}`);
-  return `<p class="eyebrow">Material académico</p><h1>Banco de preguntas</h1><p class="muted">Revisa las preguntas y publica el material aprobado para tus alumnos.</p><form id="bank-search" class="filters panel">${field('Tema', 'tema')}<label>Dificultad<select class="form-select" name="dificultad"><option value="">Todas</option>${levels}</select></label>${button('Filtrar')}</form><div id="bank-list">${bankHtml(questions)}</div>`;
+  return `<p class="eyebrow">Material académico</p><h1>Banco de preguntas</h1><p class="muted">Revisa las preguntas y publica el material aprobado para tus alumnos.</p><article class="panel"><h2>Importar boletín</h2><p class="muted">Selecciona un PDF con preguntas, opciones y respuestas para revisarlas antes de publicarlas.</p><form id="upload-bulletin" class="filters"><label>Boletín PDF (hasta 1 MB)<input class="form-control" type="file" name="file" accept="application/pdf,.pdf" required></label>${button('Importar preguntas')}</form><details class="mt-3"><summary>Formato del boletín</summary><p>Usa un bloque por pregunta, con texto seleccionable y estos campos:</p><pre>Tema: Algebra
+Dificultad: FACIL
+Pregunta: Resuelve 2x + 6 = 14
+A) 2
+B) 4
+C) 6
+D) 8
+Correcta: B</pre><p>Los niveles admitidos son FACIL, INTERMEDIO y DIFICIL. Las imágenes escaneadas necesitan convertirse en texto antes de importar.</p></details></article><form id="bank-search" class="filters panel">${field('Tema', 'tema')}<label>Dificultad<select class="form-select" name="dificultad"><option value="">Todas</option>${levels}</select></label>${button('Filtrar')}</form><div id="bank-list">${bankHtml(questions)}</div>`;
 }
 
 function bankHtml(questions) {
-  return questions.map(p => `<article class="panel"><div class="d-flex justify-content-between"><h2>${esc(p.tema)}</h2>${badge(p.estado)}</div><form data-question="${p.id}"><label class="w-100">Enunciado<textarea class="form-control" name="enunciado" required>${esc(p.enunciado)}</textarea></label><div class="filters mt-2">${field('Tema', 'tema', 'text', `required value="${esc(p.tema)}"`)}<label>Dificultad<select class="form-select" name="dificultad">${['FACIL', 'INTERMEDIO', 'DIFICIL'].map(l => `<option ${l === p.dificultad ? 'selected' : ''}>${l}</option>`).join('')}</select></label></div><label class="w-100 mt-3">Opciones (una por línea)<textarea class="form-control" name="opciones" required>${esc(p.opciones.join('\n'))}</textarea></label>${field('Respuesta correcta', 'respuestaCorrecta', 'text', `required value="${esc(p.respuestaCorrecta)}"`)}<div class="actions">${button('Guardar y aprobar')}<button type="button" class="btn btn-outline-secondary" data-solution="${p.id}">Generar solucionario</button><button type="button" class="btn btn-outline-secondary" data-review-solution="${p.id}">Revisar solucionario</button></div></form><form data-reject="${p.id}" class="filters mt-3">${field('Motivo de rechazo', 'motivoRechazo', 'text', 'required maxlength="255"')}<button class="btn btn-outline-danger">Rechazar</button></form><div id="solution-${p.id}" class="preserve mt-3"></div></article>`).join('') || empty('No se encontraron preguntas.');
+  return questions.map(p => `<article class="panel"><div class="d-flex justify-content-between"><h2>${esc(p.tema)}</h2>${badge(p.estado)}</div><form data-question="${p.id}"><label class="w-100">Enunciado<textarea class="form-control" name="enunciado" required>${esc(p.enunciado)}</textarea></label><div class="filters mt-2">${field('Tema', 'tema', 'text', `required value="${esc(p.tema)}"`)}<label>Dificultad<select class="form-select" name="dificultad">${['FACIL', 'INTERMEDIO', 'DIFICIL'].map(l => `<option ${l === p.dificultad ? 'selected' : ''}>${l}</option>`).join('')}</select></label></div><label class="w-100 mt-3">Opciones (una por línea)<textarea class="form-control" name="opciones" required>${esc(p.opciones.join('\n'))}</textarea></label>${field('Respuesta correcta', 'respuestaCorrecta', 'text', `required value="${esc(p.respuestaCorrecta)}"`)}<div class="actions">${button('Guardar y aprobar')}<button type="button" class="btn btn-outline-secondary" data-solution="${p.id}">Generar solucionario</button><button type="button" class="btn btn-outline-secondary" data-review-solution="${p.id}">Revisar solucionario</button><button type="button" class="btn btn-outline-secondary" data-variant="${p.id}">Crear variante de ecuación</button></div></form><form data-reject="${p.id}" class="filters mt-3">${field('Motivo de rechazo', 'motivoRechazo', 'text', 'required maxlength="255"')}<button class="btn btn-outline-danger">Rechazar</button></form><div id="solution-${p.id}" class="preserve mt-3"></div></article>`).join('') || empty('No se encontraron preguntas.');
 }
 
 async function resultados() {
-  if (account.rol === 'ALUMNO') return '';
+  if (account.rol === 'ALUMNO') {
+    const attempts=await api('/practicas/respuestas');
+    academicResults=attempts;
+    return `<p class="eyebrow">Aprende de cada intento</p><h1>Mis resultados</h1><p class="muted">Tus respuestas y avances registrados en las prácticas.</p><div class="cards"><article class="panel"><p class="eyebrow">Intentos registrados</p><div class="metric">${attempts.length}</div></article><article class="panel"><p class="eyebrow">Respuestas correctas</p><div class="metric">${attempts.filter(r=>r.correcta).length}</div></article></div><article class="panel"><h2>Historial de prácticas</h2><label>Resultado<select id="result-state" class="form-select"><option value="">Todos</option><option value="correcta">Correctas</option><option value="incorrecta">Por reforzar</option></select></label><div id="result-list">${resultsHtml(attempts)}</div></article>`;
+  }
   if (account.rol !== 'DOCENTE') return empty('Esta sección está disponible para docentes.');
   const summary = await api('/docente/resumen-semanal');
   return `<p class="eyebrow">Seguimiento del aprendizaje</p><h1>Resultados y reportes</h1><article class="panel"><h2>Resumen semanal</h2><form id="weekly" class="filters">${field('Semana (lunes)', 'semana', 'date', `required value="${summary.inicio}" step="7"`)}${button('Consultar')}</form><div id="weekly-result" class="mt-3">${summaryHtml(summary)}</div></article><article class="panel"><h2>Rendimiento por sección</h2>${account.secciones.length ? `<form id="section-results" class="filters"><label>Sección<select class="form-select" name="seccion">${sectionOptions()}</select></label>${button('Consultar temas por reforzar')}<button type="button" class="btn btn-outline-secondary" id="download-pdf">Descargar informe PDF</button></form><div id="weak-topics" class="mt-3"></div>` : empty('No tienes secciones asignadas.')}</article>`;
@@ -160,9 +198,15 @@ function summaryHtml(s) {
   return `<p class="muted">Desde ${esc(s.inicio)} hasta ${esc(s.finExclusivo)} (fin no incluido)</p><div class="table-wrap"><table class="table"><tbody>${Object.entries(labels).map(([key, label]) => `<tr><th scope="row">${label}</th><td>${esc(s[key])}</td></tr>`).join('')}</tbody></table></div>`;
 }
 
+/** El historial muestra la evaluación guardada por el servidor, nunca calcula una nota local. */
+function resultsHtml(rows){
+  return rows.map(r=>`<article class="question"><div class="d-flex justify-content-between gap-3"><span class="status">${r.correcta?'Correcta':'Por reforzar'}</span><small class="muted">${esc(date(r.fecha))}</small></div><h3 class="mt-3 preserve">${esc(r.enunciado)}</h3><p class="muted">${esc(r.tema)}</p><p class="preserve">Tu respuesta: ${esc(r.respuesta)}</p></article>`).join('')||empty('Todavía no tienes intentos registrados para este filtro.');
+}
+
 async function calendario() {
+  if (account.rol === 'ALUMNO') return `<p class="eyebrow">Organiza tu preparación</p><h1>Simulacros y calendario</h1><p class="muted">Consulta las fechas de los simulacros de tus cursos.</p><form id="calendar-search" class="panel filters">${field('Desde','desde','date','required')}${field('Hasta','hasta','date','required')}${button('Consultar calendario')}</form><div id="calendar-list">${empty('Selecciona un período para consultar tus simulacros.')}</div>`;
   if (account.rol !== 'APODERADO') return empty('Esta sección está disponible para apoderados.');
-  return `<p class="eyebrow">Seguimiento familiar</p><h1>Calendario académico</h1><p class="muted">Consulta las próximas fechas de simulacros de tus alumnos vinculados.</p>${account.hijos.length ? `<form id="calendar-search" class="panel filters"><label>Alumno<select class="form-select" name="alumno">${account.hijos.map(h => `<option value="${h.id}">${esc(h.email)}</option>`).join('')}</select></label>${field('Desde', 'desde', 'date', 'required')}${field('Hasta', 'hasta', 'date', 'required')}${button('Consultar calendario')}</form><div id="calendar-list">${empty('Selecciona un rango de fechas para consultar las actividades.')}</div>` : empty('No tienes alumnos vinculados.')}`;
+  return `<p class="eyebrow">Seguimiento académico</p><h1>Calendario académico</h1><p class="muted">Consulta las próximas fechas de simulacros de tus alumnos vinculados.</p>${account.hijos.length ? `<form id="calendar-search" class="panel filters"><label>Alumno<select class="form-select" name="alumno">${account.hijos.map(h => `<option value="${h.id}">${esc(h.email)}</option>`).join('')}</select></label>${field('Desde', 'desde', 'date', 'required')}${field('Hasta', 'hasta', 'date', 'required')}${button('Consultar calendario')}</form><div id="calendar-list">${empty('Selecciona un rango de fechas para consultar las actividades.')}</div>` : empty('No tienes alumnos vinculados.')}`;
 }
 
 /** La lista de asistencia sale de las matrículas reales; no se escriben alumnos manualmente. */
@@ -176,13 +220,28 @@ async function clases() {
 async function notificaciones() {
   if (account.rol !== 'APODERADO') return empty('Esta sección está disponible para apoderados.');
   const lists = await Promise.all(account.hijos.map(async h => ({ alumno: h, items: await api(`/apoderado/alumnos/${h.id}/notificaciones`) })));
-  return `<p class="eyebrow">Seguimiento familiar</p><h1>Notificaciones académicas</h1><p class="muted">Avisos sobre la asistencia de tus alumnos vinculados.</p>${lists.map(({ alumno, items }) => `<article class="panel"><h2>${esc(alumno.email)}</h2>${items.map(n => `<div class="question"><small class="muted">${esc(date(n.fecha))}</small><p class="preserve">${esc(n.descripcion)}</p></div>`).join('') || empty('No tienes notificaciones de este alumno.')}</article>`).join('') || empty('No tienes alumnos vinculados.')}`;
+  return `<p class="eyebrow">Seguimiento académico</p><h1>Notificaciones académicas</h1><p class="muted">Avisos sobre la asistencia de tus alumnos vinculados.</p>${lists.map(({ alumno, items }) => `<article class="panel"><h2>${esc(alumno.email)}</h2>${items.map(n => `<div class="question"><small class="muted">${esc(date(n.fecha))}</small><p class="preserve">${esc(n.descripcion)}</p></div>`).join('') || empty('No tienes notificaciones de este alumno.')}</article>`).join('') || empty('No tienes alumnos vinculados.')}`;
 }
 
 /** Conecta únicamente controles de la vista actual con sus operaciones reales. */
 function bind(page) {
   const form = (selector, callback) => document.querySelectorAll(selector).forEach(f => { f.onsubmit = event => { event.preventDefault(); if (!validar(f)) return; const values = Object.fromEntries(new FormData(f)); perform(event.submitter, () => callback(values, f)); }; });
   const click = (selector, callback) => document.querySelectorAll(selector).forEach(b => { b.onclick = () => perform(b, () => callback(b)); });
+  const resultFilter=document.querySelector('#result-state');
+  if(resultFilter)resultFilter.onchange=()=>{document.querySelector('#result-list').innerHTML=resultsHtml(academicResults.filter(r=>!resultFilter.value||r.correcta===(resultFilter.value==='correcta')));};
+  // La importación usa multipart real; solo después de la confirmación se vuelve a consultar el banco.
+  form('#upload-bulletin', async (_values,f)=>{
+    const body=new FormData(f);
+    const file=body.get('file');
+    if(!file || file.size===0 || file.size>1048576)throw new Error('Selecciona un PDF de hasta 1 MB.');
+    body.append('docenteId',String(account.id));
+    const imported=await api('/docente/boletin/extraer',{method:'POST',body});
+    await render();notice(`${imported.length} preguntas importadas para revisión.`,true);
+  });
+  click('[data-variant]',async b=>{
+    await api(`/docente/preguntas/${b.dataset.variant}/variantes?${query({docenteId:account.id})}`,{method:'POST'});
+    await render();notice('La variante se guardó para revisión.',true);
+  });
   form('#new-class', async values => { const s = account.secciones[Number(values.seccion)]; await api('/docente/clases', { method: 'POST', body: { seccionId: s.id, titulo: values.titulo, fin: values.fin + ':00' } }); await render(); notice('La clase fue programada.', true); });
   click('[data-close-class]', async b => { await api(`/docente/clases/${b.dataset.closeClass}/cerrar`, { method: 'PUT' }); await render(); notice('Asistencia cerrada. Los avisos están disponibles para los apoderados vinculados.', true); });
   click('[data-class-students]', async b => {
@@ -242,10 +301,19 @@ function bind(page) {
   form('#weekly', async values => { const s = await api(`/docente/resumen-semanal?${query(values)}`); document.querySelector('#weekly-result').innerHTML = summaryHtml(s); });
   form('#section-results', async values => { const s = account.secciones[Number(values.seccion)]; const topics = await api(`/docente/secciones/${s.id}/temas-debiles`); document.querySelector('#weak-topics').innerHTML = topics.length ? `<table class="table"><thead><tr><th>Tema</th><th>Errores registrados</th></tr></thead><tbody>${topics.map(t => `<tr><td>${esc(t.tema)}</td><td>${esc(t.cantidadErrores)}</td></tr>`).join('')}</tbody></table>` : empty('Todavía no hay temas por reforzar registrados.'); });
   click('#download-pdf', async () => { const f = document.querySelector('#section-results'); const s = account.secciones[Number(new FormData(f).get('seccion'))]; const blob = await api(`/docente/secciones/${s.id}/rendimiento.pdf`, { blob: true }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `rendimiento-seccion-${s.id}.pdf`; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); });
-  form('#calendar-search', async values => { if (values.desde > values.hasta) throw new Error('La fecha final debe ser igual o posterior a la inicial.'); const events = await api(`/apoderado/alumnos/${values.alumno}/simulacros?${query({ desde: values.desde, hasta: values.hasta })}`); document.querySelector('#calendar-list').innerHTML = events.map(e => `<article class="panel"><p class="eyebrow">${esc(e.fecha)}</p><h2>${esc(e.nombre)}</h2></article>`).join('') || empty('Todavía no hay actividades programadas en este período.'); });
+  form('#calendar-search', async values => { if (values.desde > values.hasta) throw new Error('La fecha final debe ser igual o posterior a la inicial.'); const base=account.rol==='ALUMNO'?'/alumno/simulacros':`/apoderado/alumnos/${values.alumno}/simulacros`; const events = await api(`${base}?${query({ desde: values.desde, hasta: values.hasta })}`); document.querySelector('#calendar-list').innerHTML = events.map(e => `<article class="panel"><p class="eyebrow">${esc(e.fecha)}</p><h2>${esc(e.nombre)}</h2></article>`).join('') || empty('Todavía no hay actividades programadas en este período.'); });
 }
 
+/** Rutas públicas y privadas: los enlaces protegidos piden acceso y conservan la autorización del servidor. */
+function navigate(){
+  const path=location.hash.slice(1);
+  if(account && account.rol!=='VISITANTE'){render();return;}
+  if(path==='practicas'){account={rol:'VISITANTE',email:'Catálogo público',secciones:[],hijos:[]};render();}
+  else if(['acceso','consultas','resultados','calendario','cuenta','dudas','sesion'].includes(path)){login();}
+  else if(path==='herramientas'){if(!document.querySelector('#herramientas'))publicHome(); document.querySelector('#herramientas')?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});}
+  else publicHome();
+}
 async function start() { account = await api('/cuenta'); await render(); }
-window.addEventListener('hashchange', () => { if (account) render(); });
+window.addEventListener('hashchange', navigate);
 window.addEventListener('session-expired', login);
-if (session.get()) start().catch(error => { login(); notice(error.message); }); else login();
+if (session.get()) start().catch(error => { login(); notice(error.message); }); else navigate();

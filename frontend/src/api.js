@@ -11,21 +11,24 @@ export const session = {
 export async function api(path, { method = 'GET', body, signal = AbortSignal.timeout(15000), blob = false, protegido = false } = {}) {
   if (protegido && !session.get()) throw new Error('Ingresa con tu acceso de alumno para continuar.');
   const headers = { Accept: blob ? 'application/pdf' : 'application/json' };
+  const multipart=body instanceof FormData;
   if (session.get()) headers.Authorization = `Bearer ${session.get()}`;
-  if (body !== undefined) headers['Content-Type'] = 'application/json';
+  if (body !== undefined && !multipart) headers['Content-Type'] = 'application/json';
   let response;
   try {
-    response = await fetch(`/api${path}`, { method, headers, body: body === undefined ? undefined : JSON.stringify(body), signal, cache: 'no-store' });
+    response = await fetch(`/api${path}`, { method, headers, body: body === undefined ? undefined : multipart?body:JSON.stringify(body), signal, cache: 'no-store' });
   } catch (error) {
     throw new Error(error.name === 'TimeoutError' ? 'El servidor tardó demasiado. Inténtalo de nuevo.' : 'No se pudo conectar con el servicio académico. Inténtalo de nuevo.');
   }
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
-    if (response.status === 401) {
+    // La indisponibilidad de infraestructura se expresa en lenguaje del campus, sin nombres internos.
+    if(response.status===503)throw new Error('El servicio académico no está disponible. Inténtalo de nuevo más tarde.');
+    if (response.status === 401 && path !== '/auth/login') {
       session.clear();
       window.dispatchEvent(new Event('session-expired'));
     }
-    throw new Error(error.detail || error.message || ({ 401: 'La sesión no es válida o ha vencido.', 403: 'No tienes permiso para esta operación.', 404: 'El contenido solicitado todavía no está disponible.', 409: 'El registro ha cambiado. Actualiza e inténtalo de nuevo.', 503: 'El servicio académico no está disponible.' }[response.status]) || `No se pudo completar la solicitud (${response.status}).`);
+    throw new Error(error.detail || error.message || ({ 400:'Revisa los datos ingresados.', 401: path==='/auth/login'?'Usuario o contraseña incorrectos.':'La sesión no es válida o ha vencido.', 403: 'No tienes permiso para esta operación.', 404: 'El contenido solicitado todavía no está disponible.', 409: 'El registro ha cambiado. Actualiza e inténtalo de nuevo.', 429:'Demasiados intentos. Espera cinco minutos y vuelve a intentarlo.', 503: 'El servicio académico no está disponible.' }[response.status]) || `No se pudo completar la solicitud (${response.status}).`);
   }
   return blob ? response.blob() : response.status === 204 ? null : response.json();
 }

@@ -3,6 +3,7 @@ import { randomBytes } from 'node:crypto';
 
 // Mantiene los escenarios existentes con puertos aislados y clave exclusiva de H2.
 process.env.UMBRAL_WEB_TEST_SECRET ||= randomBytes(48).toString('hex');
+process.env.UMBRAL_WEB_TEST_PASSWORD ||= randomBytes(24).toString('base64url');
 export default defineConfig({
   testDir:'./tests',testMatch:'web.spec.js',workers:1,timeout:30000,
   use:{
@@ -13,6 +14,6 @@ export default defineConfig({
   webServer:[
     {command:'node node_modules/vite/bin/vite.js --config tests/vite.browser.js --port 5179 --strictPort',url:'http://127.0.0.1:5179',reuseExistingServer:false},
     {command:'"%JAVA_HOME%/bin/java.exe" -jar ../backend/target/umbral-backend-0.0.1-SNAPSHOT.jar --spring.profiles.active=demo --server.port=18091 --umbral.resumen.enabled=false',
-     url:'http://127.0.0.1:18091/api/practicas/preguntas?tema=Algebra&dificultad=FACIL',env:{UMBRAL_JWT_SECRET:process.env.UMBRAL_WEB_TEST_SECRET},timeout:60000,reuseExistingServer:false},
+     url:'http://127.0.0.1:18091/api/practicas/preguntas?tema=Algebra&dificultad=FACIL',env:{UMBRAL_JWT_SECRET:process.env.UMBRAL_WEB_TEST_SECRET,UMBRAL_DEMO_TEST_PASSWORD:process.env.UMBRAL_WEB_TEST_PASSWORD},timeout:60000,reuseExistingServer:false},
   ],
 });

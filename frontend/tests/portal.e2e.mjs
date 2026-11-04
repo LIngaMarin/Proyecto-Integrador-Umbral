@@ -7,6 +7,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 
 const root = resolve(import.meta.dirname, '..');
 const secret = randomBytes(48).toString('base64url');
+const testPassword = randomBytes(24).toString('base64url');
 const processes = [];
 const errors = [];
 let browser;
@@ -24,18 +25,30 @@ async function ready(url) {
   throw new Error(`No inició ${url}\n${backendLog.slice(-3000)}`);
 }
 async function enter(page, user) {
-  await page.goto('http://127.0.0.1:5178');
-  await page.locator('textarea[name=token]').fill(token(user));
-  await page.getByRole('button', { name: 'Ingresar al campus' }).click();
+  await page.goto('http://127.0.0.1:5178/#acceso');
+  await page.locator('[name=usuario]').fill(({1:'docente.demo',2:'alumno.demo',3:'apoderado.demo'})[user]);
+  await page.locator('[name=password]').fill(testPassword);
+  await page.getByRole('button', { name: 'Iniciar sesión', exact:true }).click();
   await expect(page.getByRole('heading', { name: 'Bienvenido a UMBRAL.' })).toBeVisible();
 }
 async function link(page, label, heading) {
   await page.getByRole('link', { name: label, exact: true }).click();
   await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible();
 }
+/** PDF de prueba real; el servidor debe extraer exactamente este contenido antes de guardarlo. */
+function bulletinPdf(){
+  const lines=['Tema: Geometria','Dificultad: FACIL','Pregunta: Cuanto es 2 + 4?','A) 4','B) 6','C) 8','Correcta: B'];
+  const content='BT /F1 12 Tf 50 760 Td 18 TL '+lines.map((line,i)=>(i?'T* ':'')+'('+line.replace(/[\\()]/g,'\\$&')+') Tj').join('\n')+' ET';
+  const objects=['<< /Type /Catalog /Pages 2 0 R >>','<< /Type /Pages /Kids [3 0 R] /Count 1 >>','<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>','<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',`<< /Length ${Buffer.byteLength(content)} >>\nstream\n${content}\nendstream`];
+  let pdf='%PDF-1.4\n';const offsets=[0];
+  objects.forEach((o,i)=>{offsets.push(Buffer.byteLength(pdf));pdf+=`${i+1} 0 obj\n${o}\nendobj\n`;});
+  const xref=Buffer.byteLength(pdf);
+  pdf+='xref\n0 6\n0000000000 65535 f \n'+offsets.slice(1).map(o=>String(o).padStart(10,'0')+' 00000 n \n').join('')+`trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`;
+  return Buffer.from(pdf);
+}
 try {
   const java = process.env.JAVA_HOME ? resolve(process.env.JAVA_HOME, 'bin/java.exe') : 'java';
-  const backend = spawn(java, ['-jar', resolve(root, '../backend/target/umbral-backend-0.0.1-SNAPSHOT.jar'), '--spring.profiles.active=demo', '--server.port=18089', '--umbral.resumen.enabled=false', '--umbral.asistencia.intervalo-ms=1000'], { env: { ...process.env, UMBRAL_JWT_SECRET: secret }, windowsHide: true });
+  const backend = spawn(java, ['-jar', resolve(root, '../backend/target/umbral-backend-0.0.1-SNAPSHOT.jar'), '--spring.profiles.active=demo', '--server.port=18089', '--umbral.resumen.enabled=false', '--umbral.asistencia.intervalo-ms=1000'], { env: { ...process.env, UMBRAL_JWT_SECRET: secret, UMBRAL_DEMO_TEST_PASSWORD: testPassword }, windowsHide: true });
   processes.push(backend);
   backend.stdout.on('data', data => { backendLog += data; });
   backend.stderr.on('data', data => { backendLog += data; });
@@ -99,6 +112,17 @@ try {
   await expect(student.locator('#doubts .question')).toHaveCount(1);
   await student.getByRole('button', { name: 'Ver historial' }).click();
   await expect(student.locator('[id^=detail-]')).toContainText('RESUELTA');
+  await link(student,'Resultados','Mis resultados');
+  await expect(student.getByText('Tu respuesta: 4')).toBeVisible();
+  await student.reload();
+  await expect(student.getByText('Tu respuesta: 4')).toBeVisible();
+  await student.locator('#result-state').selectOption('incorrecta');
+  await expect(student.getByText('Todavía no tienes intentos registrados para este filtro.')).toBeVisible();
+  await link(student,'Simulacros','Simulacros y calendario');
+  await student.locator('[name=desde]').fill('2026-11-01');
+  await student.locator('[name=hasta]').fill('2026-11-30');
+  await student.getByRole('button',{name:'Consultar calendario'}).click();
+  await expect(student.getByRole('heading',{name:'Simulacro demo'})).toBeVisible();
   await teacher.reload();
   await teacher.locator('#group-search').fill('Sin coincidencias');
   await expect(teacher.getByText('No hay consultas para estos filtros.')).toBeVisible();
@@ -112,11 +136,20 @@ try {
   await teacher.getByRole('button', { name: 'Marcar como resuelta' }).click();
   await expect(teacher.getByText('La consulta quedó resuelta.')).toBeVisible();
   await link(teacher, 'Resultados', 'Resultados y reportes');
+  await teacher.getByRole('button',{name:'Consultar',exact:true}).click();
+  await expect(teacher.locator('#weekly-result')).toContainText('Preguntas creadas');
   await teacher.getByRole('button', { name: 'Consultar temas por reforzar' }).click();
   await expect(teacher.locator('#weak-topics')).toContainText('Algebra');
   const downloaded = teacher.waitForEvent('download');
   await teacher.getByRole('button', { name: 'Descargar informe PDF' }).click();
   expect((await downloaded).suggestedFilename()).toBe('rendimiento-seccion-1.pdf');
+  await link(teacher,'Banco de preguntas','Banco de preguntas');
+  await teacher.locator('[data-variant]').first().click();
+  await expect(teacher.getByText('La variante se guardó para revisión.')).toBeVisible();
+  await teacher.locator('#upload-bulletin input[type=file]').setInputFiles({name:'boletin.pdf',mimeType:'application/pdf',buffer:bulletinPdf()});
+  await teacher.getByRole('button',{name:'Importar preguntas'}).click();
+  await expect(teacher.getByText('1 preguntas importadas para revisión.')).toBeVisible();
+  await expect(teacher.getByRole('heading',{name:'Geometria',exact:true})).toBeVisible();
   await link(teacher, 'Clases y asistencia', 'Clases y asistencia');
   await teacher.locator('[name=titulo]').fill('Repaso de ecuaciones');
   const tomorrow = new Date(Date.now()+86400000).toISOString().slice(0,16);
@@ -126,6 +159,8 @@ try {
   await teacher.getByRole('button', { name: 'Ver asistencia' }).click();
   await teacher.getByRole('button', { name: 'Registrar presente' }).click();
   await expect(teacher.getByText('PRESENTE', { exact: true })).toBeVisible();
+  await teacher.getByRole('button',{name:'Cerrar asistencia',exact:true}).click();
+  await expect(teacher.getByRole('alert')).toContainText('La clase todavía no ha finalizado');
   await enter(parent, 3);
   await link(parent, 'Calendario', 'Calendario académico');
   await parent.locator('[name=desde]').fill('2026-11-01');
@@ -136,14 +171,14 @@ try {
   await expect(parent.getByText('No tienes notificaciones de este alumno.')).toBeVisible();
   // Crea una clase real de duración breve para comprobar también el aviso en el navegador.
   const finLima = new Intl.DateTimeFormat('sv-SE', { timeZone: 'America/Lima', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(new Date(Date.now()+3000)).replace(' ', 'T');
-  const nueva = await fetch('http://127.0.0.1:18089/api/docente/clases', { method: 'POST', headers: { Authorization: `Bearer ${token(1)}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ seccionId: 1, titulo: 'Clase de seguimiento familiar', fin: finLima }) });
+  const nueva = await fetch('http://127.0.0.1:18089/api/docente/clases', { method: 'POST', headers: { Authorization: `Bearer ${token(1)}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ seccionId: 1, titulo: 'Clase de seguimiento académico', fin: finLima }) });
   expect(nueva.status).toBe(201);
   await expect.poll(async () => {
     const r = await fetch('http://127.0.0.1:18089/api/apoderado/alumnos/2/notificaciones', { headers: { Authorization: `Bearer ${token(3)}` } });
     return (await r.json()).length;
   }, { timeout: 15000 }).toBe(1);
   await parent.reload();
-  await expect(parent.getByText('No se registró asistencia a la clase: Clase de seguimiento familiar')).toBeVisible();
+  await expect(parent.getByText('No se registró asistencia a la clase: Clase de seguimiento académico')).toBeVisible();
   await link(parent, 'Mi cuenta', 'Mi cuenta');
   await expect(parent.getByRole('heading', { name: 'apoderado@example.invalid' })).toBeVisible();
   await link(parent, 'Notificaciones', 'Notificaciones académicas');
