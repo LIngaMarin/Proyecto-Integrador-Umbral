@@ -308,6 +308,32 @@ class RespuestasHttpTests {
         assertEquals(200,request("GET",ruta,user=1).statusCode())
     }
 
+    /** HU32: dos alumnos distintos reciben la misma respuesta sin poder consultar la duda ajena. */
+    @Test fun `respuesta agrupada se propaga a varios alumnos sin duplicarse`() {
+        val p=pregunta()
+        // Matrícula adicional solo en H2 de pruebas; se retira incluso si falla una aserción.
+        jdbc.update("INSERT INTO adm_matricula(id,alumno_id,seccion_id,activa) VALUES(9032,4,1,true)")
+        try {
+            val body="""{"docenteId":1,"seccionId":1,"preguntaId":${p.id},"texto":"Consulta compartida entre alumnos"}"""
+            for(alumno in listOf(2L,4L))assertEquals(201,request("POST","/api/alumno/dudas",user=alumno,body=body).statusCode())
+            val grupo=grupos.findAll().single{it.preguntaId==p.id}
+            val ruta="/api/docente/dudas/grupos/${grupo.id}/respuestas"
+            assertEquals(201,request("POST",ruta,user=1,body="""{"texto":"Explicación para ambos alumnos"}""").statusCode())
+            val consultas=dudas.findByGrupoIdOrderByFechaAscIdAsc(grupo.id)
+            assertEquals(setOf(2L,4L),consultas.map{it.alumnoId}.toSet())
+            assertEquals(1,consultas.map{it.respuestaId}.distinct().size)
+            assertNotNull(consultas.first().respuestaId)
+            for(d in consultas){
+                val response=request("GET","/api/alumno/dudas/${d.id}/respuesta",user=d.alumnoId)
+                assertEquals(200,response.statusCode());assertTrue(response.body().contains("Explicación para ambos alumnos"))
+                val otro=if(d.alumnoId==2L)4L else 2L
+                assertEquals(403,request("GET","/api/alumno/dudas/${d.id}/respuesta",user=otro).statusCode())
+            }
+            assertEquals(409,request("POST",ruta,user=1,body="""{"texto":"Reenvío duplicado"}""").statusCode())
+            assertEquals(1,respuestasGrupo.findByGrupoIdOrderByFechaAscIdAsc(grupo.id).size)
+        } finally {jdbc.update("DELETE FROM adm_matricula WHERE id=9032")}
+    }
+
     @Test fun `resuelve dudas respondidas filtra estados y conserva historial sin duplicar eventos`() {
         val p=pregunta()
         val body="""{"docenteId":1,"seccionId":1,"preguntaId":${p.id},"texto":"Duda a resolver"}"""
