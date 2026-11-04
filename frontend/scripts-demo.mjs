@@ -3,7 +3,8 @@ import { randomBytes } from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { resolve } from 'node:path';
 const java=process.env.JAVA_HOME?resolve(process.env.JAVA_HOME,'bin/java.exe'):'java';
-const jar=resolve(import.meta.dirname,'../backend/target/umbral-backend-0.0.1-SNAPSHOT.jar');
+// Permite iniciar la versión verificada mientras otra instancia conserva su propio archivo abierto.
+const jar=process.env.UMBRAL_BACKEND_JAR || resolve(import.meta.dirname,'../backend/target/umbral-backend-0.0.1-SNAPSHOT.jar');
 const port=Number(process.env.UMBRAL_DEMO_PORT||8080);
 if(!Number.isInteger(port)||port<1||port>65535)throw new Error('Puerto demo no válido');
 console.log('UMBRAL demo: abre http://localhost:5173 e inicia sesión con alumno.demo, docente.demo o apoderado.demo y su contraseña de prueba.');
