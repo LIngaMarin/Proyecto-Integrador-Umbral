@@ -71,6 +71,11 @@ class DocenteController(
     fun generarSolucionario(@PathVariable id: Long): ResponseEntity<Solucionario> =
         ResponseEntity.ok(solucionarioService.generarParaPregunta(id))
 
+    /** Recupera un solucionario existente para revisarlo sin volver a generarlo ni conocer su identificador. */
+    @GetMapping("/preguntas/{id}/solucionario")
+    fun consultarSolucionario(@PathVariable id: Long): ResponseEntity<Solucionario> =
+        ResponseEntity.ok(solucionarioService.consultarParaRevision(id))
+
     /** PUT /solucionarios/{id}/aprobar: usa el id de ruta para delegar el cambio de estado. */
     @PutMapping("/solucionarios/{id}/aprobar")
     fun aprobarSolucionario(@PathVariable id: Long): ResponseEntity<Solucionario> =
