@@ -1,5 +1,7 @@
 # UMBRAL — entrega del portal académico
 
+> Documento histórico del 03/11/2026. El acceso actual es con usuario y contraseña; consultar [ENTREGA_LOGIN_Y_DISENO.md](ENTREGA_LOGIN_Y_DISENO.md) para ejecución, seguridad, endpoints y funciones actualizadas. Ya no se introducen tokens manualmente y el historial de prácticas ahora es persistido.
+
 ## Estado y alcance
 
 Se trabajó sobre la rama `web`, partiendo de `dda3167`, con frontend vacío y backend Kotlin existente. Se conservan JWT, PostgreSQL, H2 demo, contratos móviles y migraciones anteriores. Los archivos que ya estaban sin seguimiento (`.run/`, `SITES10.pdf`, `backend.zip`, `backend/CONEXION_LOCAL.md`, `backend/DEMO_LOCAL.md`) no forman parte de la entrega.

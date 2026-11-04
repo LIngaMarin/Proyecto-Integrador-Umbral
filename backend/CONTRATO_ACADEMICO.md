@@ -15,6 +15,8 @@ endpoint de login ni emisión de tokens en Kotlin. Los roles se leen de la base,
 no del cuerpo ni de claims controlados por el cliente. `Actor.id` es `Perfil.id`,
 no `auth_user.id`. Los identificadores docentes existentes deben referir perfiles.
 
+Actualización 04/11/2026: se añadió `POST /api/auth/login` con usuario/correo y contraseña. Reutiliza hashes Django BCrypt-SHA256 o PBKDF2-SHA256 y emite access tokens compatibles con la verificación existente; no modifica usuarios de producción. La portada web gestiona el acceso automáticamente. Las instrucciones actuales y el inventario ampliado están en `../ENTREGA_LOGIN_Y_DISENO.md`; la referencia anterior a ausencia de un emisor/login describe la entrega previa.
+
 Un alumno puede responder preguntas aprobadas de docentes con horario activo
 en una sección activa en que tiene matrícula activa. El catálogo sigue público
 y no contiene respuestas. Las respuestas admiten intentos sucesivos y conservan
