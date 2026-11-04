@@ -5,6 +5,7 @@ import { validar } from './componentes.js';
 import { resultados as intentos, limpiarResultados } from './practicas.js';
 import { landing } from './landing.js';
 import { icon } from './icons.js';
+import { reportes, bindReportes } from './reportes.js';
 
 // La cuenta confirmada por el backend decide las vistas; ocultar enlaces no sustituye sus permisos.
 const app = document.querySelector('#app');
@@ -91,7 +92,7 @@ function publicHome(){
 
 function shell(page) {
   clearLanding();
-  const links = [['inicio', 'Inicio'], ...(account.rol === 'ALUMNO' ? [['practicas', 'Prácticas'], ['consultas', 'Mis consultas'], ['resultados', 'Resultados'], ['calendario', 'Simulacros']] : account.rol === 'DOCENTE' ? [['consultas', 'Consultas académicas'], ['clases', 'Clases y asistencia'], ['banco', 'Banco de preguntas'], ['resultados', 'Resultados']] : account.rol === 'VISITANTE' ? [['practicas', 'Prácticas'], ['acceso', 'Ingresar']] : [['calendario', 'Calendario'], ['notificaciones', 'Notificaciones']]), ...(account.rol === 'VISITANTE' ? [] : [['cuenta', 'Mi cuenta']])];
+  const links = [['inicio', 'Inicio'], ...(account.rol === 'ALUMNO' ? [['practicas', 'Prácticas'], ['consultas', 'Mis consultas'], ['resultados', 'Resultados'], ['calendario', 'Simulacros']] : account.rol === 'DOCENTE' ? [['consultas', 'Consultas académicas'], ['clases', 'Clases y asistencia'], ['banco', 'Banco de preguntas'], ['resultados', 'Resultados'], ['reportes', 'Reportes académicos']] : account.rol === 'VISITANTE' ? [['practicas', 'Prácticas'], ['acceso', 'Ingresar']] : [['calendario', 'Calendario'], ['notificaciones', 'Notificaciones']]), ...(account.rol === 'VISITANTE' ? [] : [['cuenta', 'Mi cuenta']])];
   app.innerHTML = `<div class="shell"><aside class="sidebar"><div><div class="brand">UMBRAL</div><div class="eyebrow mt-2">Campus académico</div></div><nav aria-label="Navegación principal">${links.map(([id, label]) => `<a href="#${id}" class="${page === id ? 'active' : ''}" ${page === id ? 'aria-current="page"' : ''}>${label}</a>`).join('')}</nav><footer>Tu siguiente paso,<br>cada día más cerca.</footer></aside><div class="workspace"><header class="topbar"><div>${esc(roles[account.rol])}<br><small>${esc(account.email)}</small></div><button id="logout" class="btn btn-outline-secondary">Cerrar sesión</button></header><main><div id="notice" aria-live="polite"></div><section id="content" aria-live="polite"></section></main></div></div>`;
   document.querySelector('#logout').textContent=account.rol==='VISITANTE'?'Iniciar sesión':'Cerrar sesión';
   document.querySelector('#logout').onclick = () => { session.clear(); limpiarResultados(); history.replaceState(null,'',account.rol==='VISITANTE'?'#acceso':'#portada'); if(account.rol==='VISITANTE')login();else publicHome(); };
@@ -109,11 +110,13 @@ async function render() {
   const content = document.querySelector('#content');
   content.innerHTML = '<p role="status">Cargando información académica…</p>';
   try {
-    const html = await ({ inicio: home, practicas, consultas, banco, resultados, calendario, cuenta, clases, notificaciones }[page] || home)();
+    const html = await ({ inicio: home, practicas, consultas, banco, resultados, calendario, cuenta, clases, notificaciones, reportes:()=>reportes(account) }[page] || home)();
     if (current !== generation) return;
     content.innerHTML = html;
     // Las respuestas se consultan de nuevo al navegar para reflejar su persistencia real.
     bind(page);
+    // HU41: la descarga nueva convive con los reportes anteriores y conserva su ruta PDF.
+    if(page==='reportes')bindReportes(account);
     content.tabIndex = -1;
     content.focus({ preventScroll: true });
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -130,7 +133,7 @@ async function home() {
     const groups = await api('/docente/dudas/grupos');
     metrics = `<article class="panel"><p class="eyebrow">Temas de consulta</p><div class="metric">${groups.length}</div></article><article class="panel"><p class="eyebrow">Secciones asignadas</p><div class="metric">${account.secciones.length}</div></article>`;
   } else metrics = `<article class="panel"><p class="eyebrow">Alumnos vinculados</p><div class="metric">${account.hijos.length}</div></article>`;
-  const tools=account.rol==='ALUMNO'?[['book','Prácticas','Refuerza un tema y resuelve tu siguiente pregunta.','practicas'],['chat','Mis consultas','Revisa las respuestas y continúa aprendiendo.','consultas'],['chart','Mis resultados','Revisa tus respuestas y el historial de tus prácticas.','resultados'],['calendar','Simulacros','Consulta las fechas de tu preparación académica.','calendario']]:account.rol==='DOCENTE'?[['chat','Consultas académicas','Atiende los temas que necesitan tus alumnos.','consultas'],['book','Banco de preguntas','Revisa y publica material académico.','banco'],['calendar','Clases y asistencia','Organiza tus clases y registra la presencia.','clases'],['chart','Resultados y reportes','Consulta estadísticas y descarga informes.','resultados']]:[['calendar','Calendario','Consulta los simulacros de alumnos vinculados.','calendario'],['bell','Notificaciones','Revisa avisos académicos de asistencia.','notificaciones']];
+  const tools=account.rol==='ALUMNO'?[['book','Prácticas','Refuerza un tema y resuelve tu siguiente pregunta.','practicas'],['chat','Mis consultas','Revisa las respuestas y continúa aprendiendo.','consultas'],['chart','Mis resultados','Revisa tus respuestas y el historial de tus prácticas.','resultados'],['calendar','Simulacros','Consulta las fechas de tu preparación académica.','calendario']]:account.rol==='DOCENTE'?[['chat','Consultas académicas','Atiende los temas que necesitan tus alumnos.','consultas'],['book','Banco de preguntas','Revisa y publica material académico.','banco'],['calendar','Clases y asistencia','Organiza tus clases y registra la presencia.','clases'],['chart','Resultados y reportes','Consulta estadísticas y descarga informes.','resultados'],['chart','Reportes académicos','Consulta y exporta el rendimiento de tu sección.','reportes']]:[['calendar','Calendario','Consulta los simulacros de alumnos vinculados.','calendario'],['bell','Notificaciones','Revisa avisos académicos de asistencia.','notificaciones']];
   return `<p class="eyebrow">Tu espacio académico · ${esc(roles[account.rol])}</p><h1>Bienvenido a UMBRAL.</h1><p class="muted">${esc(account.email)}</p><div class="hero"><div><p class="eyebrow">${account.rol==='ALUMNO'?'Tu próximo objetivo está más cerca':'Acompañamiento académico'}</p><h2>${account.rol==='ALUMNO'?'Sigue construyendo tu camino.':account.rol==='DOCENTE'?'Enseñar también es abrir caminos.':'Sigue su preparación.'}</h2><p>${account.rol==='ALUMNO'?'Retoma tus prácticas, comparte tus dudas y fortalece lo que aprendes.':account.rol==='DOCENTE'?'Revisa las consultas de tus secciones y orienta el siguiente paso de tus alumnos.':'Consulta las actividades y avisos de los alumnos vinculados a tu cuenta.'}</p><a class="btn btn-primary" href="#${tools[0][3]}">${account.rol==='ALUMNO'?'Continuar practicando':account.rol==='DOCENTE'?'Atender consultas':'Ver calendario'} ${icon('arrow')}</a></div><span class="hero-symbol">${icon('cap')}</span></div><div class="cards">${metrics}</div><div class="section-intro mt-5"><div><p class="eyebrow">A un paso</p><h2>Tus herramientas académicas</h2></div></div><div class="tool-grid">${tools.map(([symbol,title,text,href])=>`<article class="tool-card"><span class="tool-icon">${icon(symbol)}</span><h3>${title}</h3><p>${text}</p><a href="#${href}">Abrir ${icon('arrow')}</a></article>`).join('')}</div>`;
 }
 
@@ -309,7 +312,7 @@ function navigate(){
   const path=location.hash.slice(1);
   if(account && account.rol!=='VISITANTE'){render();return;}
   if(path==='practicas'){account={rol:'VISITANTE',email:'Catálogo público',secciones:[],hijos:[]};render();}
-  else if(['acceso','consultas','resultados','calendario','cuenta','dudas','sesion'].includes(path)){login();}
+  else if(['acceso','consultas','resultados','calendario','cuenta','dudas','sesion','reportes'].includes(path)){login();}
   else if(path==='herramientas'){if(!document.querySelector('#herramientas'))publicHome(); document.querySelector('#herramientas')?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});}
   else publicHome();
 }
