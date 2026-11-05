@@ -1,6 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.utils import timezone
 
 
 class Academia(models.Model):
@@ -288,3 +289,36 @@ class ErrorTema(models.Model):
 
     def __str__(self):
         return f'{self.tema.nombre}: {self.cantidad} errores'
+
+
+class RegistroAuditoria(models.Model):
+    """Una acción de escritura hecha en el panel: quién, qué, sobre qué y cuándo."""
+
+    class Accion(models.TextChoices):
+        CREAR = 'CREAR', 'Creó'
+        EDITAR = 'EDITAR', 'Editó'
+        ELIMINAR = 'ELIMINAR', 'Eliminó'
+
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='registros_auditoria',
+    )
+    # Copia del nombre y del rol al momento de la acción: el registro sigue
+    # siendo legible aunque después se borre o cambie el usuario.
+    usuario_nombre = models.CharField(max_length=150)
+    rol = models.CharField(max_length=20, blank=True)
+    accion = models.CharField(max_length=10, choices=Accion.choices)
+    recurso = models.CharField(max_length=60)
+    objeto_id = models.CharField(max_length=20, blank=True)
+    metodo = models.CharField(max_length=8)
+    ruta = models.CharField(max_length=255)
+    estado = models.PositiveSmallIntegerField()
+    ip = models.GenericIPAddressField(null=True, blank=True)
+    fecha = models.DateTimeField(default=timezone.now, db_index=True)
+
+    class Meta:
+        db_table = 'adm_auditoria'
+        ordering = ['-fecha', '-id']
+
+    def __str__(self):
+        return f'{self.usuario_nombre} {self.accion} {self.recurso} {self.objeto_id}'.strip()
