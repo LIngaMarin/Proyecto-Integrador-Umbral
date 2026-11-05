@@ -13,7 +13,7 @@
     <link rel="preload" href="assets/fuentes/bricolage-grotesque.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="css/base.css" />
     <link rel="stylesheet" href="css/hero.css" />
-<link rel="stylesheet" href="css/que-es.css" /><link rel="stylesheet" href="css/como.css" />  </head>
+<link rel="stylesheet" href="css/que-es.css" /><link rel="stylesheet" href="css/como.css" /><link rel="stylesheet" href="css/entradas.css" />  </head>
   <body>
     <a class="saltar" href="#contenido">Saltar al contenido</a>
 
@@ -26,7 +26,7 @@
         <span>Umbral</span>
       </a>
       <nav aria-label="Principal">
-<a href="#que-es">Qué es</a><a href="#como-funciona">Cómo funciona</a>      </nav>
+<a href="#que-es">Qué es</a><a href="#como-funciona">Cómo funciona</a><a href="#entradas">Entradas</a>      </nav>
       <a class="boton boton-tinta" href="#entradas">Ingresar</a>
     </header>
 
@@ -157,8 +157,60 @@
       </section>
 
 
+      <section class="entradas oscuro" id="entradas" data-tema="oscuro">
+        <div class="contenedor">
+          <div class="entradas-intro">
+            <h2>Entra por tu puerta</h2>
+            <p>Cada perfil tiene su propio acceso, y todos trabajan sobre los mismos datos.</p>
+          </div>
+
+          <div class="puertas">
+            <article class="puerta" data-entrada="admin">
+              <span class="estado" data-estado="comprobando"><i></i><b>Comprobando</b></span>
+              <h3>Administración</h3>
+              <p>
+                Sedes, aulas, ciclos, horarios, matrículas, rendimiento por salón, temas con más
+                errores y auditoría.
+              </p>
+              <p class="para">Administradores y coordinadores</p>
+              <a class="boton boton-luz" href="#entradas">Entrar al panel</a>
+            </article>
+
+            <article class="puerta" data-entrada="apoderado">
+              <span class="estado" data-estado="comprobando"><i></i><b>Comprobando</b></span>
+              <h3>Apoderados</h3>
+              <p>
+                La asistencia de tus hijos día por día. Pronto, también sus resultados y el
+                calendario de simulacros.
+              </p>
+              <p class="para">Madres, padres y tutores</p>
+              <a class="boton boton-luz" href="#entradas">Entrar al portal</a>
+            </article>
+
+            <article class="puerta" data-entrada="campus">
+              <span class="estado" data-estado="comprobando"><i></i><b>Comprobando</b></span>
+              <h3>Campus web</h3>
+              <p>
+                Práctica, banco de preguntas del docente, reportes de rendimiento en PDF y
+                asistencia.
+              </p>
+              <p class="para">Docentes y alumnos</p>
+              <a class="boton boton-luz" href="#entradas">Entrar al campus</a>
+            </article>
+
+            <article class="puerta" data-entrada="movil">
+              <span class="estado" data-estado="comprobando"><i></i><b>Comprobando</b></span>
+              <h3>App móvil</h3>
+              <p>Tu horario, la práctica de la semana, asistencia con código QR y dudas con foto.</p>
+              <p class="para">Alumnos y docentes, en Android</p>
+              <a class="boton boton-luz" href="#entradas">Descargar la app</a>
+            </article>
+          </div>
+        </div>
+      </section>
+
     </main>
 
-    <script src="js/hero.js"></script>
-<script src="js/como.js"></script>  </body>
+<script src="config.js"></script>    <script src="js/hero.js"></script>
+<script src="js/como.js"></script><script src="js/entradas.js"></script>  </body>
 </html>
