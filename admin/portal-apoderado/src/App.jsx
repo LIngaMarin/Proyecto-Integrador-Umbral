@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api, CLAVES, cerrarSesionLocal } from './api'
 import { aplicarMarca } from './marca'
+import Asistencia from './components/Asistencia'
 import CambiarClave from './components/CambiarClave'
 import Login from './components/Login'
 import './App.css'
@@ -18,6 +19,7 @@ export default function App() {
   )
   const [academia, setAcademia] = useState(null)
   const [hijos, setHijos] = useState(null)
+  const [elegido, setElegido] = useState(null)
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -40,9 +42,12 @@ export default function App() {
       .catch(() => setError('No se pudo cargar la información de tus hijos.'))
   }, [entrado])
 
+  const hijo = hijos?.find((h) => h.id === elegido) ?? hijos?.[0] ?? null
+
   const salir = () => {
     cerrarSesionLocal()
     setHijos(null)
+    setElegido(null)
     setError('')
     setSesion(null)
   }
@@ -94,17 +99,26 @@ export default function App() {
             Todavía no tienes hijos vinculados a tu cuenta. Pide a la academia que los vincule.
           </p>
         )}
-        {hijos && hijos.length > 0 && (
-          <ul className="hijos">
-            {hijos.map((h) => (
-              <li className="tarjeta" key={h.id}>
-                <strong>
-                  {h.first_name} {h.last_name}
-                </strong>
-                <span className="suave">{h.email}</span>
-              </li>
-            ))}
-          </ul>
+        {hijo && (
+          <>
+            {hijos.length > 1 && (
+              <div className="hijos" role="tablist" aria-label="Tus hijos">
+                {hijos.map((h) => (
+                  <button
+                    key={h.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={h.id === hijo.id}
+                    className={h.id === hijo.id ? 'chip activo' : 'chip'}
+                    onClick={() => setElegido(h.id)}
+                  >
+                    {h.first_name} {h.last_name}
+                  </button>
+                ))}
+              </div>
+            )}
+            <Asistencia key={hijo.id} hijo={hijo} />
+          </>
         )}
       </main>
     </>

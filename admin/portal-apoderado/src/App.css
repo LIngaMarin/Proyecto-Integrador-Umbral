@@ -193,20 +193,197 @@ input {
 /* ---------- Hijos ---------- */
 
 .hijos {
-  display: grid;
-  gap: 12px;
-  padding: 0;
-  margin: 0;
-  list-style: none;
-}
-
-.hijos li {
   display: flex;
-  flex-direction: column;
-  padding: 14px 16px;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .vacio {
   padding: 20px;
   color: var(--texto-suave);
+}
+
+.chip {
+  padding: 7px 14px;
+  color: var(--texto);
+  font-size: 0.9rem;
+  font-weight: 500;
+  background: var(--superficie);
+  border: 1px solid var(--borde-campo);
+  border-radius: 999px;
+}
+
+.chip:hover:not(:disabled) {
+  color: var(--texto);
+  background: var(--primario-suave);
+}
+
+.chip.activo {
+  color: #fff;
+  background: var(--color-primario);
+  border-color: var(--color-primario);
+}
+
+.chip.activo:hover:not(:disabled) {
+  color: #fff;
+  background: var(--primario-oscuro);
+}
+
+.aviso {
+  padding: 10px 12px;
+  color: var(--aviso);
+  font-size: 0.9rem;
+  background: var(--aviso-fondo);
+  border-radius: 8px;
+}
+
+/* ---------- Asistencia ---------- */
+
+.asistencia {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+}
+
+.periodos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.fechas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.asistencia .vacio {
+  padding: 4px 0;
+}
+
+.resumen {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  background: var(--fondo);
+  border-radius: var(--radio);
+}
+
+.resumen-titulo strong {
+  font-size: 1.7rem;
+  font-weight: 700;
+}
+
+.reparto {
+  display: flex;
+  height: 12px;
+  overflow: hidden;
+  background: var(--borde);
+  border-radius: 999px;
+}
+
+.tramo.presente,
+.punto.presente {
+  background: #22a35a;
+}
+
+.tramo.tardanza,
+.punto.tardanza {
+  background: #e0a400;
+}
+
+.tramo.falta,
+.punto.falta {
+  background: #d9483b;
+}
+
+.tramo {
+  flex-basis: 0;
+}
+
+.leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  padding: 0;
+  margin: 0;
+  font-size: 0.9rem;
+  list-style: none;
+}
+
+.leyenda li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.punto {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.dias {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  border-top: 1px solid var(--borde);
+}
+
+.dia {
+  display: grid;
+  grid-template-columns: 1fr auto 88px;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 4px;
+  border-bottom: 1px solid var(--borde);
+}
+
+.dia-fecha::first-letter {
+  text-transform: uppercase;
+}
+
+.dia-hora {
+  color: var(--texto-suave);
+  font-size: 0.88rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.estado {
+  justify-self: end;
+  padding: 2px 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 999px;
+}
+
+.estado.presente {
+  color: var(--ok);
+  background: var(--ok-fondo);
+}
+
+.estado.tardanza {
+  color: var(--aviso);
+  background: var(--aviso-fondo);
+}
+
+.estado.falta {
+  color: var(--error);
+  background: var(--error-fondo);
+}
+
+@media (max-width: 520px) {
+  .asistencia {
+    padding: 16px;
+  }
+
+  .dia {
+    grid-template-columns: 1fr 84px;
+  }
+
+  .dia-hora {
+    display: none;
+  }
 }
