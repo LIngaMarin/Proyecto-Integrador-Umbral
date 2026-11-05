@@ -1,0 +1,130 @@
+.como {
+  padding-block: clamp(72px, 10vw, 140px);
+}
+
+.como-rejilla {
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+  gap: clamp(32px, 7vw, 110px);
+  align-items: start;
+}
+
+.como-intro {
+  position: sticky;
+  top: calc(var(--cabecera) + 36px);
+}
+
+.como h2 {
+  font-size: clamp(2rem, 4.4vw, 3.4rem);
+}
+
+.como-intro p {
+  max-width: 24em;
+  margin-top: 18px;
+  color: var(--suave);
+}
+
+.pasos {
+  --avance: 0;
+  position: relative;
+  padding-left: clamp(70px, 9vw, 110px);
+}
+
+/* Carril y tramo recorrido, que se llena a medida que se baja. */
+.pasos::before,
+.pasos::after {
+  content: '';
+  position: absolute;
+  top: 12px;
+  bottom: 12px;
+  left: clamp(18px, 2.6vw, 30px);
+  width: 3px;
+  border-radius: 2px;
+}
+
+.pasos::before {
+  background: var(--linea);
+}
+
+.pasos::after {
+  background: var(--cobalto);
+  transform: scaleY(var(--avance));
+  transform-origin: 50% 0;
+}
+
+.paso {
+  position: relative;
+  padding-block: 0 clamp(40px, 6vw, 72px);
+}
+
+.paso:last-child {
+  padding-bottom: 0;
+}
+
+.paso-numero {
+  position: absolute;
+  top: -4px;
+  left: calc(-1 * clamp(70px, 9vw, 110px));
+  display: grid;
+  place-items: center;
+  width: clamp(38px, 5vw, 52px);
+  aspect-ratio: 1;
+  color: var(--suave);
+  font: 700 1.2rem/1 var(--display);
+  background: var(--hueso);
+  border: 3px solid var(--linea);
+  border-radius: 50%;
+  transition:
+    color 0.3s ease,
+    background-color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.paso.activo .paso-numero {
+  color: #fff;
+  background: var(--cobalto);
+  border-color: var(--cobalto);
+}
+
+.paso h3 {
+  font-size: clamp(1.4rem, 2.6vw, 2rem);
+}
+
+.paso p {
+  max-width: 34em;
+  margin-top: 10px;
+  color: var(--suave);
+}
+
+.como-cierre {
+  max-width: 34em;
+  margin-top: clamp(36px, 5vw, 60px);
+  margin-left: clamp(70px, 9vw, 110px);
+  padding: 18px 22px;
+  font-weight: 500;
+  background: var(--luz-suave);
+  border-left: 5px solid var(--luz);
+  border-radius: 4px 14px 14px 4px;
+}
+
+@media (max-width: 860px) {
+  .como-rejilla {
+    grid-template-columns: 1fr;
+  }
+
+  .como-intro {
+    position: static;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pasos::after {
+    transform: none;
+  }
+
+  .paso .paso-numero {
+    color: #fff;
+    background: var(--cobalto);
+    border-color: var(--cobalto);
+  }
+}

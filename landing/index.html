@@ -13,7 +13,7 @@
     <link rel="preload" href="assets/fuentes/bricolage-grotesque.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="css/base.css" />
     <link rel="stylesheet" href="css/hero.css" />
-<link rel="stylesheet" href="css/que-es.css" />  </head>
+<link rel="stylesheet" href="css/que-es.css" /><link rel="stylesheet" href="css/como.css" />  </head>
   <body>
     <a class="saltar" href="#contenido">Saltar al contenido</a>
 
@@ -26,7 +26,7 @@
         <span>Umbral</span>
       </a>
       <nav aria-label="Principal">
-<a href="#que-es">Qué es</a>      </nav>
+<a href="#que-es">Qué es</a><a href="#como-funciona">Cómo funciona</a>      </nav>
       <a class="boton boton-tinta" href="#entradas">Ingresar</a>
     </header>
 
@@ -113,9 +113,52 @@
       </section>
 
 
+      <section class="como" id="como-funciona" data-tema="claro">
+        <div class="contenedor como-rejilla">
+          <div class="como-intro">
+            <h2>De un boletín a una práctica en cuatro pasos</h2>
+            <p>Todo lo que genera la IA pasa por el docente antes de llegar al alumno.</p>
+          </div>
+
+          <div>
+            <ol class="pasos">
+              <li class="paso">
+                <span class="paso-numero">1</span>
+                <h3>El docente sube su boletín</h3>
+                <p>Una foto o un PDF. Umbral extrae las preguntas y arma variantes de cada una.</p>
+              </li>
+              <li class="paso">
+                <span class="paso-numero">2</span>
+                <h3>La IA propone y el sistema verifica</h3>
+                <p>
+                  Genera el solucionario paso a paso y comprueba las respuestas dos veces antes de
+                  mostrárselas al docente.
+                </p>
+              </li>
+              <li class="paso">
+                <span class="paso-numero">3</span>
+                <h3>El docente aprueba o rechaza</h3>
+                <p>Edita cada pregunta, la aprueba o la descarta. Nada llega a un alumno sin su visto bueno.</p>
+              </li>
+              <li class="paso">
+                <span class="paso-numero">4</span>
+                <h3>El alumno practica lo que vio en clase</h3>
+                <p>
+                  Recibe preguntas según el temario de la semana y refuerzo en los temas que le
+                  cuestan.
+                </p>
+              </li>
+            </ol>
+            <p class="como-cierre">
+              Cuando termina un simulacro, el coordinador ve qué salones necesitan apoyo y en qué temas.
+            </p>
+          </div>
+        </div>
+      </section>
+
 
     </main>
 
     <script src="js/hero.js"></script>
-  </body>
+<script src="js/como.js"></script>  </body>
 </html>
