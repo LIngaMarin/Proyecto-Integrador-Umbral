@@ -1,3 +1,4 @@
+from datetime import date
 from io import StringIO
 
 from django.core.management import call_command
@@ -5,7 +6,7 @@ from django.test import TestCase
 
 from academia.temas_criticos import temas_por_seccion
 from academia.models import (
-    Apoderado, Aula, Curso, ErrorTema, Horario, Matricula, Perfil, Resultado,
+    Apoderado, Asistencia, Aula, Curso, ErrorTema, Horario, Matricula, Perfil, Resultado,
     Seccion, Sede, Simulacro, Tema,
 )
 
@@ -43,15 +44,37 @@ class CargarDemoTests(TestCase):
     def test_es_idempotente(self):
         cargar()
         antes = (
-            Perfil.objects.count(), Matricula.objects.count(),
-            Horario.objects.count(), Resultado.objects.count(), ErrorTema.objects.count(),
+            Perfil.objects.count(), Matricula.objects.count(), Horario.objects.count(),
+            Resultado.objects.count(), ErrorTema.objects.count(), Asistencia.objects.count(),
         )
         cargar()
         despues = (
-            Perfil.objects.count(), Matricula.objects.count(),
-            Horario.objects.count(), Resultado.objects.count(), ErrorTema.objects.count(),
+            Perfil.objects.count(), Matricula.objects.count(), Horario.objects.count(),
+            Resultado.objects.count(), ErrorTema.objects.count(), Asistencia.objects.count(),
         )
         self.assertEqual(antes, despues)
+
+    def test_registra_asistencia_en_dias_habiles(self):
+        cargar()
+        registros = Asistencia.objects.all()
+        self.assertGreater(registros.count(), 12 * 15)
+        self.assertEqual(
+            registros.values('alumno').distinct().count(), 12
+        )
+        for registro in registros:
+            self.assertLess(registro.fecha.weekday(), 5)
+            self.assertNotIn(registro.fecha, [date(2026, 11, 1), date(2026, 12, 8)])
+        estados = set(registros.values_list('estado', flat=True))
+        self.assertEqual(estados, {'PRESENTE', 'TARDANZA', 'FALTA'})
+
+    def test_las_faltas_no_tienen_hora_y_el_resto_si(self):
+        cargar()
+        self.assertFalse(
+            Asistencia.objects.filter(estado='FALTA').exclude(hora_registro=None).exists()
+        )
+        self.assertFalse(
+            Asistencia.objects.exclude(estado='FALTA').filter(hora_registro=None).exists()
+        )
 
     def test_las_cuentas_demo_pueden_iniciar_sesion(self):
         cargar()

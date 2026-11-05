@@ -322,3 +322,30 @@ class RegistroAuditoria(models.Model):
 
     def __str__(self):
         return f'{self.usuario_nombre} {self.accion} {self.recurso} {self.objeto_id}'.strip()
+
+
+class Asistencia(models.Model):
+    """Asistencia diaria de un alumno a la sede (una fila por alumno y día)."""
+
+    class Estado(models.TextChoices):
+        PRESENTE = 'PRESENTE', 'Asistió'
+        TARDANZA = 'TARDANZA', 'Tardanza'
+        FALTA = 'FALTA', 'Faltó'
+
+    alumno = models.ForeignKey(Perfil, on_delete=models.CASCADE, related_name='asistencias')
+    fecha = models.DateField(db_index=True)
+    estado = models.CharField(max_length=10, choices=Estado.choices, default=Estado.PRESENTE)
+    # Hora a la que se registró el ingreso; vacía cuando faltó.
+    hora_registro = models.TimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'adm_asistencia'
+        unique_together = [('alumno', 'fecha')]
+        ordering = ['-fecha']
+
+    def clean(self):
+        if self.alumno_id and self.alumno.rol != Perfil.Rol.ALUMNO:
+            raise ValidationError({'alumno': 'La asistencia solo se registra a alumnos.'})
+
+    def __str__(self):
+        return f'{self.alumno} {self.fecha} {self.estado}'

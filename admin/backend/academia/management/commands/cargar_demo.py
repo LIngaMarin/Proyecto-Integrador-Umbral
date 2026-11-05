@@ -6,15 +6,16 @@ Es idempotente: se puede ejecutar varias veces sin duplicar datos y no
 modifica contraseñas de cuentas que ya existan. Todas las cuentas de
 demostración usan el dominio @demo.umbral.pe.
 """
-from datetime import date, time
+from datetime import date, datetime, time, timedelta
 from decimal import Decimal
+from zoneinfo import ZoneInfo
 
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from academia.models import (
-    Academia, Apoderado, Aula, Ciclo, ConfiguracionIA, Curso, ErrorTema, Festivo,
+    Academia, Apoderado, Asistencia, Aula, Ciclo, ConfiguracionIA, Curso, ErrorTema, Festivo,
     Horario, Marca, Matricula, Perfil, Resultado, Seccion, Sede, Simulacro, Tema,
     UsoIA,
 )
@@ -78,6 +79,11 @@ TEMAS = {
     'Comunicación': ['Comprensión lectora', 'Razonamiento verbal', 'Ortografía'],
 }
 PESO_ERRORES = [4, 3, 2, 1]
+
+# Asistencia de los últimos días hábiles (sin sábados, domingos ni festivos).
+DIAS_DE_ASISTENCIA = 30
+ENTRADA_TURNO_A = time(8, 0)
+ENTRADA_TURNO_B = time(15, 0)
 
 # Secciones con rendimiento bajo, para que el reporte muestre "refuerzo".
 RENDIMIENTO_BAJO = {('Matemática', 'B'): 9.5, ('Química', 'B'): 10.0}
@@ -179,6 +185,8 @@ class Command(BaseCommand):
                     )
                     self._errores_por_tema(curso, resultado, puntaje)
 
+        self._asistencias(alumnos)
+
         for nombre, apellido, telefono, hijos in APODERADOS:
             perfil = self._usuario(nombre, apellido, Perfil.Rol.APODERADO, None)
             apoderado, _ = Apoderado.objects.get_or_create(
@@ -205,6 +213,40 @@ class Command(BaseCommand):
             ErrorTema.objects.get_or_create(
                 resultado=resultado, tema=tema, defaults={'cantidad': cantidad}
             )
+
+    def _asistencias(self, alumnos):
+        """Registra la asistencia de cada alumno en los últimos días hábiles.
+
+        El patrón es fijo (no aleatorio): algunas faltas y tardanzas repartidas, para
+        que el portal del apoderado tenga algo que mostrar.
+        """
+        hoy = datetime.now(ZoneInfo('America/Lima')).date()
+        festivos = {fecha for fecha, _ in FESTIVOS}
+        dia = hoy - timedelta(days=1)
+        ultimo = hoy - timedelta(days=DIAS_DE_ASISTENCIA)
+        habiles = 0
+        while dia >= ultimo:
+            if dia.weekday() < 5 and dia not in festivos:
+                for i, alumno in enumerate(alumnos):
+                    self._asistencia(i, alumno, dia, habiles)
+                habiles += 1
+            dia -= timedelta(days=1)
+
+    def _asistencia(self, indice, alumno, dia, orden):
+        entrada = ENTRADA_TURNO_A if indice < 6 else ENTRADA_TURNO_B
+        sorteo = (indice * 5 + orden * 3) % 17
+        base = datetime.combine(dia, entrada)
+        if sorteo == 0:
+            estado, hora = Asistencia.Estado.FALTA, None
+        elif sorteo <= 2:
+            estado = Asistencia.Estado.TARDANZA
+            hora = (base + timedelta(minutes=10 + (indice + orden) % 20)).time()
+        else:
+            estado = Asistencia.Estado.PRESENTE
+            hora = (base - timedelta(minutes=5 + (indice + orden) % 10)).time()
+        Asistencia.objects.get_or_create(
+            alumno=alumno, fecha=dia, defaults={'estado': estado, 'hora_registro': hora}
+        )
 
     def _usuario(self, nombre, apellido, rol, sede):
         email = correo(nombre, apellido)
