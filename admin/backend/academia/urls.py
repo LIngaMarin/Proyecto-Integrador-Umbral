@@ -15,6 +15,7 @@ from .matriculas import (
     MatriculaViewSet,
     SeccionViewSet,
 )
+from .asistencia_hijo import AsistenciaHijoView
 from .auditoria_api import AuditoriaView
 from .comparacion_api import ComparacionView
 from .temas_criticos_api import TemasCriticosView
@@ -47,6 +48,7 @@ router.register('docentes', DocenteViewSet, basename='docente')
 urlpatterns = router.urls + [
     path('auth/cambiar-clave/', CambiarClaveView.as_view()),
     path('mis-hijos/', MisHijosView.as_view()),
+    path('mis-hijos/<int:pk>/asistencia/', AsistenciaHijoView.as_view()),
     path('mis-hijos/<int:pk>/', MiHijoView.as_view()),
     path('configuracion-ia/', ConfiguracionIAView.as_view()),
     path('ia/usar/', UsarIAView.as_view()),
