@@ -1,0 +1,270 @@
+/* Fuentes incluidas en la página: así se ve igual con o sin conexión. */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url('../assets/fuentes/bricolage-grotesque.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Figtree';
+  font-style: normal;
+  font-weight: 300 900;
+  font-display: swap;
+  src: url('../assets/fuentes/figtree.woff2') format('woff2');
+}
+
+:root {
+  --tinta: #14173d;
+  --tinta-2: #1c2052;
+  --cobalto: #3b4cf0;
+  --luz: #ffd24d;
+  --luz-suave: #fff1bd;
+  --hueso: #f5f6fb;
+  --linea: #dde1f1;
+  --texto: #1b1e3a;
+  --suave: #565b7d;
+  --suave-oscuro: #b4b9dc;
+  --menta: #1fa971;
+
+  --display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+  --cuerpo: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --ancho: 1180px;
+  --lateral: clamp(20px, 5vw, 56px);
+  --cabecera: 68px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  overflow-x: clip;
+  color: var(--texto);
+  font-family: var(--cuerpo);
+  font-size: 1.05rem;
+  line-height: 1.65;
+  background: var(--hueso);
+}
+
+h1,
+h2,
+h3,
+p,
+ul,
+ol {
+  margin: 0;
+}
+
+ul,
+ol {
+  padding: 0;
+  list-style: none;
+}
+
+a {
+  color: inherit;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--display);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.08;
+}
+
+section[id] {
+  scroll-margin-top: calc(var(--cabecera) - 8px);
+}
+
+:focus-visible {
+  outline: 3px solid var(--cobalto);
+  outline-offset: 3px;
+}
+
+.oscuro :focus-visible,
+.cabecera[data-tema='oscuro'] :focus-visible {
+  outline-color: var(--luz);
+}
+
+.contenedor {
+  width: 100%;
+  max-width: calc(var(--ancho) + 2 * var(--lateral));
+  padding-inline: var(--lateral);
+  margin-inline: auto;
+}
+
+.saltar {
+  position: fixed;
+  top: -60px;
+  left: 16px;
+  z-index: 30;
+  padding: 10px 16px;
+  color: #fff;
+  background: var(--tinta);
+  border-radius: 8px;
+}
+
+.saltar:focus {
+  top: 12px;
+}
+
+/* ---------- Botones ---------- */
+
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.8em 1.6em;
+  font: 600 1rem/1.2 var(--cuerpo);
+  text-decoration: none;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.boton:hover {
+  transform: translateY(-2px);
+}
+
+.boton-tinta {
+  color: #fff;
+  background: var(--tinta);
+}
+
+.boton-tinta:hover {
+  background: var(--cobalto);
+}
+
+.boton-luz {
+  color: var(--tinta);
+  background: var(--luz);
+}
+
+.boton-luz:hover {
+  background: var(--luz-suave);
+}
+
+.boton-borde {
+  color: inherit;
+  border-color: currentColor;
+}
+
+.boton-borde:hover {
+  color: var(--tinta);
+  background: var(--luz);
+  border-color: var(--luz);
+}
+
+.boton[aria-disabled='true'] {
+  color: var(--suave-oscuro);
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.22);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ---------- Cabecera ---------- */
+
+.cabecera {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  height: var(--cabecera);
+  padding-inline: var(--lateral);
+  color: var(--tinta);
+  transition: color 0.3s ease;
+}
+
+.cabecera[data-tema='oscuro'] {
+  color: #fff;
+}
+
+.marca {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font: 700 1.4rem/1 var(--display);
+  letter-spacing: -0.03em;
+  text-decoration: none;
+}
+
+.marca svg {
+  width: 20px;
+  height: 24px;
+}
+
+.cabecera nav {
+  display: flex;
+  gap: clamp(16px, 3vw, 36px);
+  margin-left: auto;
+}
+
+.cabecera nav a {
+  padding-block: 6px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-decoration: none;
+  background: linear-gradient(currentColor, currentColor) 0 100% / 0 2px no-repeat;
+  transition: background-size 0.25s ease;
+}
+
+.cabecera nav a:hover {
+  background-size: 100% 2px;
+}
+
+.cabecera .boton {
+  padding: 0.55em 1.3em;
+  font-size: 0.95rem;
+}
+
+.cabecera .boton-tinta {
+  color: #fff;
+  background: var(--tinta);
+}
+
+.cabecera[data-tema='oscuro'] .boton {
+  color: var(--tinta);
+  background: var(--luz);
+}
+
+@media (max-width: 760px) {
+  .cabecera nav {
+    display: none;
+  }
+
+  .cabecera {
+    justify-content: space-between;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  * {
+    transition: none !important;
+  }
+}

@@ -1,0 +1,268 @@
+/* La portada ocupa más que la pantalla: mientras se baja, la puerta crece hasta
+   cubrirla y el visitante "entra" a la sección siguiente. */
+
+.hero {
+  position: relative;
+  height: 190svh;
+}
+
+.hero-escena {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+}
+
+.hero-rejilla {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  gap: clamp(24px, 5vw, 72px);
+  align-items: center;
+  height: 100%;
+  padding-top: var(--cabecera);
+  padding-bottom: 28px;
+}
+
+.hero-texto {
+  will-change: transform, opacity;
+}
+
+.hero h1 {
+  font-size: clamp(2.7rem, 6.6vw, 5.6rem);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+}
+
+.hero h1 .linea {
+  display: block;
+  padding-bottom: 0.1em;
+  overflow: hidden;
+}
+
+.hero h1 .linea > span {
+  display: block;
+  transform: translateY(110%);
+  animation: sube 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+  animation-delay: calc(var(--i) * 0.14s + 0.1s);
+}
+
+.hero-lead {
+  max-width: 34em;
+  margin-top: 26px;
+  font-size: clamp(1.05rem, 1.7vw, 1.3rem);
+  color: var(--suave);
+  opacity: 0;
+  animation: aparece 0.8s ease 0.7s forwards;
+}
+
+.hero-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 28px;
+  margin-top: 34px;
+  opacity: 0;
+  animation: aparece 0.8s ease 0.9s forwards;
+}
+
+.enlace-sutil {
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--cobalto);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 6px;
+}
+
+.enlace-sutil:hover {
+  color: var(--cobalto);
+}
+
+/* ---------- La puerta ---------- */
+
+.arco {
+  position: relative;
+  justify-self: center;
+  height: min(68svh, 580px);
+  aspect-ratio: 5 / 7.4;
+  will-change: transform;
+}
+
+.arco::before {
+  content: '';
+  position: absolute;
+  inset: -14px -14px 0;
+  border: 2px solid rgba(59, 76, 240, 0.3);
+  border-bottom: 0;
+  border-radius: 999px 999px 0 0;
+}
+
+.arco-interior {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--tinta);
+  border-radius: 999px 999px 0 0;
+}
+
+.arco-luz {
+  position: absolute;
+  inset: 0;
+}
+
+.arco-luz i {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(110% 62% at 50% 100%, var(--luz-suave) 0%, var(--luz) 24%, rgba(255, 210, 77, 0.38) 52%, transparent 76%);
+  transform-origin: 50% 100%;
+  animation: abrir 2s cubic-bezier(0.2, 0.7, 0.2, 1) 0.3s both;
+}
+
+.arco-umbral {
+  position: absolute;
+  right: -16%;
+  bottom: -3px;
+  left: -16%;
+  height: 6px;
+  background: var(--luz);
+  border-radius: 3px;
+  transform-origin: 50% 50%;
+  animation: ancho 1.2s cubic-bezier(0.2, 0.7, 0.2, 1) 0.2s both;
+}
+
+@keyframes sube {
+  to {
+    transform: none;
+  }
+}
+
+@keyframes aparece {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes abrir {
+  from {
+    opacity: 0;
+    transform: scaleY(0.05);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ancho {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: none;
+  }
+}
+
+@media (max-width: 860px) {
+  .hero-rejilla {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+    align-content: center;
+    gap: 22px;
+  }
+
+  .hero-texto {
+    align-self: end;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.4rem, 11vw, 3.4rem);
+  }
+
+  .hero-lead {
+    margin-top: 16px;
+    font-size: 1.02rem;
+  }
+
+  .hero-acciones {
+    margin-top: 20px;
+  }
+
+  .arco {
+    align-self: end;
+    height: min(40svh, 340px);
+    margin-bottom: 14px;
+  }
+}
+
+@media (max-width: 860px) and (max-height: 700px) {
+  .hero-lead {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero {
+    height: auto;
+  }
+
+  .hero-escena {
+    position: relative;
+    height: auto;
+    min-height: 100svh;
+  }
+
+  .hero h1 .linea > span,
+  .hero-lead,
+  .hero-acciones,
+  .arco-luz i,
+  .arco-umbral {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+}
+
+/* El dato aparece dentro de la puerta ya abierta. */
+.hero-dentro {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  color: #fff;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.hero-dentro .contenedor {
+  width: 100%;
+}
+
+.hero-dentro .dato-nota {
+  color: var(--suave-oscuro);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-dentro {
+    position: static;
+    padding-block: clamp(72px, 11vw, 150px) 0;
+    background: var(--tinta);
+    opacity: 1;
+  }
+}
+
+.dato {
+  max-width: 16ch;
+  font-size: clamp(2.4rem, 7vw, 5.6rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.dato-nota {
+  margin-top: 18px;
+  color: var(--suave-oscuro);
+  font-size: 0.95rem;
+}
