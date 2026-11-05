@@ -1,0 +1,212 @@
+/* ---------- Estructura general ---------- */
+
+h1 {
+  margin: 0 0 4px;
+  font-size: 1.6rem;
+  line-height: 1.25;
+}
+
+h2 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+p {
+  margin: 0;
+}
+
+.suave {
+  color: var(--texto-suave);
+}
+
+.tarjeta {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+}
+
+.contenedor {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 28px 16px 48px;
+}
+
+.cabecera {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--superficie);
+  border-bottom: 1px solid var(--borde);
+}
+
+.cabecera-marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.cabecera-marca img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.cabecera-marca div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.cabecera-marca strong {
+  color: var(--color-primario);
+  font-size: 1.1rem;
+}
+
+.cabecera-marca span {
+  overflow: hidden;
+  color: var(--texto-suave);
+  font-size: 0.78rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cabecera-usuario {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.9rem;
+}
+
+.cabecera-usuario span {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 520px) {
+  .cabecera-usuario span {
+    display: none;
+  }
+}
+
+/* ---------- Botones y campos ---------- */
+
+button {
+  padding: 9px 16px;
+  color: #fff;
+  font-weight: 600;
+  background: var(--color-primario);
+  border: 1px solid var(--color-primario);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+button:hover:not(:disabled) {
+  background: var(--primario-oscuro);
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+button.secundario {
+  color: var(--texto);
+  background: var(--superficie);
+  border-color: var(--borde-campo);
+}
+
+button.secundario:hover:not(:disabled) {
+  background: var(--primario-suave);
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+input {
+  width: 100%;
+  padding: 9px 12px;
+  color: var(--texto);
+  background: var(--superficie);
+  border: 1px solid var(--borde-campo);
+  border-radius: 8px;
+}
+
+.error {
+  padding: 10px 12px;
+  color: var(--error);
+  font-size: 0.9rem;
+  background: var(--error-fondo);
+  border-radius: 8px;
+}
+
+/* ---------- Ingreso ---------- */
+
+.acceso {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: 24px 16px;
+}
+
+.acceso-caja {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: 400px;
+  padding: 32px 28px;
+}
+
+.acceso-marca {
+  color: var(--color-primario);
+  font-size: 1.3rem;
+}
+
+.acceso-caja button[type='submit'] {
+  width: 100%;
+  padding: 11px;
+}
+
+.acceso-caja p:not(.error) {
+  color: var(--texto-suave);
+}
+
+/* ---------- Hijos ---------- */
+
+.hijos {
+  display: grid;
+  gap: 12px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.hijos li {
+  display: flex;
+  flex-direction: column;
+  padding: 14px 16px;
+}
+
+.vacio {
+  padding: 20px;
+  color: var(--texto-suave);
+}

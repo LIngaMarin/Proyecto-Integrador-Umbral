@@ -1,0 +1,56 @@
+@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap');
+
+:root {
+  --fuente: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* El color de marca lo reemplaza la configuración de la academia (marca.js). */
+  --color-primario: #0f766e;
+  --primario-suave: color-mix(in srgb, var(--color-primario) 10%, white);
+  --primario-oscuro: color-mix(in srgb, var(--color-primario) 80%, black);
+
+  --fondo: #f1f7f6;
+  --superficie: #ffffff;
+  --borde: #d5e3e1;
+  --borde-campo: #b9c6c4;
+  --texto: #1f2d33;
+  --texto-suave: #5b6d74;
+
+  --ok: #15803d;
+  --ok-fondo: #dcfce7;
+  --aviso: #a16207;
+  --aviso-fondo: #fef3c7;
+  --error: #b42318;
+  --error-fondo: #fee4e2;
+
+  --radio: 10px;
+
+  font-family: var(--fuente);
+  color: var(--texto);
+  background: var(--fondo);
+  line-height: 1.5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--fondo);
+}
+
+button,
+input {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-primario);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
