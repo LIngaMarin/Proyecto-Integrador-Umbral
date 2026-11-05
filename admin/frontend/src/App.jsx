@@ -10,6 +10,7 @@ import Marca from './components/Marca'
 import Rendimiento from './components/Rendimiento'
 import Comparacion from './components/Comparacion'
 import TemasCriticos from './components/TemasCriticos'
+import Auditoria from './components/Auditoria'
 import RestablecerClave from './components/RestablecerClave'
 import Apoderados from './components/Apoderados'
 import ConfiguracionIA from './components/ConfiguracionIA'
@@ -141,6 +142,7 @@ const SECCIONES = [
   { clave: 'apoderados', titulo: 'Apoderados', campos: [], soloAdmin: true },
   { clave: 'ia', titulo: 'Inteligencia artificial', campos: [], soloAdmin: true },
   { clave: 'carga', titulo: 'Carga masiva', campos: [], soloAdmin: true },
+  { clave: 'auditoria', titulo: 'Auditoría', campos: [], soloAdmin: true },
   {
     clave: 'simulacros',
     titulo: 'Simulacros',
@@ -213,7 +215,7 @@ const GRUPOS = [
     claves: ['cursos', 'secciones', 'matriculas', 'horarios', 'simulacros', 'resultados', 'rendimiento', 'comparacion', 'temas'],
   },
   { titulo: 'Personas', claves: ['usuarios', 'apoderados', 'carga', 'claves'] },
-  { titulo: 'Ajustes', claves: ['marca', 'ia'] },
+  { titulo: 'Ajustes', claves: ['marca', 'ia', 'auditoria'] },
 ]
 
 export default function App() {
@@ -341,6 +343,8 @@ export default function App() {
             <ConfiguracionIA />
           ) : actual.clave === 'carga' ? (
             <CargaMasiva />
+          ) : actual.clave === 'auditoria' ? (
+            <Auditoria />
           ) : (
             <GestionRecurso
               key={actual.clave}
