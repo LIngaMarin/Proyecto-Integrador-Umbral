@@ -1,0 +1,106 @@
+.equipo {
+  padding-block: clamp(72px, 10vw, 140px);
+}
+
+.equipo-intro {
+  max-width: 40em;
+}
+
+.equipo h2 {
+  font-size: clamp(2rem, 4.4vw, 3.4rem);
+}
+
+.equipo-intro p {
+  margin-top: 16px;
+  color: var(--suave);
+}
+
+.integrantes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(20px, 3vw, 44px);
+  margin-top: clamp(40px, 6vw, 72px);
+}
+
+.integrante {
+  padding-top: 22px;
+  border-top: 4px solid var(--tinta);
+}
+
+.integrante:nth-child(2) {
+  border-top-color: var(--cobalto);
+}
+
+.integrante:nth-child(3) {
+  border-top-color: var(--luz);
+}
+
+.integrante h3 {
+  font-size: clamp(1.9rem, 3.4vw, 2.8rem);
+  line-height: 1;
+}
+
+.integrante h3 span {
+  display: block;
+  margin-top: 6px;
+  color: var(--suave);
+  font-size: 0.62em;
+  font-weight: 600;
+}
+
+.integrante .rol {
+  margin-top: 20px;
+  font-weight: 600;
+}
+
+.integrante .tecnologias {
+  margin-top: 4px;
+  color: var(--suave);
+  font-size: 0.97rem;
+}
+
+.pie {
+  padding-block: clamp(56px, 8vw, 100px) 36px;
+}
+
+.pie-rejilla {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+.pie .eslogan {
+  max-width: 14ch;
+  font-family: var(--display);
+  font-size: clamp(2rem, 5vw, 3.6rem);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+}
+
+.pie-datos {
+  color: var(--suave-oscuro);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.pie-datos .marca {
+  margin-bottom: 14px;
+  color: #fff;
+}
+
+.pie-linea {
+  margin-top: clamp(40px, 6vw, 72px);
+  padding-top: 20px;
+  color: var(--suave-oscuro);
+  font-size: 0.88rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+@media (max-width: 860px) {
+  .integrantes {
+    grid-template-columns: 1fr;
+  }
+}

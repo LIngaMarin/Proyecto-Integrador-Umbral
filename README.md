@@ -15,6 +15,7 @@ desde la web y desde una app móvil.
 | `admin/frontend` | Administrador | React, Vite |
 | `backend` | Usuario (docente) | Spring Boot, Kotlin |
 | `mobile` | Móvil (alumno, apoderado y docente) | Kotlin, Jetpack Compose, Room |
+| `landing` | Página de presentación | HTML, CSS y JavaScript |
 
 ## Panel de administración
 
@@ -69,6 +70,8 @@ python manage.py test
 
 ## Otras partes del proyecto
 
+- La página de presentación está en `landing/`. Se abre con `python3 -m http.server` y su
+  guía está en `landing/README.md`.
 - La API del perfil Usuario está en `backend/`. Su guía de demostración está en
   `backend/GUIA_DEMOSTRACION.md`.
 - La app móvil está en `mobile/` y se abre con Android Studio.
