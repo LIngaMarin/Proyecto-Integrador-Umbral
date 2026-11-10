@@ -174,6 +174,104 @@ input {
   padding: 20px;
 }
 
+/* ---------- Resultados de simulacros ---------- */
+
+.resultados {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+}
+
+.curso-resultados {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid var(--borde);
+}
+
+.curso-resultados header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.promedio {
+  color: var(--texto-suave);
+  font-size: 0.9rem;
+}
+
+.grafico {
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+}
+
+.grafico-guia {
+  stroke: var(--borde);
+  stroke-width: 1;
+}
+
+.grafico-nota {
+  fill: var(--texto-suave);
+  font-size: 9px;
+}
+
+.grafico-linea {
+  fill: none;
+  stroke: var(--color-primario);
+  stroke-width: 2;
+}
+
+.grafico-punto {
+  fill: var(--color-primario);
+}
+
+.lista-simulacros {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.lista-simulacros li {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.92rem;
+}
+
+.lista-simulacros small {
+  display: block;
+  color: var(--texto-suave);
+}
+
+.variacion {
+  font-size: 0.82rem;
+}
+
+.variacion.sube {
+  color: var(--ok);
+}
+
+.variacion.baja {
+  color: var(--error);
+}
+
+.variacion.igual {
+  color: var(--texto-suave);
+}
+
+.nota {
+  min-width: 2.5ch;
+  text-align: right;
+}
+
 /* ---------- Ingreso ---------- */
 
 .acceso {
