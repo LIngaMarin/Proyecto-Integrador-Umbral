@@ -5,6 +5,7 @@ import Asistencia from './components/Asistencia'
 import CambiarClave from './components/CambiarClave'
 import Contacto from './components/Contacto'
 import Login from './components/Login'
+import Resultados from './components/Resultados'
 import './App.css'
 
 const primerNombre = (nombre) => (nombre || '').split(' ')[0]
@@ -119,6 +120,7 @@ export default function App() {
               </div>
             )}
             <Asistencia key={hijo.id} hijo={hijo} />
+            <Resultados key={`resultados-${hijo.id}`} hijo={hijo} />
           </>
         )}
         <Contacto />
