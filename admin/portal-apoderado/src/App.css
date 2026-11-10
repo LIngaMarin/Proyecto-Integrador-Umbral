@@ -158,6 +158,22 @@ input {
   border-radius: 8px;
 }
 
+.exito {
+  padding: 10px 12px;
+  color: var(--texto);
+  font-size: 0.9rem;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+}
+
+.contacto {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+}
+
 /* ---------- Ingreso ---------- */
 
 .acceso {
