@@ -3,6 +3,7 @@ import { api, CLAVES, cerrarSesionLocal } from './api'
 import { aplicarMarca } from './marca'
 import Asistencia from './components/Asistencia'
 import CambiarClave from './components/CambiarClave'
+import Contacto from './components/Contacto'
 import Login from './components/Login'
 import './App.css'
 
@@ -120,6 +121,7 @@ export default function App() {
             <Asistencia key={hijo.id} hijo={hijo} />
           </>
         )}
+        <Contacto />
       </main>
     </>
   )
