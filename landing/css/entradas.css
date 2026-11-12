@@ -59,6 +59,49 @@
   opacity: 1;
 }
 
+.puerta-icono {
+  --color: var(--luz);
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  box-sizing: border-box;
+  width: 42px;
+  height: 42px;
+  padding: 10px;
+  color: var(--color);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  background: color-mix(in srgb, var(--color) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color) 45%, transparent);
+  border-radius: 50%;
+  transform: translateX(-50%);
+  transition: transform 0.3s ease;
+}
+
+[data-entrada='admin'] .puerta-icono {
+  --color: #9aa5ff;
+}
+
+[data-entrada='apoderado'] .puerta-icono {
+  --color: #4fd6a0;
+}
+
+[data-entrada='campus'] .puerta-icono {
+  --color: var(--luz);
+}
+
+[data-entrada='movil'] .puerta-icono {
+  --color: #ff9d8a;
+}
+
+.puerta:hover .puerta-icono,
+.puerta:focus-within .puerta-icono {
+  transform: translateX(-50%) scale(1.08);
+}
+
 .estado {
   position: absolute;
   top: 78px;
@@ -152,5 +195,9 @@
 @media (prefers-reduced-motion: reduce) {
   .estado[data-estado='comprobando'] i {
     animation: none;
+  }
+
+  .puerta-icono {
+    transition: none;
   }
 }
