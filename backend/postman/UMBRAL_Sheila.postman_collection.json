@@ -1,0 +1,2254 @@
+{
+  "info": {
+    "name": "UMBRAL - Backend Sheila - HU 23, 27, 28, 29, 30, 38, 39 y 42",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Rutas existentes verificadas en demo H2. Ejecutar toda la colección, en orden, contra una demo recién iniciada. Los IDs iniciales corresponden a los fixtures. Los ejemplos de respuesta se capturan en una ejecución real. No contiene claves ni tokens. La preparación de HU 27 reutiliza las rutas docentes existentes de generación y aprobación. Ver README.md."
+  },
+  "variable": [
+    {
+      "key": "preguntaId",
+      "value": ""
+    },
+    {
+      "key": "dudaId",
+      "value": ""
+    },
+    {
+      "key": "grupoId",
+      "value": ""
+    },
+    {
+      "key": "solucionarioId",
+      "value": ""
+    },
+    {
+      "key": "respuestaDemo",
+      "value": "4"
+    }
+  ],
+  "item": [
+    {
+      "name": "HU 42 - Prácticas por tema",
+      "item": [
+        {
+          "name": "Consultar preguntas aprobadas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/practicas/preguntas?tema=Algebra&dificultad=FACIL",
+            "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "if (pm.response.code === 200 && pm.response.json().length) { pm.collectionVariables.set(\"preguntaId\", pm.response.json()[0].id); }",
+                  "pm.test(\"Catálogo sin respuesta correcta\", function () { const datos = pm.response.json(); pm.expect(datos).to.be.an(\"array\").that.is.not.empty; datos.forEach(p => pm.expect(p).not.to.have.property(\"respuestaCorrecta\")); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Respuesta real de demo - 29/10/2026",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/practicas/preguntas?tema=Algebra&dificultad=FACIL",
+                "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                }
+              ],
+              "body": "[{\"id\":1,\"enunciado\":\"DEMO: Resolver 2x + 6 = 14\",\"tema\":\"Algebra\",\"dificultad\":\"FACIL\",\"opciones\":[\"2\",\"4\",\"6\",\"8\"]}]",
+              "_postman_previewlanguage": "json",
+              "cookie": []
+            }
+          ]
+        },
+        {
+          "name": "Rechazar dificultad inválida",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/practicas/preguntas?tema=Algebra&dificultad=INVALIDA",
+            "description": "Se envía token válido para conservar HTTP 400 durante el despacho de errores. Sin token el comportamiento previo de esta ruta inválida es HTTP 401; queda documentado como pendiente.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{alumnoToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Respuesta real de demo - 29/10/2026",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/practicas/preguntas?tema=Algebra&dificultad=INVALIDA",
+                "description": "Se envía token válido para conservar HTTP 400 durante el despacho de errores. Sin token el comportamiento previo de esta ruta inválida es HTTP 401; queda documentado como pendiente.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{alumnoToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                }
+              ],
+              "body": "{\"timestamp\":\"2026-10-29T05:42:23.665Z\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/practicas/preguntas\"}",
+              "_postman_previewlanguage": "json",
+              "cookie": []
+            }
+          ]
+        },
+        {
+          "name": "Rechazar respuesta vacía",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/practicas/respuestas",
+            "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{alumnoToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"preguntaId\": {{preguntaId}}, \"respuesta\": \" \"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Respuesta real de demo - 29/10/2026",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/practicas/respuestas",
+                "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{alumnoToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"preguntaId\": {{preguntaId}}, \"respuesta\": \" \"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                }
+              ],
+              "body": "{\"timestamp\":\"2026-10-29T05:42:23.836Z\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/practicas/respuestas\"}",
+              "_postman_previewlanguage": "json",
+              "cookie": []
+            }
+          ]
+        },
+        {
+          "name": "Registrar respuesta del alumno",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/practicas/respuestas",
+            "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{alumnoToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"preguntaId\": {{preguntaId}}, \"respuesta\": \"{{respuestaDemo}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
+                  "pm.test(\"Intento persistido del alumno demo\", function () { const r = pm.response.json(); pm.expect(r.id).to.be.above(0); pm.expect(r.alumnoId).to.eql(2); pm.expect(r.correcta).to.eql(true); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Respuesta real de demo - 29/10/2026",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/practicas/respuestas",
+                "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{alumnoToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"preguntaId\": {{preguntaId}}, \"respuesta\": \"{{respuestaDemo}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                }
+              ],
+              "body": "{\"id\":1,\"preguntaId\":1,\"alumnoId\":2,\"respuesta\":\"4\",\"correcta\":true,\"fecha\":\"2026-10-29T00:42:23.9677907\"}",
+              "_postman_previewlanguage": "json",
+              "cookie": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "HU 27 - Solucionarios",
+      "item": [
+        {
+          "name": "Impedir acceso a pregunta sin intento propio",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/practicas/preguntas/2/solucionario",
+            "description": "La pregunta 2 aprobada del fixture aún no fue respondida por el alumno demo.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{alumnoToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Respuesta real de demo - 29/10/2026",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/practicas/preguntas/2/solucionario",
+                "description": "La pregunta 2 aprobada del fixture aún no fue respondida por el alumno demo.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{alumnoToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                }
+              ],
+              "body": "{\"timestamp\":\"2026-10-29T05:42:24.115Z\",\"status\":403,\"error\":\"Forbidden\",\"path\":\"/api/practicas/preguntas/2/solucionario\"}",
+              "_postman_previewlanguage": "json",
+              "cookie": []
+            }
+          ]
+        },
+        {
+          "name": "Preparar solución con endpoint docente existente",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/docente/preguntas/{{preguntaId}}/solucionario",
+            "description": "Preparación de la demo: reutiliza la ruta docente existente; requiere una demo nueva sin solucionario para esta pregunta.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{docenteToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "if (pm.response.code === 200) { pm.collectionVariables.set(\"solucionarioId\", pm.response.json().id); }"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Respuesta real de demo - 29/10/2026",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/docente/preguntas/{{preguntaId}}/solucionario",
+                "description": "Preparación de la demo: reutiliza la ruta docente existente; requiere una demo nueva sin solucionario para esta pregunta.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{docenteToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                }
+              ],
+              "body": "{\"id\":1,\"pregunta\":{\"id\":1,\"enunciado\":\"DEMO: Resolver 2x + 6 = 14\",\"tema\":\"Algebra\",\"dificultad\":\"FACIL\",\"opciones\":[\"2\",\"4\",\"6\",\"8\"],\"respuestaCorrecta\":\"4\",\"estado\":\"APROBADA\",\"motivoRechazo\":null,\"docenteId\":1,\"fechaCreacion\":\"2026-10-29T00:42:17.262068\"},\"pasoAPaso\":\"1. Partimos de la ecuación 2x + 6 = 14.\\n2. Restamos 6 a ambos lados: 2x = 8.\\n3. Dividimos ambos lados entre 2: x = 4.\\n4. Comprobamos el resultado: al sustituir x = 4, la ecuación se cumple.\",\"explicacionErroresComunes\":null,\"estado\":\"BORRADOR\"}",
+              "_postman_previewlanguage": "json",
+              "cookie": []
+            }
+          ]
+        },
+        {
+          "name": "Aprobar solución con endpoint docente existente",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": "{{baseUrl}}/api/docente/solucionarios/{{solucionarioId}}/aprobar",
+            "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{docenteToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Respuesta real de demo - 29/10/2026",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [],
+                "url": "{{baseUrl}}/api/docente/solucionarios/{{solucionarioId}}/aprobar",
+                "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{docenteToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                }
+              ],
+              "body": "{\"id\":1,\"pregunta\":{\"id\":1,\"enunciado\":\"DEMO: Resolver 2x + 6 = 14\",\"tema\":\"Algebra\",\"dificultad\":\"FACIL\",\"opciones\":[\"2\",\"4\",\"6\",\"8\"],\"respuestaCorrecta\":\"4\",\"estado\":\"APROBADA\",\"motivoRechazo\":null,\"docenteId\":1,\"fechaCreacion\":\"2026-10-29T00:42:17.262068\"},\"pasoAPaso\":\"1. Partimos de la ecuación 2x + 6 = 14.\\n2. Restamos 6 a ambos lados: 2x = 8.\\n3. Dividimos ambos lados entre 2: x = 4.\\n4. Comprobamos el resultado: al sustituir x = 4, la ecuación se cumple.\",\"explicacionErroresComunes\":null,\"estado\":\"APROBADO\"}",
+              "_postman_previewlanguage": "json",
+              "cookie": []
+            }
+          ]
+        },
+        {
+          "name": "Consultar solución después de responder",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/practicas/preguntas/{{preguntaId}}/solucionario",
+            "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{alumnoToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Solución aprobada disponible\", function () { const s = pm.response.json(); pm.expect(s.respuestaCorrecta).to.eql(\"4\"); pm.expect(s.pasoAPaso).to.be.a(\"string\").that.is.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Respuesta real de demo - 29/10/2026",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/practicas/preguntas/{{preguntaId}}/solucionario",
+                "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{alumnoToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                }
+              ],
+              "body": "{\"preguntaId\":1,\"respuestaCorrecta\":\"4\",\"pasoAPaso\":\"1. Partimos de la ecuación 2x + 6 = 14.\\n2. Restamos 6 a ambos lados: 2x = 8.\\n3. Dividimos ambos lados entre 2: x = 4.\\n4. Comprobamos el resultado: al sustituir x = 4, la ecuación se cumple.\",\"explicacionErroresComunes\":null}",
+              "_postman_previewlanguage": "json",
+              "cookie": []
+            }
+          ]
+        },
+        {
+          "name": "Impedir acceso del alumno al banco docente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/docente/preguntas?docenteId=1",
+            "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{alumnoToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Respuesta real de demo - 29/10/2026",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/docente/preguntas?docenteId=1",
+                "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{alumnoToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                }
+              ],
+              "body": "{\"timestamp\":\"2026-10-29T05:42:24.540Z\",\"status\":403,\"error\":\"Forbidden\",\"path\":\"/api/docente/preguntas\"}",
+              "_postman_previewlanguage": "json",
+              "cookie": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "HU 28 - Agrupación de dudas",
+      "item": [
+        {
+          "name": "Registrar duda de una pregunta",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/alumno/dudas",
+            "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{alumnoToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"docenteId\": 1, \"seccionId\": 1, \"preguntaId\": {{preguntaId}}, \"texto\": \"No entiendo el despeje\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
+                  "if (pm.response.code === 201) { const d = pm.response.json(); pm.collectionVariables.set(\"dudaId\", d.id); pm.collectionVariables.set(\"grupoId\", d.grupoId); }"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Respuesta real de demo - 29/10/2026",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/alumno/dudas",
+                "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{alumnoToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"docenteId\": 1, \"seccionId\": 1, \"preguntaId\": {{preguntaId}}, \"texto\": \"No entiendo el despeje\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                }
+              ],
+              "body": "{\"id\":1,\"grupoId\":1,\"alumnoId\":2,\"texto\":\"No entiendo el despeje\",\"estado\":\"PENDIENTE\",\"respuestaId\":null,\"fecha\":\"2026-10-29T00:42:24.6714601\"}",
+              "_postman_previewlanguage": "json",
+              "cookie": []
+            }
+          ]
+        },
+        {
+          "name": "Rechazar duda sin pregunta ni tema",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/alumno/dudas",
+            "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{alumnoToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"docenteId\": 1, \"seccionId\": 1, \"texto\": \"Tengo una duda\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Respuesta real de demo - 29/10/2026",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/alumno/dudas",
+                "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{alumnoToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"docenteId\": 1, \"seccionId\": 1, \"texto\": \"Tengo una duda\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                }
+              ],
+              "body": "{\"timestamp\":\"2026-10-29T05:42:24.775Z\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/alumno/dudas\"}",
+              "_postman_previewlanguage": "json",
+              "cookie": []
+            }
+          ]
+        },
+        {
+          "name": "Consultar dudas propias",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/alumno/dudas",
+            "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{alumnoToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Lista de dudas propias\", function () { pm.response.json().forEach(d => pm.expect(d.alumnoId).to.eql(2)); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Respuesta real de demo - 29/10/2026",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/alumno/dudas",
+                "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{alumnoToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                }
+              ],
+              "body": "[{\"id\":1,\"grupoId\":1,\"alumnoId\":2,\"texto\":\"No entiendo el despeje\",\"estado\":\"PENDIENTE\",\"respuestaId\":null,\"fecha\":\"2026-10-29T00:42:24.67146\"}]",
+              "_postman_previewlanguage": "json",
+              "cookie": []
+            }
+          ]
+        },
+        {
+          "name": "Consultar agrupaciones del docente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/docente/dudas/grupos",
+            "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{docenteToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Respuesta real de demo - 29/10/2026",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/docente/dudas/grupos",
+                "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{docenteToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                }
+              ],
+              "body": "[{\"id\":1,\"clave\":\"88a44e020d4d185cea887b1727a3765bda995ad94ef706b1fa26102f14837b78\",\"docenteId\":1,\"seccionId\":1,\"tema\":\"Algebra\",\"preguntaId\":1}]",
+              "_postman_previewlanguage": "json",
+              "cookie": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "HU 29 - Respuestas agrupadas",
+      "item": [
+        {
+          "name": "Rechazar explicación vacía",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/dudas/grupos/{{grupoId}}/respuestas",
+            "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{docenteToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"texto\": \" \"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Respuesta real de demo - 29/10/2026",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/docente/dudas/grupos/{{grupoId}}/respuestas",
+                "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{docenteToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"texto\": \" \"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                }
+              ],
+              "body": "{\"timestamp\":\"2026-10-29T05:42:25.077Z\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/docente/dudas/grupos/1/respuestas\"}",
+              "_postman_previewlanguage": "json",
+              "cookie": []
+            }
+          ]
+        },
+        {
+          "name": "Responder la agrupación",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/dudas/grupos/{{grupoId}}/respuestas",
+            "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{docenteToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"texto\": \"Restar seis y dividir entre dos.\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Respuesta real de demo - 29/10/2026",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/docente/dudas/grupos/{{grupoId}}/respuestas",
+                "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{docenteToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"texto\": \"Restar seis y dividir entre dos.\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                }
+              ],
+              "body": "{\"id\":1,\"grupoId\":1,\"docenteId\":1,\"texto\":\"Restar seis y dividir entre dos.\",\"fecha\":\"2026-10-29T00:42:25.1751847\"}",
+              "_postman_previewlanguage": "json",
+              "cookie": []
+            }
+          ]
+        },
+        {
+          "name": "Consultar respuesta de la duda propia",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/alumno/dudas/{{dudaId}}/respuesta",
+            "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{alumnoToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Explicación del docente\", function () { pm.expect(pm.response.json().texto).to.eql(\"Restar seis y dividir entre dos.\"); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Respuesta real de demo - 29/10/2026",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/alumno/dudas/{{dudaId}}/respuesta",
+                "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{alumnoToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                }
+              ],
+              "body": "{\"id\":1,\"grupoId\":1,\"docenteId\":1,\"texto\":\"Restar seis y dividir entre dos.\",\"fecha\":\"2026-10-29T00:42:25.175185\"}",
+              "_postman_previewlanguage": "json",
+              "cookie": []
+            }
+          ]
+        },
+        {
+          "name": "Impedir respuesta repetida sin dudas nuevas",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/dudas/grupos/{{grupoId}}/respuestas",
+            "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{docenteToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"texto\": \"Otra explicación\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", function () { pm.response.to.have.status(409); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Respuesta real de demo - 29/10/2026",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/docente/dudas/grupos/{{grupoId}}/respuestas",
+                "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{docenteToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"texto\": \"Otra explicación\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                }
+              ],
+              "body": "{\"timestamp\":\"2026-10-29T05:42:25.377Z\",\"status\":409,\"error\":\"Conflict\",\"path\":\"/api/docente/dudas/grupos/1/respuestas\"}",
+              "_postman_previewlanguage": "json",
+              "cookie": []
+            }
+          ]
+        },
+        {
+          "name": "Consultar historial de respuestas del grupo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/docente/dudas/grupos/{{grupoId}}/respuestas",
+            "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{docenteToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Respuesta real de demo - 29/10/2026",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/docente/dudas/grupos/{{grupoId}}/respuestas",
+                "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{docenteToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                }
+              ],
+              "body": "[{\"id\":1,\"grupoId\":1,\"docenteId\":1,\"texto\":\"Restar seis y dividir entre dos.\",\"fecha\":\"2026-10-29T00:42:25.175185\"}]",
+              "_postman_previewlanguage": "json",
+              "cookie": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "HU 30 - Resolución de dudas",
+      "item": [
+        {
+          "name": "Consultar pendientes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/alumno/dudas?estado=PENDIENTE",
+            "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{alumnoToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Respuesta real de demo - 29/10/2026",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/alumno/dudas?estado=PENDIENTE",
+                "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{alumnoToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                }
+              ],
+              "body": "[{\"id\":1,\"grupoId\":1,\"alumnoId\":2,\"texto\":\"No entiendo el despeje\",\"estado\":\"PENDIENTE\",\"respuestaId\":1,\"fecha\":\"2026-10-29T00:42:24.67146\"}]",
+              "_postman_previewlanguage": "json",
+              "cookie": []
+            }
+          ]
+        },
+        {
+          "name": "Resolver duda respondida",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": "{{baseUrl}}/api/alumno/dudas/{{dudaId}}/resolver",
+            "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{alumnoToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Duda resuelta\", function () { pm.expect(pm.response.json().estado).to.eql(\"RESUELTA\"); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Respuesta real de demo - 29/10/2026",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [],
+                "url": "{{baseUrl}}/api/alumno/dudas/{{dudaId}}/resolver",
+                "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{alumnoToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                }
+              ],
+              "body": "{\"id\":1,\"grupoId\":1,\"alumnoId\":2,\"texto\":\"No entiendo el despeje\",\"estado\":\"RESUELTA\",\"respuestaId\":1,\"fecha\":\"2026-10-29T00:42:24.67146\"}",
+              "_postman_previewlanguage": "json",
+              "cookie": []
+            }
+          ]
+        },
+        {
+          "name": "Repetir resolución sin duplicar evento",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": "{{baseUrl}}/api/alumno/dudas/{{dudaId}}/resolver",
+            "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{alumnoToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Respuesta real de demo - 29/10/2026",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [],
+                "url": "{{baseUrl}}/api/alumno/dudas/{{dudaId}}/resolver",
+                "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{alumnoToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                }
+              ],
+              "body": "{\"id\":1,\"grupoId\":1,\"alumnoId\":2,\"texto\":\"No entiendo el despeje\",\"estado\":\"RESUELTA\",\"respuestaId\":1,\"fecha\":\"2026-10-29T00:42:24.67146\"}",
+              "_postman_previewlanguage": "json",
+              "cookie": []
+            }
+          ]
+        },
+        {
+          "name": "Consultar historial de la duda",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/alumno/dudas/{{dudaId}}/historial",
+            "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{alumnoToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Historial sin resolución duplicada\", function () { pm.expect(pm.response.json().map(e => e.evento)).to.eql([\"REGISTRADA\", \"RESPONDIDA\", \"RESUELTA\"]); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Respuesta real de demo - 29/10/2026",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/alumno/dudas/{{dudaId}}/historial",
+                "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{alumnoToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                }
+              ],
+              "body": "[{\"id\":1,\"dudaId\":1,\"actorId\":2,\"rol\":\"ALUMNO\",\"evento\":\"REGISTRADA\",\"fecha\":\"2026-10-29T00:42:24.672468\"},{\"id\":2,\"dudaId\":1,\"actorId\":1,\"rol\":\"DOCENTE\",\"evento\":\"RESPONDIDA\",\"fecha\":\"2026-10-29T00:42:25.177182\"},{\"id\":3,\"dudaId\":1,\"actorId\":2,\"rol\":\"ALUMNO\",\"evento\":\"RESUELTA\",\"fecha\":\"2026-10-29T00:42:25.668109\"}]",
+              "_postman_previewlanguage": "json",
+              "cookie": []
+            }
+          ]
+        },
+        {
+          "name": "Rechazar filtro de estado inválido",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/alumno/dudas?estado=INVALIDO",
+            "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{alumnoToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Respuesta real de demo - 29/10/2026",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/alumno/dudas?estado=INVALIDO",
+                "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{alumnoToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                }
+              ],
+              "body": "{\"timestamp\":\"2026-10-29T05:42:25.960Z\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/alumno/dudas\"}",
+              "_postman_previewlanguage": "json",
+              "cookie": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "HU 38 - Calendario del apoderado",
+      "item": [
+        {
+          "name": "Consultar simulacros del hijo vinculado",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/apoderado/alumnos/2/simulacros?desde=2026-11-01&hasta=2026-11-03",
+            "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{apoderadoToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Calendario activo del curso\", function () { pm.expect(pm.response.json().map(s => s.nombre)).to.eql([\"Simulacro demo\"]); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Respuesta real de demo - 29/10/2026",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/apoderado/alumnos/2/simulacros?desde=2026-11-01&hasta=2026-11-03",
+                "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{apoderadoToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                }
+              ],
+              "body": "[{\"id\":1,\"nombre\":\"Simulacro demo\",\"fecha\":\"2026-11-01\"}]",
+              "_postman_previewlanguage": "json",
+              "cookie": []
+            }
+          ]
+        },
+        {
+          "name": "Impedir consulta de alumno no vinculado",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/apoderado/alumnos/4/simulacros",
+            "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{apoderadoToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Respuesta real de demo - 29/10/2026",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/apoderado/alumnos/4/simulacros",
+                "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{apoderadoToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                }
+              ],
+              "body": "{\"timestamp\":\"2026-10-29T05:42:26.176Z\",\"status\":403,\"error\":\"Forbidden\",\"path\":\"/api/apoderado/alumnos/4/simulacros\"}",
+              "_postman_previewlanguage": "json",
+              "cookie": []
+            }
+          ]
+        },
+        {
+          "name": "Rechazar rango invertido",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/apoderado/alumnos/2/simulacros?desde=2026-11-04&hasta=2026-11-01",
+            "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{apoderadoToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Respuesta real de demo - 29/10/2026",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/apoderado/alumnos/2/simulacros?desde=2026-11-04&hasta=2026-11-01",
+                "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{apoderadoToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                }
+              ],
+              "body": "{\"timestamp\":\"2026-10-29T05:42:26.270Z\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/apoderado/alumnos/2/simulacros\"}",
+              "_postman_previewlanguage": "json",
+              "cookie": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "HU 39 - Exportación PDF",
+      "item": [
+        {
+          "name": "Descargar rendimiento de la sección",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/docente/secciones/1/rendimiento.pdf",
+            "description": "Usar Send and Download para guardar el PDF. El cuerpo binario se omite en el ejemplo guardado; el archivo real fue comprobado por cabecera y firma PDF.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{docenteToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Descarga PDF privada\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/pdf\"); pm.expect(pm.response.headers.get(\"Cache-Control\")).to.include(\"no-store\"); pm.expect(pm.response.text().slice(0, 5)).to.eql(\"%PDF-\"); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Respuesta real de demo - 29/10/2026",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/docente/secciones/1/rendimiento.pdf",
+                "description": "Usar Send and Download para guardar el PDF. El cuerpo binario se omite en el ejemplo guardado; el archivo real fue comprobado por cabecera y firma PDF.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{docenteToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/pdf"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-store"
+                },
+                {
+                  "key": "Content-Disposition",
+                  "value": "attachment; filename=\"rendimiento-seccion-1.pdf\""
+                }
+              ],
+              "body": "",
+              "_postman_previewlanguage": "text",
+              "cookie": []
+            }
+          ]
+        },
+        {
+          "name": "Impedir descarga con rol alumno",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/docente/secciones/1/rendimiento.pdf",
+            "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{alumnoToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Respuesta real de demo - 29/10/2026",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/docente/secciones/1/rendimiento.pdf",
+                "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{alumnoToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Content-Disposition",
+                  "value": "inline;filename=f.txt"
+                }
+              ],
+              "body": "{\"timestamp\":\"2026-10-29T05:42:27.127Z\",\"status\":403,\"error\":\"Forbidden\",\"path\":\"/api/docente/secciones/1/rendimiento.pdf\"}",
+              "_postman_previewlanguage": "json",
+              "cookie": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "HU 23 - Resumen semanal",
+      "item": [
+        {
+          "name": "Consultar semana anterior completa",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/docente/resumen-semanal",
+            "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{docenteToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Estadísticas de semana completa\", function () { const s = pm.response.json(); pm.expect(new Date(s.inicio).getUTCDay()).to.eql(1); pm.expect((new Date(s.finExclusivo) - new Date(s.inicio)) / 86400000).to.eql(7); pm.expect(s.intentosPractica).to.be.at.least(0); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Respuesta real de demo - 29/10/2026",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/docente/resumen-semanal",
+                "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{docenteToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                }
+              ],
+              "body": "{\"inicio\":\"2026-10-19\",\"finExclusivo\":\"2026-10-26\",\"preguntasCreadas\":0,\"preguntasCreadasActualmenteAprobadas\":0,\"intentosPractica\":0,\"aciertosPractica\":0,\"alumnosPractica\":0,\"dudasRegistradas\":0,\"respuestasAgrupadas\":0,\"dudasResueltas\":0}",
+              "_postman_previewlanguage": "json",
+              "cookie": []
+            }
+          ]
+        },
+        {
+          "name": "Rechazar inicio de semana en martes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/docente/resumen-semanal?semana=2026-10-20",
+            "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{docenteToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Respuesta real de demo - 29/10/2026",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/docente/resumen-semanal?semana=2026-10-20",
+                "description": "Ejecutar en una demo nueva siguiendo el orden de la colección.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{docenteToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                }
+              ],
+              "body": "{\"timestamp\":\"2026-10-29T05:42:27.344Z\",\"status\":400,\"error\":\"Bad Request\",\"path\":\"/api/docente/resumen-semanal\"}",
+              "_postman_previewlanguage": "json",
+              "cookie": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

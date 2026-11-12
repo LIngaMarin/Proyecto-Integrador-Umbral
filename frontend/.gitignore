@@ -1,0 +1,3 @@
+# Artefactos locales de pruebas; nunca publicar tokens ni capturas de sesiones reales.
+test-results/
+playwright-report/

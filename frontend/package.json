@@ -1,0 +1,22 @@
+{
+    "name":  "umbral-web",
+    "private":  true,
+    "version":  "1.0.0",
+    "type":  "module",
+    "scripts":  {
+                    "dev":  "vite --host 127.0.0.1",
+                    "build":  "vite build",
+                    "preview":  "vite preview --host 127.0.0.1",
+                    "demo":  "node scripts-demo.mjs",
+                    "test":  "node --test tests/api.test.js",
+                    "test:e2e":  "node tests/portal.e2e.mjs",
+                    "test:browser":  "playwright test"
+                },
+    "dependencies":  {
+                         "bootstrap":  "^5.3.8"
+                     },
+    "devDependencies":  {
+                            "@playwright/test":  "^1.64.1",
+                            "vite":  "^7.3.1"
+                        }
+}

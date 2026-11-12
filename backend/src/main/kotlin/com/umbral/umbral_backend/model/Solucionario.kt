@@ -31,7 +31,7 @@ class Solucionario(
     val pregunta: Pregunta,
 
     /** Desarrollo escrito de los pasos de solución. */
-    @Column(columnDefinition = "TEXT", nullable = false)
+    @Column(name = "paso_a_paso", columnDefinition = "TEXT", nullable = false)
     var pasoAPaso: String,
 
     /** Explicación opcional de errores comunes. */
