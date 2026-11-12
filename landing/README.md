@@ -35,5 +35,6 @@ Al publicar, basta cambiar esas direcciones por las reales. No hay que tocar el 
 - `css/`: estilos por sección (`base`, `hero`, `que-es`, `como`, `entradas`, `equipo`).
 - `js/`: `hero.js` (puerta animada y cabecera), `como.js` (línea de pasos) y `entradas.js` (estado de las puertas).
 - `config.js`: direcciones de cada parte del sistema.
+- Íconos de las puertas: SVG en línea dentro de `index.html` (clase `puerta-icono`), con el color de cada perfil definido en `css/entradas.css`.
 
 Las animaciones se desactivan si el sistema operativo pide reducir el movimiento.
