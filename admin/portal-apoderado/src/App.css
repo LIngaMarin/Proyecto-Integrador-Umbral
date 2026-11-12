@@ -272,6 +272,89 @@ input {
   text-align: right;
 }
 
+/* ---------- Calendario de simulacros ---------- */
+
+.calendario {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+}
+
+.calendario-mes {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.calendario-mes strong {
+  text-transform: capitalize;
+}
+
+.calendario-rejilla {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  max-width: 420px;
+}
+
+.calendario-semana {
+  color: var(--texto-suave);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.calendario-dia {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  padding: 0;
+  color: var(--texto);
+  font-size: 0.9rem;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+}
+
+.calendario-dia.hoy {
+  border-color: var(--borde-campo);
+}
+
+.calendario-dia.con-simulacro {
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--color-primario);
+}
+
+.calendario-dia.con-simulacro:hover {
+  background: var(--primario-oscuro);
+}
+
+.calendario-dia.elegido {
+  outline: 2px solid var(--primario-oscuro);
+  outline-offset: 2px;
+}
+
+.calendario-detalle {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.calendario-detalle li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  background: var(--primario-suave);
+  border-radius: 8px;
+}
+
 /* ---------- Ingreso ---------- */
 
 .acceso {
