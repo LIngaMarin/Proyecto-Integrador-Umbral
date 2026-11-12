@@ -288,10 +288,6 @@ input {
   gap: 12px;
 }
 
-.calendario-mes strong {
-  text-transform: capitalize;
-}
-
 .calendario-rejilla {
   display: grid;
   grid-template-columns: repeat(7, 1fr);

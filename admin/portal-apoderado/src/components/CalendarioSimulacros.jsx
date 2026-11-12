@@ -8,12 +8,14 @@ const hoyLima = () => new Date().toLocaleDateString('en-CA', { timeZone: ZONA })
 const dos = (n) => String(n).padStart(2, '0')
 const clave = (anio, mes, dia) => `${anio}-${dos(mes)}-${dos(dia)}`
 
-const nombreMes = (anio, mes) =>
-  new Date(Date.UTC(anio, mes - 1, 1)).toLocaleDateString('es-PE', {
+const nombreMes = (anio, mes) => {
+  const texto = new Date(Date.UTC(anio, mes - 1, 1)).toLocaleDateString('es-PE', {
     month: 'long',
     year: 'numeric',
     timeZone: 'UTC',
   })
+  return texto.charAt(0).toUpperCase() + texto.slice(1)
+}
 
 const fechaLarga = (texto) =>
   new Date(`${texto}T12:00:00`).toLocaleDateString('es-PE', {
