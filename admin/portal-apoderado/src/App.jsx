@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { api, CLAVES, cerrarSesionLocal } from './api'
 import { aplicarMarca } from './marca'
 import Asistencia from './components/Asistencia'
+import CalendarioSimulacros from './components/CalendarioSimulacros'
 import CambiarClave from './components/CambiarClave'
 import Contacto from './components/Contacto'
 import Login from './components/Login'
@@ -121,6 +122,7 @@ export default function App() {
             )}
             <Asistencia key={hijo.id} hijo={hijo} />
             <Resultados key={`resultados-${hijo.id}`} hijo={hijo} />
+            <CalendarioSimulacros key={`calendario-${hijo.id}`} hijo={hijo} />
           </>
         )}
         <Contacto />
