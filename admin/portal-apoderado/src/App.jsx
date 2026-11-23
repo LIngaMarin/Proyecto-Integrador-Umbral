@@ -6,10 +6,18 @@ import CalendarioSimulacros from './components/CalendarioSimulacros'
 import CambiarClave from './components/CambiarClave'
 import Contacto from './components/Contacto'
 import Login from './components/Login'
+import Notificaciones from './components/Notificaciones'
+import Reporte from './components/Reporte'
 import Resultados from './components/Resultados'
 import './App.css'
 
 const primerNombre = (nombre) => (nombre || '').split(' ')[0]
+
+const SECCIONES = [
+  { clave: 'inicio', etiqueta: 'Inicio' },
+  { clave: 'notificaciones', etiqueta: 'Notificaciones' },
+  { clave: 'reporte', etiqueta: 'Reporte' },
+]
 
 export default function App() {
   const [sesion, setSesion] = useState(() =>
@@ -24,6 +32,7 @@ export default function App() {
   const [hijos, setHijos] = useState(null)
   const [elegido, setElegido] = useState(null)
   const [error, setError] = useState('')
+  const [vista, setVista] = useState('inicio')
 
   useEffect(() => {
     api
@@ -52,6 +61,7 @@ export default function App() {
     setHijos(null)
     setElegido(null)
     setError('')
+    setVista('inicio')
     setSesion(null)
   }
 
@@ -91,6 +101,19 @@ export default function App() {
         <h1>Hola, {primerNombre(sesion.nombre)}</h1>
         <p className="suave">Aquí puedes seguir el avance de tus hijos en la academia.</p>
 
+        <nav className="hijos" aria-label="Secciones">
+          {SECCIONES.map((s) => (
+            <button
+              key={s.clave}
+              type="button"
+              className={vista === s.clave ? 'chip activo' : 'chip'}
+              aria-current={vista === s.clave ? 'page' : undefined}
+              onClick={() => setVista(s.clave)}
+            >
+              {s.etiqueta}
+            </button>
+          ))}
+        </nav>
         {error && (
           <p className="error" role="alert">
             {error}
@@ -102,7 +125,9 @@ export default function App() {
             Todavía no tienes hijos vinculados a tu cuenta. Pide a la academia que los vincule.
           </p>
         )}
-        {hijo && (
+        {vista === 'notificaciones' && <Notificaciones />}
+        {vista === 'reporte' && hijos?.length > 0 && <Reporte hijos={hijos} />}
+        {vista === 'inicio' && hijo && (
           <>
             {hijos.length > 1 && (
               <div className="hijos" role="tablist" aria-label="Tus hijos">

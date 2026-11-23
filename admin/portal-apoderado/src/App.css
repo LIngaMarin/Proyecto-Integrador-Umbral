@@ -580,3 +580,62 @@ input {
     display: none;
   }
 }
+
+/* ---------- Notificaciones (portal del apoderado) ---------- */
+
+.notif-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.notif-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  padding: 12px 14px;
+  color: var(--texto);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+}
+
+.notif-item:hover {
+  border-color: var(--color-primario);
+}
+
+.notif-item.nueva {
+  background: var(--primario-suave);
+  border-color: var(--color-primario);
+}
+
+.notif-item small {
+  color: var(--texto-suave);
+  font-size: 0.82rem;
+}
+
+.notif-cabecera {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.notif-etiqueta {
+  color: var(--color-primario);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+@media (max-width: 520px) {
+  .notif-item {
+    padding: 10px 12px;
+  }
+}
