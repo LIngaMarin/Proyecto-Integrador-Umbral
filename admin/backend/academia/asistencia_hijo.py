@@ -46,6 +46,31 @@ def _rango(parametros, dia_actual):
     return inicio, fin, None
 
 
+def resumen_asistencia(hijo, desde, hasta):
+    """Conteo de asistencia de un alumno entre dos fechas (ambas incluidas).
+
+    Devuelve (resumen, registros): el dict de resumen y el queryset de registros.
+    """
+    registros = Asistencia.objects.filter(alumno=hijo, fecha__range=(desde, hasta))
+    cuenta = {
+        fila['estado']: fila['total']
+        for fila in registros.values('estado').annotate(total=Count('id'))
+    }
+    presentes = cuenta.get(Asistencia.Estado.PRESENTE, 0)
+    tardanzas = cuenta.get(Asistencia.Estado.TARDANZA, 0)
+    faltas = cuenta.get(Asistencia.Estado.FALTA, 0)
+    total = presentes + tardanzas + faltas
+    resumen = {
+        'presentes': presentes,
+        'tardanzas': tardanzas,
+        'faltas': faltas,
+        'total': total,
+        # Una tardanza cuenta como asistencia: el alumno sí estuvo.
+        'porcentaje': round((presentes + tardanzas) * 100 / total) if total else None,
+    }
+    return resumen, registros
+
+
 class AsistenciaHijoView(APIView):
     """Asistencia de un hijo del apoderado que inició sesión.
 
@@ -64,28 +89,12 @@ class AsistenciaHijoView(APIView):
         if error:
             return Response(error, status=400)
 
-        registros = Asistencia.objects.filter(alumno=hijo, fecha__range=(desde, hasta))
-        cuenta = {
-            fila['estado']: fila['total']
-            for fila in registros.values('estado').annotate(total=Count('id'))
-        }
-        presentes = cuenta.get(Asistencia.Estado.PRESENTE, 0)
-        tardanzas = cuenta.get(Asistencia.Estado.TARDANZA, 0)
-        faltas = cuenta.get(Asistencia.Estado.FALTA, 0)
-        total = presentes + tardanzas + faltas
-
+        resumen, registros = resumen_asistencia(hijo, desde, hasta)
         return Response({
             'hijo': _datos_hijo(hijo),
             'desde': desde,
             'hasta': hasta,
-            'resumen': {
-                'presentes': presentes,
-                'tardanzas': tardanzas,
-                'faltas': faltas,
-                'total': total,
-                # Una tardanza cuenta como asistencia: el alumno sí estuvo.
-                'porcentaje': round((presentes + tardanzas) * 100 / total) if total else None,
-            },
+            'resumen': resumen,
             'registros': [
                 {
                     'fecha': r.fecha,

@@ -1,15 +1,18 @@
 from .models import Resultado
 
 
-def resultados_por_curso(hijo):
+def resultados_por_curso(hijo, desde=None, hasta=None):
     """Resultados de simulacros de un alumno, agrupados por curso y en orden de fecha.
 
     Cada resultado trae la variación respecto al simulacro anterior del mismo curso
-    (None en el primero), para mostrar el avance entre simulacros.
+    (None en el primero), para mostrar el avance entre simulacros. Con desde/hasta
+    solo se consideran los simulacros de ese rango (ambos días incluidos).
     """
+    filas = Resultado.objects.filter(matricula__alumno=hijo, simulacro__activa=True)
+    if desde and hasta:
+        filas = filas.filter(simulacro__fecha__range=(desde, hasta))
     filas = (
-        Resultado.objects.filter(matricula__alumno=hijo, simulacro__activa=True)
-        .select_related('simulacro__curso')
+        filas.select_related('simulacro__curso')
         .order_by('simulacro__fecha', 'simulacro_id')
     )
     cursos = {}

@@ -349,3 +349,38 @@ class Asistencia(models.Model):
 
     def __str__(self):
         return f'{self.alumno} {self.fecha} {self.estado}'
+
+
+class Notificacion(models.Model):
+    """Aviso para un apoderado sobre un hecho de un hijo (p. ej. una inasistencia)."""
+
+    class Tipo(models.TextChoices):
+        INASISTENCIA = 'INASISTENCIA', 'Inasistencia'
+
+    apoderado = models.ForeignKey(
+        Apoderado, on_delete=models.CASCADE, related_name='notificaciones'
+    )
+    alumno = models.ForeignKey(Perfil, on_delete=models.CASCADE, related_name='notificaciones')
+    # Si la asistencia se borra, la notificación se conserva como historial.
+    asistencia = models.ForeignKey(
+        Asistencia, null=True, blank=True, on_delete=models.SET_NULL,
+        related_name='notificaciones',
+    )
+    tipo = models.CharField(max_length=20, choices=Tipo.choices, default=Tipo.INASISTENCIA)
+    mensaje = models.TextField()
+    fecha_creacion = models.DateTimeField(auto_now_add=True, db_index=True)
+    leida = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'adm_notificacion'
+        ordering = ['-fecha_creacion', '-id']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['apoderado', 'asistencia'],
+                condition=models.Q(asistencia__isnull=False),
+                name='notificacion_unica_por_asistencia',
+            ),
+        ]
+
+    def __str__(self):
+        return f'{self.get_tipo_display()} para {self.apoderado} ({self.alumno})'

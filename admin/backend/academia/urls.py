@@ -16,6 +16,8 @@ from .matriculas import (
     SeccionViewSet,
 )
 from .asistencia_hijo import AsistenciaHijoView
+from .notificaciones_api import LeerNotificacionView, MisNotificacionesView
+from .reporte_hijo import ReporteHijoView
 from .contacto import MisDatosContactoView
 from .programados_hijo import SimulacrosProgramadosHijoView
 from .resultados_hijo import ResultadosHijoView
@@ -55,6 +57,9 @@ urlpatterns = router.urls + [
     path('mis-hijos/<int:pk>/asistencia/', AsistenciaHijoView.as_view()),
     path('mis-hijos/<int:pk>/simulacros/', ResultadosHijoView.as_view()),
     path('mis-hijos/<int:pk>/simulacros-programados/', SimulacrosProgramadosHijoView.as_view()),
+    path('mis-hijos/<int:pk>/reporte/', ReporteHijoView.as_view()),
+    path('mis-notificaciones/', MisNotificacionesView.as_view()),
+    path('mis-notificaciones/<int:pk>/leer/', LeerNotificacionView.as_view()),
     path('mis-hijos/<int:pk>/', MiHijoView.as_view()),
     path('configuracion-ia/', ConfiguracionIAView.as_view()),
     path('ia/usar/', UsarIAView.as_view()),
