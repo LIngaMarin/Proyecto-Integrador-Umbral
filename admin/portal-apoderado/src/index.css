@@ -4,16 +4,16 @@
   --fuente: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
   /* El color de marca lo reemplaza la configuración de la academia (marca.js). */
-  --color-primario: #0f766e;
+  --color-primario: #CF3B18;
   --primario-suave: color-mix(in srgb, var(--color-primario) 10%, white);
   --primario-oscuro: color-mix(in srgb, var(--color-primario) 80%, black);
 
-  --fondo: #f1f7f6;
+  --fondo: #F3F6FB;
   --superficie: #ffffff;
-  --borde: #d5e3e1;
-  --borde-campo: #b9c6c4;
-  --texto: #1f2d33;
-  --texto-suave: #5b6d74;
+  --borde: #DCE3EF;
+  --borde-campo: #C3CDDF;
+  --texto: #1B2540;
+  --texto-suave: #5B6784;
 
   --ok: #15803d;
   --ok-fondo: #dcfce7;

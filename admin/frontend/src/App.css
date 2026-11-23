@@ -47,7 +47,7 @@
 
 .lateral .sello {
   background: var(--acento);
-  color: #0f3d3b;
+  color: var(--tinta);
 }
 
 .sello {
@@ -67,7 +67,7 @@
   height: 36px;
   width: auto;
   max-width: 120px;
-  border-radius: 6px;
+  border-radius: 10px;
   object-fit: contain;
 }
 
@@ -160,6 +160,7 @@
   padding: 12px 28px;
   background: var(--superficie);
   border-bottom: 1px solid var(--borde);
+  box-shadow: var(--sombra-1);
 }
 
 .migas {
@@ -216,6 +217,8 @@
   margin: 0 0 4px;
   font-size: 1.4rem;
   font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--tinta);
 }
 
 /* ---------- Tarjetas y paneles ---------- */
@@ -226,11 +229,14 @@
   background: var(--superficie);
   border: 1px solid var(--borde);
   border-radius: var(--radio);
+  box-shadow: var(--sombra-1);
 }
 
 .panel h3 {
   margin: 24px 0 8px;
   font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--tinta);
 }
 
 .panel > h2 + p {
@@ -253,24 +259,38 @@
 
 .tarjeta {
   display: flex;
-  flex-direction: column-reverse;
-  gap: 4px;
-  padding: 18px 20px;
+  flex-direction: column;
+  gap: 6px;
+  padding: 20px 22px;
   background: var(--superficie);
   border: 1px solid var(--borde);
-  border-top: 3px solid var(--color-primario);
+  border-top: 4px solid var(--color-primario);
   border-radius: var(--radio);
+  box-shadow: var(--sombra-2);
 }
 
 .tarjeta-valor {
-  font-size: 2rem;
+  font-size: 2.1rem;
   font-weight: 700;
   line-height: 1.1;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  color: var(--tinta);
 }
 
 .tarjeta-etiqueta {
   color: var(--texto-suave);
   font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Cada tarjeta de un grupo lleva un color de borde superior distinto */
+.tarjetas .tarjeta:nth-child(3n + 2) {
+  border-top-color: var(--acento);
+}
+
+.tarjetas .tarjeta:nth-child(3n) {
+  border-top-color: var(--luz);
 }
 
 /* ---------- Formularios y botones ---------- */
@@ -299,9 +319,9 @@
 
 input,
 select {
-  padding: 9px 11px;
+  padding: 10px 12px;
   border: 1px solid var(--borde-campo);
-  border-radius: 6px;
+  border-radius: 10px;
   background: #ffffff;
   color: var(--texto);
   font: inherit;
@@ -319,6 +339,13 @@ input[type='file'] {
   padding: 7px;
 }
 
+input:focus-visible,
+select:focus-visible {
+  outline: none;
+  border-color: var(--color-primario);
+  box-shadow: var(--anillo);
+}
+
 input[type='color'] {
   width: 72px;
   height: 40px;
@@ -327,42 +354,51 @@ input[type='color'] {
 }
 
 button {
-  padding: 9px 16px;
+  padding: 10px 18px;
   border: 1px solid var(--color-primario);
-  border-radius: 6px;
+  border-radius: 10px;
   background: var(--color-primario);
   color: #ffffff;
   font: inherit;
   font-size: 0.9rem;
   font-weight: 600;
+  line-height: 1.2;
   cursor: pointer;
-  transition: filter 0.15s, background 0.15s;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 
-button:hover:not(:disabled) {
-  filter: brightness(0.93);
+button:not(.item):hover:not(:disabled) {
+  background: var(--color-primario-hover);
+  border-color: var(--color-primario-hover);
 }
 
 button:disabled {
-  opacity: 0.55;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
 button.secundario {
   background: #ffffff;
   border-color: var(--borde-campo);
-  color: var(--texto);
+  color: var(--tinta);
 }
 
 button.secundario:hover:not(:disabled) {
   background: var(--hover);
-  filter: none;
+  border-color: var(--color-primario);
+  color: var(--color-primario);
 }
 
 button.peligro {
   background: var(--error-fondo);
   border-color: var(--error-borde);
   color: var(--error);
+}
+
+button.peligro:hover:not(:disabled) {
+  background: var(--error);
+  border-color: var(--error);
+  color: #ffffff;
 }
 
 .acciones {
@@ -393,7 +429,7 @@ td.celda-acciones button + button {
 .errores {
   margin: 12px 0;
   padding: 12px 14px 12px 32px;
-  border-radius: 6px;
+  border-radius: 10px;
   background: var(--error-fondo);
   color: var(--error);
 }
@@ -409,10 +445,10 @@ td.celda-acciones button + button {
 .aviso {
   margin: 12px 0;
   padding: 10px 12px;
-  border: 1px solid #fed7aa;
-  border-radius: 6px;
-  background: #fff7ed;
-  color: #9a3412;
+  border: 1px solid color-mix(in srgb, var(--luz) 55%, white);
+  border-radius: 10px;
+  background: var(--luz-fondo);
+  color: var(--luz-texto);
 }
 
 /* ---------- Tablas ---------- */
@@ -425,21 +461,22 @@ table {
 
 th,
 td {
-  padding: 10px 12px;
+  padding: 12px 14px;
   text-align: left;
   vertical-align: middle;
   border-bottom: 1px solid var(--borde);
 }
 
 th {
-  background: #f8fafb;
-  color: var(--texto-suave);
-  font-size: 0.84rem;
+  background: #F6F8FC;
+  color: var(--tinta);
+  font-size: 0.8rem;
   font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 tbody tr:hover {
-  background: #fafbfc;
+  background: var(--hover);
 }
 
 .tabla-claves {
@@ -483,7 +520,7 @@ tbody tr:hover {
   padding: 10px 12px;
   overflow-y: auto;
   border: 1px solid var(--borde-campo);
-  border-radius: 6px;
+  border-radius: 10px;
 }
 
 .opcion-hijo {
@@ -530,7 +567,7 @@ tbody tr:hover {
   flex-direction: column;
   gap: 8px;
   padding: 10px;
-  background: #f8fafb;
+  background: #F6F8FC;
   border: 1px solid var(--borde);
   border-radius: var(--radio);
 }
@@ -548,7 +585,7 @@ tbody tr:hover {
   background: #ffffff;
   border: 1px solid var(--borde);
   border-left: 3px solid var(--color-primario);
-  border-radius: 6px;
+  border-radius: 10px;
   font-size: 0.85rem;
 }
 
@@ -584,7 +621,7 @@ tbody tr:hover {
 }
 
 .barra-pista > .barra.refuerzo {
-  background: #e34948;
+  background: var(--error);
 }
 
 .fila-barra:hover .barra-pista > .barra {
@@ -624,7 +661,7 @@ tbody tr:hover {
 }
 
 .punto.refuerzo {
-  background: #e34948;
+  background: var(--error);
 }
 
 /* ---------- Comparar simulacros ---------- */
@@ -664,7 +701,7 @@ tbody tr:hover {
 }
 
 .cmp-relleno.antes {
-  background: #b7ccc9;
+  background: #B9C2D3;
 }
 
 .cmp-relleno.ahora {
@@ -672,7 +709,7 @@ tbody tr:hover {
 }
 
 .cmp-relleno.ahora.refuerzo {
-  background: #e34948;
+  background: var(--error);
 }
 
 .cmp-umbral {
@@ -735,7 +772,7 @@ tbody tr:hover {
 }
 
 .punto.antes {
-  background: #b7ccc9;
+  background: #B9C2D3;
 }
 
 /* ---------- Temas con más errores ---------- */
@@ -750,7 +787,7 @@ tbody tr:hover {
   padding: 18px 20px;
   background: var(--superficie);
   border: 1px solid var(--borde);
-  border-left: 4px solid #e34948;
+  border-left: 4px solid var(--error);
   border-radius: var(--radio);
 }
 
@@ -921,4 +958,16 @@ tbody tr:hover {
   margin-top: 16px;
   color: var(--texto-suave);
   font-size: 0.9rem;
+}
+
+/* ---------- Estados vacíos ---------- */
+
+p.vacio {
+  margin: 0;
+  padding: 28px 20px;
+  text-align: center;
+  color: var(--texto-suave);
+  border: 1px dashed var(--borde-campo);
+  border-radius: var(--radio);
+  background: #FBFCFE;
 }

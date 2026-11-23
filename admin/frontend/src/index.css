@@ -3,29 +3,45 @@
 :root {
   --fuente: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
-  /* Colores de marca: los reemplaza la configuración de la academia (marca.js). */
-  --color-primario: #0f766e;
-  --color-secundario: #1f2937;
+  /* Colores de marca: los reemplaza la configuración de la academia (marca.js).
+     El hover se deriva del primario para que siga a la marca en runtime. */
+  --color-primario: #CF3B18;
+  --color-primario-hover: color-mix(in srgb, var(--color-primario) 85%, black);
+  --color-secundario: #101B3B;
   --primario-suave: color-mix(in srgb, var(--color-primario) 10%, white);
 
-  --fondo: #eef6f5;
-  --lateral-fondo: #0f4c4a;
-  --lateral-texto: #d7ece9;
-  --lateral-suave: #8fc2bd;
-  --lateral-hover: rgba(255, 255, 255, 0.08);
-  --lateral-activo: rgba(255, 255, 255, 0.14);
-  --acento: #5eead4;
-  --superficie: #ffffff;
-  --borde: #d5e3e1;
-  --borde-campo: #c3ccd5;
-  --texto: #26343f;
-  --texto-suave: #66757f;
-  --hover: #eef5f4;
+  /* Paleta Amanecer */
+  --tinta: #101B3B;
+  --acento: #19C3A6;
+  --luz: #FFC83D;
+  --luz-fondo: color-mix(in srgb, var(--luz) 16%, white);
+  --luz-texto: #6B4A00;
+
+  --fondo: #F3F6FB;
+  --superficie: #FFFFFF;
+  --borde: #DCE3EF;
+  --borde-campo: #C3CDDF;
+  --hover: #EEF2FA;
+  --texto: #1B2540;
+  --texto-suave: #5B6784;
   --exito: #15803d;
-  --error: #b42318;
-  --error-fondo: #fef3f2;
-  --error-borde: #fda29b;
-  --radio: 8px;
+  --error: #B42318;
+  --error-fondo: #FEF3F2;
+  --error-borde: #FDA29B;
+
+  /* Menú lateral (tinta) */
+  --lateral-fondo: var(--tinta);
+  --lateral-texto: #D6DDEE;
+  --lateral-suave: #8E9BBB;
+  --lateral-hover: rgba(255, 255, 255, 0.07);
+  --lateral-activo: rgba(255, 255, 255, 0.12);
+
+  /* Sombras en capas, suaves y tintadas */
+  --sombra-1: 0 1px 2px rgba(16, 27, 59, 0.06);
+  --sombra-2: 0 1px 3px rgba(16, 27, 59, 0.06), 0 6px 16px rgba(16, 27, 59, 0.06);
+  --anillo: 0 0 0 3px color-mix(in srgb, var(--color-primario) 25%, transparent);
+
+  --radio: 10px;
 
   font-family: var(--fuente);
   color: var(--texto);
@@ -40,6 +56,7 @@
 body {
   margin: 0;
   background: var(--fondo);
+  -webkit-font-smoothing: antialiased;
 }
 
 :focus-visible {
