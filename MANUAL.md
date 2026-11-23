@@ -214,14 +214,44 @@ por docente · carga masiva de alumnos desde Excel · registro de auditoría.
 | 34 | Consultar la asistencia de cada hijo, con filtro por fechas |
 | 35 | Ver los resultados de simulacros por curso, con promedio, gráfico de avance y variación |
 | 37 | Actualizar teléfono y correo (con validación) |
+| 36 | Ver avisos de inasistencia (se generan solos cuando se registra una falta) y marcarlos como leídos |
+| 38 | Reporte periódico por hijo: asistencia, simulacros del período, promedio y tendencia |
 | 40 | Ver un calendario mensual con los simulacros programados y su detalle |
 
 Un apoderado **solo ve a sus propios hijos**.
 
 ### Docente y alumno (campus web y app móvil)
 
-Práctica de preguntas, banco de preguntas del docente, reportes de rendimiento en PDF,
-asistencia, horario y dudas con foto. Están en las ramas `web` (Sheila) y `mobiles` (Dario).
+Campus web (rama `web`, Sheila): práctica de preguntas, dudas agrupadas y respondidas,
+resolución de dudas, notificaciones del apoderado y reportes de rendimiento en PDF.
+
+App móvil (rama `mobiles`, carpeta `mobile/`): al abrir se elige el perfil.
+
+| Perfil | Pantallas |
+|---|---|
+| Alumno | Inicio, práctica de la semana y por tema con solucionario, dificultad y favoritas, progreso, temas débiles, comparativo anónimo y horario |
+| Docente | Clases de hoy, alumnos de la sección con búsqueda y dudas por responder |
+| Apoderado | Asistencia y simulacros de cada hijo con tendencia, avisos de inasistencia y agenda de simulacros |
+
+La app sigue MVVM con Jetpack Compose y Material 3. Hoy usa datos de demostración
+(`data/demo/DemoRepository.kt`) detrás de la interfaz `UmbralRepository`: para conectar el
+servidor se escribe otra implementación y se cambia en `MainActivity`; las pantallas no cambian.
+No usa Firebase: las notificaciones push (HU 31, 44, 45, 55, 57, 61) quedan para cuando exista
+un servidor que las envíe, y entonces conviene Firebase Cloud Messaging.
+
+## 6.1 Identidad visual: paleta «Amanecer»
+
+Landing, panel admin, portal del apoderado, campus web y app móvil usan la misma paleta.
+
+| Color | Valor | Uso |
+|---|---|---|
+| Coral | `#CF3B18` | Botones y acciones principales |
+| Tinta | `#101B3B` | Menús laterales, encabezados y fondos oscuros |
+| Turquesa | `#19C3A6` | Éxito, avance y marca activa |
+| Luz | `#FFC83D` | Avisos y destacados |
+| Fondo | `#F3F6FB` | Fondo de páginas (superficies en blanco) |
+
+En el panel, la academia puede cambiar el color principal desde «Marca»; el valor de arriba es el predeterminado.
 
 ## 7. API: endpoints del portal del apoderado
 
@@ -236,6 +266,9 @@ Todas las rutas empiezan con `http://127.0.0.1:8000/api/` y piden un token de se
 | `GET /mis-hijos/<id>/asistencia/?desde=&hasta=` | Asistencia del hijo (HU 34) |
 | `GET /mis-hijos/<id>/simulacros/` | Resultados de simulacros por curso (HU 35) |
 | `GET /mis-hijos/<id>/simulacros-programados/?desde=&hasta=` | Simulacros programados (HU 40) |
+| `GET /mis-hijos/<id>/reporte/?desde=&hasta=` | Reporte periódico: asistencia, simulacros, promedio y tendencia (HU 38) |
+| `GET /mis-notificaciones/` | Avisos de inasistencia de los hijos, con el contador `sin_leer` (HU 36) |
+| `POST /mis-notificaciones/<id>/leer/` | Marca un aviso como leído |
 | `GET` y `PUT /mis-datos/contacto/` | Leer y actualizar el contacto (HU 37) |
 
 Las fechas usan el formato `AAAA-MM-DD` y ambos extremos están incluidos. Si no se indican,
@@ -299,14 +332,29 @@ puede entrar al portal, sin sesión no se entra).
 **Hecho**
 - Panel de administración y API de la academia (sprints anteriores).
 - Portal del apoderado: HU 34, 35, 37 y 40, con pruebas.
-- Landing con las cuatro puertas de entrada.
+- Avisos de inasistencia (HU 36) y reporte periódico por hijo (HU 38), con pruebas (279 en total).
+- Paleta «Amanecer» aplicada a landing, admin, portal, campus web y app móvil.
+- Landing con las cuatro puertas de entrada; la puerta «App móvil» abre `landing/movil.html`.
 - Campus web y API del perfil Usuario (Sheila, rama `web`).
 
 **Pendiente**
 - Docker: un solo comando para levantar todo el sistema.
 - Unir la rama `web` a `main` e integrar la API de Sheila con la de administración.
+- Compilar y probar en un equipo con internet lo que no se pudo verificar: la app Android
+  (`mobile/`) y el backend Spring Boot. Se escribió y se revisó a mano, pero no se compiló.
 - Enlace de descarga del APK para la puerta "App móvil" de la landing.
+- Notificaciones push y lector de código QR en la app (necesitan servidor y cámara).
 - Reordenar los archivos de `admin/backend/academia/` por funcionalidad.
+
+### ¿Microservicios en Java?
+
+Recomendación: **no partir el sistema ahora**. Con tres personas y poco tiempo, microservicios
+suman despliegues, redes y datos repartidos sin dar beneficio visible. Lo que sí conviene es un
+**monolito modular** con contratos claros: la API de administración (Django) y la del campus
+(Spring Boot) ya son dos servicios con responsabilidades distintas. El siguiente paso razonable
+es que Spring valide los tokens de Django y consuma su API, y empaquetar ambos con Docker.
+Si se quiere mostrar microservicios en la defensa, el candidato natural es extraer
+«notificaciones» como servicio propio, porque ya está aislado en `notificaciones.py`.
 
 ## 12. Solución de problemas
 

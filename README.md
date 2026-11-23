@@ -7,6 +7,8 @@ Umbral permite administrar una academia (sedes, cursos, horarios, matrículas), 
 contenido de práctica con inteligencia artificial y seguir el rendimiento de los alumnos
 desde la web y desde una app móvil.
 
+Guía completa de uso, perfiles, API, pruebas y paleta: [MANUAL.md](MANUAL.md).
+
 ## Estructura del repositorio
 
 | Carpeta | Perfil | Tecnología |
@@ -14,7 +16,7 @@ desde la web y desde una app móvil.
 | `admin/backend` | Administrador | Django, Django REST Framework, PostgreSQL |
 | `admin/frontend` | Administrador | React, Vite |
 | `backend` | Usuario (docente) | Spring Boot, Kotlin |
-| `mobile` | Móvil (alumno, apoderado y docente) | Kotlin, Jetpack Compose, Room |
+| `mobile` | Móvil (alumno, apoderado y docente) | Kotlin, Jetpack Compose, Material 3, MVVM |
 | `landing` | Página de presentación | HTML, CSS y JavaScript |
 
 ## Panel de administración
