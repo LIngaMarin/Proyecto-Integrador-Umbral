@@ -16,17 +16,17 @@
 }
 
 :root {
-  --tinta: #14173d;
-  --tinta-2: #1c2052;
-  --cobalto: #3b4cf0;
-  --luz: #ffd24d;
-  --luz-suave: #fff1bd;
-  --hueso: #f5f6fb;
-  --linea: #dde1f1;
-  --texto: #1b1e3a;
-  --suave: #565b7d;
-  --suave-oscuro: #b4b9dc;
-  --menta: #1fa971;
+  --tinta: #101b3b;
+  --tinta-2: #182650;
+  --primario: #cf3b18;
+  --luz: #ffc83d;
+  --luz-suave: #fff0c2;
+  --hueso: #f3f6fb;
+  --linea: #dce3ef;
+  --texto: #1b2540;
+  --suave: #5b6784;
+  --suave-oscuro: #b4bdd6;
+  --menta: #19c3a6;
 
   --display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
   --cuerpo: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -90,7 +90,7 @@ section[id] {
 }
 
 :focus-visible {
-  outline: 3px solid var(--cobalto);
+  outline: 3px solid var(--primario);
   outline-offset: 3px;
 }
 
@@ -150,7 +150,7 @@ section[id] {
 }
 
 .boton-tinta:hover {
-  background: var(--cobalto);
+  background: var(--primario);
 }
 
 .boton-luz {

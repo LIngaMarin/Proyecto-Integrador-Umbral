@@ -28,7 +28,7 @@
 }
 
 .integrante:nth-child(2) {
-  border-top-color: var(--cobalto);
+  border-top-color: var(--primario);
 }
 
 .integrante:nth-child(3) {

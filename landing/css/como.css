@@ -47,7 +47,7 @@
 }
 
 .pasos::after {
-  background: var(--cobalto);
+  background: var(--primario);
   transform: scaleY(var(--avance));
   transform-origin: 50% 0;
 }
@@ -82,8 +82,8 @@
 
 .paso.activo .paso-numero {
   color: #fff;
-  background: var(--cobalto);
-  border-color: var(--cobalto);
+  background: var(--primario);
+  border-color: var(--primario);
 }
 
 .paso h3 {
@@ -124,7 +124,7 @@
 
   .paso .paso-numero {
     color: #fff;
-    background: var(--cobalto);
-    border-color: var(--cobalto);
+    background: var(--primario);
+    border-color: var(--primario);
   }
 }

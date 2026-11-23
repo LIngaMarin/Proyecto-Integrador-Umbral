@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>App móvil · Umbral</title>
+    <meta name="theme-color" content="#101b3b" />
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+    <link rel="stylesheet" href="css/base.css" />
+    <style>
+      body { background: var(--tinta); color: #fff; }
+      main { max-width: 720px; margin: 0 auto; padding: 64px var(--lateral) 80px; }
+      h1 { font-size: clamp(2.2rem, 6vw, 3.4rem); margin: 0 0 12px; }
+      p, li { color: var(--suave-oscuro); line-height: 1.65; }
+      a.volver { color: var(--luz); text-decoration: none; font-weight: 600; }
+      ol { padding-left: 1.2rem; display: grid; gap: 10px; }
+      code { background: var(--tinta-2); padding: 2px 8px; border-radius: 6px; color: #fff; }
+      .perfiles { display: grid; gap: 10px; margin: 20px 0 32px; }
+      .perfiles div { background: var(--tinta-2); border-radius: 14px; padding: 14px 18px; }
+      .perfiles strong { color: #fff; display: block; }
+      h2 { margin: 36px 0 10px; font-size: 1.3rem; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <a class="volver" href="index.html#entradas">Volver a Umbral</a>
+      <h1>Umbral en tu celular</h1>
+      <p>La app es de Android y trae tres perfiles: alumno, docente y apoderado. Todavía no hay un instalador publicado, así que se instala desde el código.</p>
+
+      <h2>Qué verás al entrar</h2>
+      <div class="perfiles">
+        <div><strong>Alumno</strong>Práctica de la semana y por tema, solucionario, progreso, comparativo anónimo y horario.</div>
+        <div><strong>Docente</strong>Clases de hoy, lista de alumnos con búsqueda y dudas por responder.</div>
+        <div><strong>Apoderado</strong>Asistencia y simulacros de cada hijo, avisos de inasistencia y agenda de simulacros.</div>
+      </div>
+
+      <h2>Cómo instalarla</h2>
+      <ol>
+        <li>Instala Android Studio y clona el repositorio.</li>
+        <li>Cambia a la rama <code>mobiles</code> y abre la carpeta <code>mobile/</code>.</li>
+        <li>Espera a que termine la sincronización de Gradle.</li>
+        <li>Conecta tu celular con la depuración USB activada, o crea un emulador, y pulsa Ejecutar.</li>
+      </ol>
+      <p>Por ahora usa datos de demostración dentro de la app; la conexión con el servidor se agrega sin cambiar las pantallas.</p>
+    </main>
+  </body>
+</html>

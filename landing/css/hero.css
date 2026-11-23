@@ -69,13 +69,13 @@
 .enlace-sutil {
   font-weight: 600;
   text-decoration: underline;
-  text-decoration-color: var(--cobalto);
+  text-decoration-color: var(--primario);
   text-decoration-thickness: 2px;
   text-underline-offset: 6px;
 }
 
 .enlace-sutil:hover {
-  color: var(--cobalto);
+  color: var(--primario);
 }
 
 /* ---------- La puerta ---------- */
@@ -92,7 +92,7 @@
   content: '';
   position: absolute;
   inset: -14px -14px 0;
-  border: 2px solid rgba(59, 76, 240, 0.3);
+  border: 2px solid rgba(207, 59, 24, 0.3);
   border-bottom: 0;
   border-radius: 999px 999px 0 0;
 }
@@ -114,7 +114,7 @@
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(110% 62% at 50% 100%, var(--luz-suave) 0%, var(--luz) 24%, rgba(255, 210, 77, 0.38) 52%, transparent 76%);
+    radial-gradient(110% 62% at 50% 100%, var(--luz-suave) 0%, var(--luz) 24%, rgba(255, 200, 61, 0.38) 52%, transparent 76%);
   transform-origin: 50% 100%;
   animation: abrir 2s cubic-bezier(0.2, 0.7, 0.2, 1) 0.3s both;
 }

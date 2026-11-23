@@ -10,7 +10,7 @@ window.UMBRAL = {
     // Campus web de docentes y alumnos (rama `web`, carpeta frontend/).
     // Se levanta con: npm run dev -- --port 5175
     campus: 'http://127.0.0.1:5175',
-    // App móvil Android. Cuando exista un APK o una página de descarga, pegar aquí el enlace.
-    movil: '',
+    // App móvil Android: página con los pasos para instalarla. Si hay un APK publicado, poner aquí su enlace.
+    movil: 'movil.html',
   },
 }
