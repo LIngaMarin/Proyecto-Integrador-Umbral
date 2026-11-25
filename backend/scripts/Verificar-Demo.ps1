@@ -52,6 +52,8 @@ try {
     }
     if (-not $ready) { throw 'El demo no inicio a tiempo.' }
     $preguntas=Comprobar GET '/api/practicas/preguntas?tema=Algebra&dificultad=FACIL' 200
+    $preguntasAlumno=@(Comprobar GET '/api/alumno/practicas/preguntas?tema=Algebra&dificultad=FACIL' 200 2)
+    if ($preguntasAlumno.Count -lt 1 -or $preguntasAlumno[0].respuestaCorrecta) { throw 'El catalogo autenticado no devolvio preguntas seguras para el alumno.' }
     $pregunta=@($preguntas)[0].id
     $null=Comprobar GET "/api/practicas/preguntas/$pregunta/solucionario" 403 2
     $null=Comprobar POST '/api/practicas/respuestas' 201 2 @{preguntaId=$pregunta;respuesta='4'}

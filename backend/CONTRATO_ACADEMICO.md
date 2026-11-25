@@ -12,8 +12,8 @@ devuelven 503; no conceden permisos por defecto.
 `Authorization: Bearer <access token>` de Django SimpleJWT, HS256, con `user_id`,
 `token_type=access` y `exp`. Configurar `UMBRAL_JWT_SECRET` en el entorno con la
 clave de firma de Django (al menos 32 bytes); nunca en Git. Sin esta configuración
-se genera una clave efímera y los tokens de Django no serán aceptados. No hay
-endpoint de login ni emisión de tokens en Kotlin. Los roles se leen de la base,
+se genera una clave efímera y los tokens de Django no serán aceptados. El endpoint
+`POST /api/auth/login` también emite tokens compatibles. Los roles se leen de la base,
 no del cuerpo ni de claims controlados por el cliente. `Actor.id` es `Perfil.id`,
 no `auth_user.id`. Los identificadores docentes existentes deben referir perfiles.
 
@@ -23,6 +23,38 @@ Un alumno puede responder preguntas aprobadas de docentes con horario activo
 en una sección activa en que tiene matrícula activa. El catálogo sigue público
 y no contiene respuestas. Las respuestas admiten intentos sucesivos y conservan
 fecha, opción y evaluación de cada intento.
+
+Para clientes autenticados, `GET /api/alumno/practicas/preguntas?tema=Algebra&dificultad=FACIL`
+requiere rol ALUMNO y limita el catálogo a docentes con horario activo en una
+sección activa donde ese perfil mantiene una matrícula activa. Usa el ID de
+`adm_perfil`, no el ID de `auth_user`, y aplica la misma relación que el registro
+de intentos. Devuelve el DTO público sin respuesta correcta ni datos de revisión;
+si el alumno no tiene secciones habilitadas, devuelve `[]`. El catálogo público
+`GET /api/practicas/preguntas` conserva su comportamiento global.
+
+Ejemplo para campus o Android:
+
+```http
+GET /api/alumno/practicas/preguntas?tema=Algebra&dificultad=FACIL
+Authorization: Bearer <access-token>
+```
+
+```json
+[
+	{
+		"id": 12,
+		"enunciado": "Resuelve 2x + 6 = 14",
+		"tema": "Algebra",
+		"dificultad": "FACIL",
+		"opciones": ["2", "4"]
+	}
+]
+```
+
+El cliente registra cada selección en `POST /api/practicas/respuestas`, consulta
+su historial en `GET /api/practicas/respuestas` y solo obtiene el solucionario
+aprobado mediante `GET /api/practicas/preguntas/{id}/solucionario` después de
+tener un intento propio persistido.
 
 HU 27: `GET /api/practicas/preguntas/{id}/solucionario` exige rol ALUMNO,
 matrícula vigente y al menos una respuesta propia persistida. Retorna únicamente

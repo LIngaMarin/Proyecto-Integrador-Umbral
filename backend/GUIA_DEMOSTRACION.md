@@ -1,6 +1,6 @@
 # Demostración del backend web
 
-Revisión del 29/10/2026. Esta guía usa el contrato actual de las HU de Sheila.
+Revisión del 25/11/2026. Esta guía usa el contrato actual de las HU de Sheila.
 El detalle de permisos y reglas provisionales está en
 [CONTRATO_ACADEMICO.md](CONTRATO_ACADEMICO.md); los endpoints completos y las
 dependencias de despliegue están en [AVANCE_SHEILA.md](AVANCE_SHEILA.md).
@@ -32,7 +32,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Verificar-Demo
 ```
 
 El script inicia su propio proceso en `127.0.0.1:18082`, genera una clave y tokens
-efímeros en memoria, comprueba 17 solicitudes HTTP y detiene esa instancia al
+efímeros en memoria, comprueba 18 solicitudes HTTP y detiene esa instancia al
 terminar. No guarda tokens ni cambia la política permanente de PowerShell.
 El puerto se puede cambiar con `-Port 18083` si está ocupado.
 
@@ -57,18 +57,58 @@ El catálogo público puede consultarse directamente:
 Invoke-RestMethod 'http://127.0.0.1:18082/api/practicas/preguntas?tema=Algebra&dificultad=FACIL'
 ```
 
-Las demás rutas exigen un token de acceso firmado. Kotlin no tiene un endpoint de
-login: en la integración normal los tokens se obtienen del sistema administrativo.
-Para una demo manual, la instancia y los tokens locales deben compartir la clave
-efímera configurada por entorno en `UMBRAL_JWT_SECRET`. No publicar esa clave ni
-exportar tokens en colecciones o archivos de entorno compartidos.
+Las rutas protegidas exigen un token de acceso firmado. `POST /api/auth/login`
+acepta usuario o correo y contraseña. También se aceptan
+access tokens de Django SimpleJWT. En ambos casos configura `UMBRAL_JWT_SECRET`
+con la misma clave HS256 que Django usa para `SIMPLE_JWT.SIGNING_KEY` (por defecto,
+`SECRET_KEY`). Sin ella, Spring genera una clave efímera y no comparte sesiones
+con Django. Nunca guardes claves ni tokens en Git, colecciones o archivos `.env`.
+
+El catálogo público anterior conserva su alcance global. El catálogo autenticado
+`GET /api/alumno/practicas/preguntas?tema=Algebra&dificultad=FACIL` exige ALUMNO y
+solo lista preguntas aprobadas de docentes con horario activo en secciones activas
+donde el perfil tiene matrícula activa. Envía el mismo token para registrar el
+intento en `POST /api/practicas/respuestas`, consultar el historial propio en
+`GET /api/practicas/respuestas` y pedir un solucionario aprobado después del
+primer intento. La respuesta del listado no incluye la solución.
+
+## PostgreSQL de integración
+
+El arranque normal usa PostgreSQL y exige estas variables en el proceso:
+
+```powershell
+$env:UMBRAL_DB_URL='jdbc:postgresql://localhost:5432/umbral'
+$env:UMBRAL_DB_USERNAME='umbral_app'
+$env:UMBRAL_DB_PASSWORD='<clave-local>'
+$env:UMBRAL_JWT_SECRET='<misma-clave-SIMPLE_JWT-SIGNING_KEY-de-Django>'
+.\mvnw.cmd spring-boot:run
+```
+
+`UMBRAL_DB_URL` debe apuntar a la base que ya contiene el esquema Django y las
+tablas `auth_user` y `adm_*`. El usuario configurado necesita lectura sobre esas
+tablas y permisos de migración sobre las tablas propias de Spring. Flyway aplica
+solo `src/main/resources/db/migration`; Hibernate usa `validate` y no crea ni
+modifica las tablas de Django. No ejecutes el perfil demo contra esa base.
+
+La demo usa H2 en memoria. Para empaquetar el driver y arrancar con los fixtures:
+
+```powershell
+.\mvnw.cmd -B -Pdemo package
+& "$env:JAVA_HOME/bin/java.exe" -jar .\target\umbral-backend-0.0.1-SNAPSHOT.jar --spring.profiles.active=demo
+```
+
+El perfil Maven `-Pdemo` agrega H2 al artefacto y el perfil Spring `demo` habilita
+sus datos ficticios. El perfil `test` también usa H2; ninguna de las dos pruebas
+conecta con PostgreSQL real.
 
 ## Orden de las funcionalidades
 
 | HU | Solicitud principal | Comprobación |
 | --- | --- | --- |
 | 42 | `GET /api/practicas/preguntas?tema=Algebra&dificultad=FACIL` | Solo preguntas aprobadas; no devuelve la respuesta correcta. |
+| 42 | `GET /api/alumno/practicas/preguntas?tema=Algebra&dificultad=FACIL` | Token ALUMNO; limita preguntas a sus matrículas y horarios activos; devuelve el DTO sin solución. |
 | 42 | `POST /api/practicas/respuestas` | Alumno. Cuerpo `{"preguntaId":1,"respuesta":"4"}`; devuelve 201. |
+| 42 | `GET /api/practicas/respuestas` | Alumno; devuelve solo su historial persistido. |
 | 27 | `GET /api/practicas/preguntas/1/solucionario` | Requiere un intento propio y una solución aprobada. |
 | 28 | `POST /api/alumno/dudas` | Cuerpo `{"docenteId":1,"seccionId":1,"preguntaId":1,"texto":"No entiendo el despeje"}`; devuelve 201. |
 | 28 | `GET /api/docente/dudas/grupos` | El docente consulta sus agrupaciones autorizadas. |
