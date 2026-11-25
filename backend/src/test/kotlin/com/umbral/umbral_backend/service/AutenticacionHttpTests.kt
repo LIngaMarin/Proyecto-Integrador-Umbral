@@ -1,6 +1,11 @@
 package com.umbral.umbral_backend.service
 
 import com.umbral.umbral_backend.security.PasswordAcademico
+import com.nimbusds.jose.JWSAlgorithm
+import com.nimbusds.jose.JWSHeader
+import com.nimbusds.jose.crypto.MACSigner
+import com.nimbusds.jwt.JWTClaimsSet
+import com.nimbusds.jwt.SignedJWT
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -18,6 +23,7 @@ import java.security.MessageDigest
 import java.util.*
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec
+import javax.crypto.spec.SecretKeySpec
 import tools.jackson.databind.ObjectMapper
 
 /** HTTP real y base aislada: nunca usa ni escribe contraseñas de producción. */
@@ -29,6 +35,7 @@ class AutenticacionHttpTests {
     @Autowired lateinit var json:ObjectMapper
     @Autowired lateinit var passwords:PasswordAcademico
     @Autowired lateinit var service:AutenticacionService
+    @Autowired lateinit var jwtKey:SecretKeySpec
     companion object {
         @JvmStatic @DynamicPropertySource fun config(r:DynamicPropertyRegistry){
             r.add("spring.datasource.url"){"jdbc:h2:mem:auth-web;MODE=PostgreSQL;DB_CLOSE_DELAY=-1"}
@@ -44,6 +51,17 @@ class AutenticacionHttpTests {
     private fun hash(password:String):String {
         val sha=MessageDigest.getInstance("SHA-256").digest(password.toByteArray()).joinToString(""){"%02x".format(it)}
         return "bcrypt_sha256$"+BCrypt.hashpw(sha,BCrypt.gensalt(10))
+    }
+
+    @Test fun `acepta user_id numerico de Django SimpleJWT`() {
+        val now=Date()
+        val claims=JWTClaimsSet.Builder().subject("2").claim("user_id",2L).claim("token_type","access")
+            .issueTime(now).expirationTime(Date(now.time+600_000)).build()
+        val token=SignedJWT(JWSHeader(JWSAlgorithm.HS256),claims).also{it.sign(MACSigner(jwtKey.encoded))}.serialize()
+        val response=request("GET","/api/cuenta",token=token)
+
+        assertEquals(200,response.statusCode(),response.body())
+        assertTrue(response.body().contains("\"rol\":\"ALUMNO\""))
     }
 
     @Test fun `acceso con usuario y correo emite JWT valido sin revelar contrasena`() {

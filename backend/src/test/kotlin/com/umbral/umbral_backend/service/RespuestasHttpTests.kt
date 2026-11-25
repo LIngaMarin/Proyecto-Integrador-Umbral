@@ -61,8 +61,8 @@ class RespuestasHttpTests {
             ?: HttpRequest.BodyPublishers.noBody()).build(), HttpResponse.BodyHandlers.ofString())
     }
 
-    fun pregunta(estado: EstadoPregunta = EstadoPregunta.APROBADA, docenteId: Long = 1): Pregunta = preguntas.saveAndFlush(Pregunta(
-        enunciado = "2x + 6 = 14", tema = "HTTP", dificultad = Dificultad.FACIL,
+    fun pregunta(estado: EstadoPregunta = EstadoPregunta.APROBADA, docenteId: Long = 1, tema: String = "HTTP"): Pregunta = preguntas.saveAndFlush(Pregunta(
+        enunciado = "2x + 6 = 14", tema = tema, dificultad = Dificultad.FACIL,
         opciones = listOf("2","4"), respuestaCorrecta = "4", estado = estado, docenteId = docenteId))
 
     /** El nuevo historial persiste entre solicitudes y nunca incluye intentos ni soluciones ajenos. */
@@ -237,6 +237,32 @@ class RespuestasHttpTests {
             assertEquals(401, request("POST","/api/practicas/respuestas",bearer=jwt,body="{}").statusCode())
     }
 
+
+    @Test fun `listado autenticado limita preguntas a docentes de matriculas activas`() {
+        val tema="Acceso-${java.util.UUID.randomUUID()}"
+        val propia=pregunta(docenteId=1,tema=tema)
+        val otraSeccion=pregunta(docenteId=5,tema=tema)
+        pregunta(EstadoPregunta.PENDIENTE,docenteId=1,tema=tema)
+        val filtros="tema=$tema&dificultad=FACIL"
+
+        val alumno=request("GET","/api/alumno/practicas/preguntas?$filtros",user=2)
+        assertEquals(200,alumno.statusCode(),alumno.body())
+        assertTrue(alumno.body().contains("\"id\":${propia.id}"))
+        assertFalse(alumno.body().contains("\"id\":${otraSeccion.id}"))
+        assertFalse(alumno.body().contains("respuestaCorrecta"))
+        assertEquals(401,request("GET","/api/alumno/practicas/preguntas?$filtros",user=null).statusCode())
+        assertEquals(403,request("GET","/api/alumno/practicas/preguntas?$filtros",user=1).statusCode())
+
+        val otroAlumno=request("GET","/api/alumno/practicas/preguntas?$filtros",user=4)
+        assertEquals(200,otroAlumno.statusCode(),otroAlumno.body())
+        assertFalse(otroAlumno.body().contains("\"id\":${propia.id}"))
+        assertTrue(otroAlumno.body().contains("\"id\":${otraSeccion.id}"))
+
+        val catalogo=request("GET","/api/practicas/preguntas?$filtros",user=null)
+        assertEquals(200,catalogo.statusCode(),catalogo.body())
+        assertTrue(catalogo.body().contains("\"id\":${propia.id}"))
+        assertTrue(catalogo.body().contains("\"id\":${otraSeccion.id}"))
+    }
     @Test fun `solucion aprobada exige intento propio y bloquea rutas docentes alternativas`() {
         val p = pregunta()
         val ruta = "/api/practicas/preguntas/${p.id}/solucionario"

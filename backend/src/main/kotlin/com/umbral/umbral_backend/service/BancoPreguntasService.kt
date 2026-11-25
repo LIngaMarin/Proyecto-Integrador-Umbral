@@ -19,17 +19,34 @@ class BancoPreguntasService(
     /** HU 42: consulta solo preguntas publicadas sin revelar su solución. */
     @Transactional(readOnly = true)
     fun obtenerPreguntasPractica(tema: String, dificultad: Dificultad): List<PreguntaPracticaDTO> {
-        if (tema.isBlank()) {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "El tema es obligatorio")
-        }
+        val temaNormalizado = normalizarTema(tema)
         return preguntaRepository.findByEstadoAndTemaAndDificultad(
-            EstadoPregunta.APROBADA, tema.trim(), dificultad
-        ).map {
-            PreguntaPracticaDTO(
-                it.id, it.enunciado, it.tema, it.dificultad, it.opciones.toList()
-            )
-        }
+            EstadoPregunta.APROBADA, temaNormalizado, dificultad
+        ).map(::aPreguntaPracticaDTO)
     }
+
+    /** Lista solo preguntas de docentes que atienden secciones activas del alumno. */
+    @Transactional(readOnly = true)
+    fun obtenerPreguntasPracticaDeAlumno(
+        tema: String,
+        dificultad: Dificultad,
+        docentesPermitidos: Collection<Long>
+    ): List<PreguntaPracticaDTO> {
+        val temaNormalizado = normalizarTema(tema)
+        if (docentesPermitidos.isEmpty()) return emptyList()
+        return preguntaRepository.findByEstadoAndDocenteIdInAndTemaAndDificultad(
+            EstadoPregunta.APROBADA, docentesPermitidos, temaNormalizado, dificultad
+        ).map(::aPreguntaPracticaDTO)
+    }
+
+    private fun normalizarTema(tema: String): String {
+        if (tema.isBlank()) throw ResponseStatusException(HttpStatus.BAD_REQUEST, "El tema es obligatorio")
+        return tema.trim()
+    }
+
+    private fun aPreguntaPracticaDTO(pregunta: Pregunta) = PreguntaPracticaDTO(
+        pregunta.id, pregunta.enunciado, pregunta.tema, pregunta.dificultad, pregunta.opciones.toList()
+    )
 
     // HU 22: Consultar las preguntas de un docente con filtros opcionales.
     /** Mantiene el filtro docente y combina los filtros opcionales presentes. */

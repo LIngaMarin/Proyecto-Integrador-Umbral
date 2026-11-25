@@ -15,6 +15,13 @@ interface PreguntaRepository : JpaRepository<Pregunta, Long> {
         dificultad: Dificultad
     ): List<Pregunta>
 
+    fun findByEstadoAndDocenteIdInAndTemaAndDificultad(
+        estado: EstadoPregunta,
+        docenteId: Collection<Long>,
+        tema: String,
+        dificultad: Dificultad
+    ): List<Pregunta>
+
     /** Busca exclusivamente por el identificador docente. */
     fun findByDocenteId(docenteId: Long): List<Pregunta>
 

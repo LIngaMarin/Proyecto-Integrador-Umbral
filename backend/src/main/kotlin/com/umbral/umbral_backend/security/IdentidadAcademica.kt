@@ -37,10 +37,18 @@ class IdentidadAcademica(private val jdbc: JdbcTemplate) {
 
     /** Exige una matrícula activa del alumno en una sección atendida por el docente. */
     fun exigirPregunta(alumnoId: Long, docenteId: Long) {
-        exigir("""SELECT COUNT(*) FROM adm_matricula m JOIN adm_horario h ON h.seccion_id=m.seccion_id
-            JOIN adm_seccion s ON s.id=m.seccion_id JOIN adm_perfil p ON p.id=h.docente_id
-            JOIN auth_user u ON u.id=p.user_id WHERE m.alumno_id=? AND h.docente_id=?
-            AND m.activa=true AND h.activa=true AND s.activa=true AND p.rol='DOCENTE' AND u.is_active=true""", alumnoId, docenteId)
+        if (docenteId !in docentesDisponiblesParaPractica(alumnoId))
+            throw ResponseStatusException(HttpStatus.FORBIDDEN, "No tiene acceso a este recurso")
+    }
+
+    /** Docentes con horario activo en secciones activas donde el alumno conserva matrícula activa. */
+    fun docentesDisponiblesParaPractica(alumnoId: Long): List<Long> = consulta {
+        jdbc.query("""SELECT DISTINCT h.docente_id FROM adm_matricula m
+            JOIN adm_horario h ON h.seccion_id=m.seccion_id JOIN adm_seccion s ON s.id=m.seccion_id
+            JOIN adm_perfil p ON p.id=h.docente_id JOIN auth_user u ON u.id=p.user_id
+            WHERE m.alumno_id=? AND m.activa=true AND h.activa=true AND s.activa=true
+            AND p.rol='DOCENTE' AND u.is_active=true""",
+            { rs, _ -> rs.getLong("docente_id") }, alumnoId)
     }
 
     /** Comprueba que el alumno esté matriculado en la sección y ambos registros sigan activos. */
