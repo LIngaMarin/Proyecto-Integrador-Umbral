@@ -1,56 +1,37 @@
 package com.umbral.app.ui.alumno
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import com.umbral.app.domain.UmbralRepository
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.umbral.app.domain.Usuario
+import com.umbral.app.ui.navegacion.ContenedorConPestanas
+import com.umbral.app.ui.navegacion.Pestana
+import com.umbral.app.ui.navegacion.irAPestana
 
-private class DestinoAlumno(val emoji: String, val etiqueta: String)
-
-private val destinosAlumno = listOf(
-    DestinoAlumno("🏠", "Inicio"),
-    DestinoAlumno("✏️", "Práctica"),
-    DestinoAlumno("📈", "Progreso"),
-    DestinoAlumno("🗓️", "Horario"),
+private val PESTANAS_ALUMNO = listOf(
+    Pestana("inicio", "🏠", "Inicio"),
+    Pestana("practica", "✏️", "Práctica"),
+    Pestana("progreso", "📈", "Progreso"),
+    Pestana("horario", "🗓️", "Horario"),
 )
 
-/** Contenedor del alumno: barra inferior con 4 destinos. */
+/** Contenedor del alumno: barra inferior con 4 destinos, cada uno con su ViewModel. */
 @Composable
-fun AlumnoRoot(repo: UmbralRepository, usuario: Usuario, onSalir: () -> Unit) {
-    var destino by rememberSaveable { mutableIntStateOf(0) }
-
-    Scaffold(
-        bottomBar = {
-            NavigationBar {
-                destinosAlumno.forEachIndexed { indice, d ->
-                    NavigationBarItem(
-                        selected = destino == indice,
-                        onClick = { destino = indice },
-                        icon = { Text(d.emoji) },
-                        label = { Text(d.etiqueta) },
-                    )
-                }
+fun AlumnoRoot(usuario: Usuario, onSalir: () -> Unit) {
+    val nav = rememberNavController()
+    ContenedorConPestanas(nav, PESTANAS_ALUMNO) { mod ->
+        NavHost(navController = nav, startDestination = "inicio", modifier = mod) {
+            composable("inicio") {
+                InicioAlumnoScreen(
+                    usuario = usuario,
+                    onIrAPractica = { nav.irAPestana("practica") },
+                    onSalir = onSalir,
+                )
             }
-        },
-    ) { innerPadding ->
-        Box(Modifier.fillMaxSize().padding(innerPadding)) {
-            when (destino) {
-                0 -> InicioAlumnoScreen(repo = repo, usuario = usuario, onIrAPractica = { destino = 1 }, onSalir = onSalir)
-                1 -> PracticaScreen(repo = repo)
-                2 -> ProgresoScreen(repo = repo)
-                else -> HorarioScreen(repo = repo)
-            }
+            composable("practica") { PracticaScreen() }
+            composable("progreso") { ProgresoScreen() }
+            composable("horario") { HorarioScreen() }
         }
     }
 }

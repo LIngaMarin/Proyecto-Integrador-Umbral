@@ -1,11 +1,15 @@
 package com.umbral.app.ui.common
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.CreationExtras
+import com.umbral.app.AppContainer
+import com.umbral.app.UmbralApplication
 
-/** Fábrica mínima para crear ViewModels con dependencias: viewModel(factory = vmFactory { MiVm(repo) }). */
-inline fun <reified T : ViewModel> vmFactory(crossinline construir: () -> T): ViewModelProvider.Factory =
-    object : ViewModelProvider.Factory {
-        @Suppress("UNCHECKED_CAST")
-        override fun <V : ViewModel> create(modelClass: Class<V>): V = construir() as V
-    }
+/**
+ * Para usar dentro de viewModelFactory { initializer { ... } }:
+ * da acceso al AppContainer de la aplicacion.
+ *
+ *   val Factory = viewModelFactory { initializer { MiViewModel(contenedor().repositorio) } }
+ */
+fun CreationExtras.contenedor(): AppContainer =
+    (this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as UmbralApplication).container

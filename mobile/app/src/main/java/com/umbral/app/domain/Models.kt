@@ -67,3 +67,15 @@ data class ResultadoSimulacro(val nombre: String, val fecha: String, val puntaje
 data class SimulacroProgramado(val nombre: String, val fecha: String, val hora: String, val aula: String)
 
 data class AvisoInasistencia(val id: Int, val mensaje: String, val fecha: String, val leida: Boolean)
+
+/** Sesion iniciada: el usuario y el token (JWT) que entrega Spring Boot. */
+data class Sesion(val usuario: Usuario, val token: String)
+
+/** Cuenta de prueba que se muestra en el login cuando la app esta en modo demo. */
+data class CuentaDemo(val correo: String, val clave: String, val usuario: Usuario)
+
+/** Lo que el alumno marco en la practica: dificultad por pregunta y sus favoritas. */
+data class MarcasPractica(
+    val dificultades: Map<Int, Dificultad> = emptyMap(),
+    val favoritas: Set<Int> = emptySet(),
+)

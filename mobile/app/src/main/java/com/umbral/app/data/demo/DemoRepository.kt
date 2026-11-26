@@ -4,19 +4,24 @@ import com.umbral.app.domain.AlumnoSeccion
 import com.umbral.app.domain.AvisoInasistencia
 import com.umbral.app.domain.Clase
 import com.umbral.app.domain.Comparativo
+import com.umbral.app.domain.CuentaDemo
 import com.umbral.app.domain.Dificultad
 import com.umbral.app.domain.Duda
+import com.umbral.app.domain.ErrorUmbral
 import com.umbral.app.domain.EstadoAsistencia
 import com.umbral.app.domain.Hijo
+import com.umbral.app.domain.MarcasPractica
 import com.umbral.app.domain.PreguntaPractica
 import com.umbral.app.domain.ProgresoCurso
 import com.umbral.app.domain.RegistroAsistencia
 import com.umbral.app.domain.ResultadoSimulacro
 import com.umbral.app.domain.Rol
+import com.umbral.app.domain.Sesion
 import com.umbral.app.domain.SimulacroProgramado
 import com.umbral.app.domain.TemaDebil
 import com.umbral.app.domain.Usuario
 import com.umbral.app.domain.UmbralRepository
+import kotlinx.coroutines.delay
 
 private const val SEDE = "Sede Miraflores"
 private const val SECCION_A = "Ciclo Ordinario · A"
@@ -49,17 +54,24 @@ private fun pregunta(
     dificultad = dificultad,
 )
 
+/** Clave de todas las cuentas de demostracion. */
+const val CLAVE_DEMO = "umbral123"
+
+/** Cuentas que el login muestra como "entrar rapido" en modo demo. */
+val CUENTAS_DEMO: List<CuentaDemo> = listOf(
+    CuentaDemo("camila@umbral.pe", CLAVE_DEMO, Usuario(1, "Camila Rojas", Rol.ALUMNO, "Ciclo Ordinario · Sección A")),
+    CuentaDemo("marcos@umbral.pe", CLAVE_DEMO, Usuario(2, "Marcos Quispe", Rol.DOCENTE, "Matemática y Razonamiento")),
+    CuentaDemo("rosa@umbral.pe", CLAVE_DEMO, Usuario(3, "Rosa Medina", Rol.APODERADO, "Apoderada de Camila y Mateo")),
+)
+
 /**
  * Implementación en memoria de [UmbralRepository] para la demo.
  * Solo las dudas y los avisos cambian de estado; el resto son listas inmutables.
  */
-class DemoRepository : UmbralRepository {
-
-    private val listaUsuarios: List<Usuario> = listOf(
-        Usuario(1, "Camila Rojas", Rol.ALUMNO, "Ciclo Ordinario · Sección A"),
-        Usuario(2, "Marcos Quispe", Rol.DOCENTE, "Matemática y Razonamiento"),
-        Usuario(3, "Rosa Medina", Rol.APODERADO, "Apoderada de Camila y Mateo"),
-    )
+class DemoRepository(
+    /** Espera simulada de "red" para que se vea el estado Cargando. En pruebas se usa 0. */
+    private val retardoMs: Long = 300,
+) : UmbralRepository {
 
     private val listaHorario: List<Clase> = listOf(
         Clase(1, "Aritmética", "A", "A-201", SEDE, 1, "08:00", "09:30", "Marcos Quispe"),
@@ -435,57 +447,93 @@ class DemoRepository : UmbralRepository {
         ),
     )
 
-    override suspend fun usuariosDemo(): List<Usuario> = listaUsuarios
+    // Lo que el alumno marco en la practica (en memoria)
+    private var dificultadesEstado: Map<Int, Dificultad> = emptyMap()
+    private var favoritasEstado: Set<Int> = emptySet()
 
-    override suspend fun horarioSemanal(): List<Clase> = listaHorario
+    /** Simula una llamada de red: espera un poco y nunca deja escapar la excepcion. */
+    private suspend fun <T> demo(bloque: () -> T): Result<T> {
+        if (retardoMs > 0) delay(retardoMs)
+        return runCatching(bloque)
+    }
 
-    override suspend fun preguntasSemana(): List<PreguntaPractica> =
+    override suspend fun login(correo: String, clave: String): Result<Sesion> = demo {
+        val cuenta = CUENTAS_DEMO.firstOrNull { it.correo.equals(correo.trim(), ignoreCase = true) }
+        if (cuenta == null || cuenta.clave != clave) throw ErrorUmbral.CredencialesInvalidas()
+        Sesion(cuenta.usuario, token = "demo-${cuenta.usuario.id}")
+    }
+
+    override suspend fun horarioSemanal(): Result<List<Clase>> = demo { listaHorario }
+
+    override suspend fun preguntasSemana(): Result<List<PreguntaPractica>> = demo {
         IDS_SEMANA.mapNotNull { id -> listaPreguntas.firstOrNull { it.id == id } }
+    }
 
-    override suspend fun temas(): List<String> = listaTemas
+    override suspend fun temas(): Result<List<String>> = demo { listaTemas }
 
-    override suspend fun preguntasPorTema(tema: String): List<PreguntaPractica> =
+    override suspend fun preguntasPorTema(tema: String): Result<List<PreguntaPractica>> = demo {
         listaPreguntas.filter { it.tema == tema }
+    }
 
-    override suspend fun progreso(): List<ProgresoCurso> = listaProgreso
+    override suspend fun registrarRespuesta(preguntaId: Int, opcion: Int, acerto: Boolean): Result<Unit> = demo { }
 
-    override suspend fun temasDebiles(): List<TemaDebil> = listaTemasDebiles
+    override suspend fun marcasPractica(): Result<MarcasPractica> = demo {
+        MarcasPractica(dificultadesEstado, favoritasEstado)
+    }
 
-    override suspend fun comparativo(): Comparativo = comparativoDemo
+    override suspend fun marcarDificultad(preguntaId: Int, dificultad: Dificultad): Result<Unit> = demo {
+        dificultadesEstado = dificultadesEstado + (preguntaId to dificultad)
+    }
 
-    override suspend fun dudas(): List<Duda> = dudasEstado
+    override suspend fun marcarFavorita(preguntaId: Int, favorita: Boolean): Result<Unit> = demo {
+        favoritasEstado = if (favorita) favoritasEstado + preguntaId else favoritasEstado - preguntaId
+    }
 
-    override suspend fun responderDuda(id: Int, respuesta: String) {
+    override suspend fun progreso(): Result<List<ProgresoCurso>> = demo { listaProgreso }
+
+    override suspend fun temasDebiles(): Result<List<TemaDebil>> = demo { listaTemasDebiles }
+
+    override suspend fun comparativo(): Result<Comparativo> = demo { comparativoDemo }
+
+    override suspend fun dudas(): Result<List<Duda>> = demo { dudasEstado }
+
+    override suspend fun responderDuda(id: Int, respuesta: String): Result<Unit> = demo {
         dudasEstado = dudasEstado.map { duda ->
             if (duda.id == id) duda.copy(resuelta = true, respuesta = respuesta) else duda
         }
     }
 
-    override suspend fun alumnosSeccion(): List<AlumnoSeccion> = listaAlumnos
+    override suspend fun alumnosSeccion(): Result<List<AlumnoSeccion>> = demo { listaAlumnos }
 
-    override suspend fun hijos(): List<Hijo> = listaHijos
+    override suspend fun hijos(): Result<List<Hijo>> = demo { listaHijos }
 
-    override suspend fun asistenciaHijo(hijoId: Int): List<RegistroAsistencia> = when (hijoId) {
-        1 -> asistenciaCamila
-        2 -> asistenciaMateo
-        else -> emptyList()
+    override suspend fun asistenciaHijo(hijoId: Int): Result<List<RegistroAsistencia>> = demo {
+        when (hijoId) {
+            1 -> asistenciaCamila
+            2 -> asistenciaMateo
+            else -> emptyList()
+        }
     }
 
-    override suspend fun resultadosHijo(hijoId: Int): List<ResultadoSimulacro> = when (hijoId) {
-        1 -> resultadosCamila
-        2 -> resultadosMateo
-        else -> emptyList()
+    override suspend fun resultadosHijo(hijoId: Int): Result<List<ResultadoSimulacro>> = demo {
+        when (hijoId) {
+            1 -> resultadosCamila
+            2 -> resultadosMateo
+            else -> emptyList()
+        }
     }
 
-    override suspend fun simulacrosProgramados(hijoId: Int): List<SimulacroProgramado> = when (hijoId) {
-        1 -> simulacrosCamila
-        2 -> simulacrosMateo
-        else -> emptyList()
+    override suspend fun simulacrosProgramados(hijoId: Int): Result<List<SimulacroProgramado>> = demo {
+        when (hijoId) {
+            1 -> simulacrosCamila
+            2 -> simulacrosMateo
+            else -> emptyList()
+        }
     }
 
-    override suspend fun avisos(): List<AvisoInasistencia> = avisosEstado
+    override suspend fun avisos(): Result<List<AvisoInasistencia>> = demo { avisosEstado }
 
-    override suspend fun marcarAvisoLeido(id: Int) {
+    override suspend fun marcarAvisoLeido(id: Int): Result<Unit> = demo {
         avisosEstado = avisosEstado.map { aviso ->
             if (aviso.id == id) aviso.copy(leida = true) else aviso
         }

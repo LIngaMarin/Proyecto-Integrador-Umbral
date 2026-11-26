@@ -1,5 +1,7 @@
 package com.umbral.app.ui.apoderado
 
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.umbral.app.ui.common.ErrorConReintento
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,27 +17,23 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.umbral.app.domain.EstadoAsistencia
 import com.umbral.app.domain.Hijo
 import com.umbral.app.domain.RegistroAsistencia
 import com.umbral.app.domain.ResultadoSimulacro
-import com.umbral.app.domain.UmbralRepository
 import com.umbral.app.ui.common.Encabezado
 import com.umbral.app.ui.common.Etiqueta
 import com.umbral.app.ui.common.EstadoVacio
 import com.umbral.app.ui.common.Tarjeta
 import com.umbral.app.ui.common.TarjetaDato
 import com.umbral.app.ui.common.TituloSeccion
-import com.umbral.app.ui.common.vmFactory
 import com.umbral.app.ui.theme.AcentoOscuro
 import com.umbral.app.ui.theme.ErrorRojo
 import com.umbral.app.ui.theme.Fondo
@@ -45,7 +43,6 @@ import com.umbral.app.ui.theme.Tinta
 
 @Composable
 fun MisHijosScreen(
-    repo: UmbralRepository,
     nombre: String,
     hijos: List<Hijo>,
     hijoId: Int,
@@ -53,8 +50,8 @@ fun MisHijosScreen(
     onSalir: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val vm: MisHijosViewModel = viewModel<MisHijosViewModel>(factory = vmFactory { MisHijosViewModel(repo) })
-    val estado by vm.estado.collectAsState()
+    val vm: MisHijosViewModel = viewModel(factory = MisHijosViewModel.Factory)
+    val estado by vm.estado.collectAsStateWithLifecycle()
 
     LaunchedEffect(hijoId) {
         if (hijoId >= 0) vm.cargar(hijoId)
@@ -83,7 +80,9 @@ fun MisHijosScreen(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                if (!listo) {
+                if (estado.error != null) {
+                    item { ErrorConReintento(estado.error.orEmpty(), onReintentar = { vm.cargar(hijoId, forzar = true) }) }
+                } else if (!listo) {
                     item { Text("Cargando…") }
                 } else {
                     item { TituloSeccion("Asistencia de ${hijo?.nombre ?: "tu hijo"}") }

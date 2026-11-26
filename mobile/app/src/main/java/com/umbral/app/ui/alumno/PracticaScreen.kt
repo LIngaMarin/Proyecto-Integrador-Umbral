@@ -1,5 +1,7 @@
 package com.umbral.app.ui.alumno
 
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.umbral.app.ui.common.ErrorConReintento
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -19,7 +21,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,18 +29,14 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.umbral.app.domain.Dificultad
 import com.umbral.app.domain.PreguntaPractica
-import com.umbral.app.domain.UmbralRepository
 import com.umbral.app.ui.common.Encabezado
 import com.umbral.app.ui.common.Etiqueta
 import com.umbral.app.ui.common.EstadoVacio
 import com.umbral.app.ui.common.Tarjeta
 import com.umbral.app.ui.common.TituloSeccion
-import com.umbral.app.ui.common.vmFactory
 import com.umbral.app.ui.theme.Acento
 import com.umbral.app.ui.theme.AcentoOscuro
 import com.umbral.app.ui.theme.ErrorRojo
@@ -47,137 +44,14 @@ import com.umbral.app.ui.theme.Superficie
 import com.umbral.app.ui.theme.Tinta
 import com.umbral.app.ui.theme.TintaSuave
 import com.umbral.app.ui.theme.TextoFuerte
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
-
-enum class ModoPractica { SEMANA, TEMA }
-
-data class PracticaUiState(
-    val modo: ModoPractica = ModoPractica.SEMANA,
-    val cargando: Boolean = false,
-    val temas: List<String> = emptyList(),
-    val temaElegido: String? = null,
-    val preguntas: List<PreguntaPractica> = emptyList(),
-    val indice: Int = 0,
-    val eleccion: Int? = null,
-    val correctas: Int = 0,
-    val terminado: Boolean = false,
-    val dificultades: Map<Int, Dificultad> = emptyMap(),
-    val favoritas: Set<Int> = emptySet(),
-)
-
-private fun PracticaUiState.conPreguntas(lista: List<PreguntaPractica>, tema: String?): PracticaUiState =
-    copy(
-        cargando = false,
-        preguntas = lista,
-        temaElegido = tema,
-        indice = 0,
-        eleccion = null,
-        correctas = 0,
-        terminado = false,
-    )
-
-class PracticaViewModel(private val repo: UmbralRepository) : ViewModel() {
-    private val _state = MutableStateFlow(PracticaUiState())
-    val state: StateFlow<PracticaUiState> = _state.asStateFlow()
-
-    init {
-        cargarSemana()
-        cargarTemas()
-    }
-
-    fun cambiarModo(modo: ModoPractica) {
-        _state.value = _state.value.copy(modo = modo).conPreguntas(emptyList(), null)
-        if (modo == ModoPractica.SEMANA) cargarSemana()
-    }
-
-    private fun cargarSemana() {
-        viewModelScope.launch {
-            _state.value = _state.value.copy(cargando = true)
-            val lista = repo.preguntasSemana()
-            val actual = _state.value
-            _state.value = if (actual.modo == ModoPractica.SEMANA) {
-                actual.conPreguntas(lista, null)
-            } else {
-                actual.copy(cargando = false)
-            }
-        }
-    }
-
-    private fun cargarTemas() {
-        viewModelScope.launch {
-            val lista = repo.temas()
-            _state.value = _state.value.copy(temas = lista)
-        }
-    }
-
-    fun elegirTema(tema: String) {
-        viewModelScope.launch {
-            _state.value = _state.value.copy(cargando = true)
-            val lista = repo.preguntasPorTema(tema)
-            val actual = _state.value
-            _state.value = if (actual.modo == ModoPractica.TEMA) {
-                actual.conPreguntas(lista, tema)
-            } else {
-                actual.copy(cargando = false)
-            }
-        }
-    }
-
-    fun volverATemas() {
-        _state.value = _state.value.conPreguntas(emptyList(), null)
-    }
-
-    fun elegirOpcion(opcion: Int) {
-        val s = _state.value
-        val pregunta = s.preguntas.getOrNull(s.indice) ?: return
-        if (s.eleccion != null || s.terminado) return
-        val acierto = opcion == pregunta.correcta
-        _state.value = s.copy(
-            eleccion = opcion,
-            correctas = if (acierto) s.correctas + 1 else s.correctas,
-        )
-    }
-
-    fun marcarDificultad(dificultad: Dificultad) {
-        val s = _state.value
-        val pregunta = s.preguntas.getOrNull(s.indice) ?: return
-        _state.value = s.copy(dificultades = s.dificultades + (pregunta.id to dificultad))
-    }
-
-    fun alternarFavorita() {
-        val s = _state.value
-        val pregunta = s.preguntas.getOrNull(s.indice) ?: return
-        val nuevas = if (pregunta.id in s.favoritas) s.favoritas - pregunta.id else s.favoritas + pregunta.id
-        _state.value = s.copy(favoritas = nuevas)
-    }
-
-    fun siguiente() {
-        val s = _state.value
-        if (s.eleccion == null) return
-        val proximo = s.indice + 1
-        val nuevo = if (proximo >= s.preguntas.size) {
-            s.copy(terminado = true)
-        } else {
-            s.copy(indice = proximo, eleccion = null)
-        }
-        _state.value = nuevo
-    }
-
-    fun practicarDeNuevo() {
-        _state.value = _state.value.copy(indice = 0, eleccion = null, correctas = 0, terminado = false)
-    }
-}
 
 private val margenH = Modifier.padding(horizontal = 16.dp)
 private val dificultadesElegibles = listOf(Dificultad.FACIL, Dificultad.MEDIA, Dificultad.DIFICIL)
 
 @Composable
-fun PracticaScreen(repo: UmbralRepository) {
-    val vm: PracticaViewModel = viewModel(factory = vmFactory { PracticaViewModel(repo) })
-    val estado by vm.state.collectAsState()
+fun PracticaScreen() {
+    val vm: PracticaViewModel = viewModel(factory = PracticaViewModel.Factory)
+    val estado by vm.state.collectAsStateWithLifecycle()
     val pregunta = estado.preguntas.getOrNull(estado.indice)
 
     LazyColumn(
@@ -204,13 +78,17 @@ fun PracticaScreen(repo: UmbralRepository) {
             }
         }
 
+        val errorCarga = estado.error
+        if (errorCarga != null) {
+            item { ErrorConReintento(errorCarga, onReintentar = { vm.reintentar() }, modifier = margenH) }
+        }
         if (estado.cargando) {
             item { CircularProgressIndicator(modifier = margenH) }
         }
 
         if (estado.modo == ModoPractica.TEMA && estado.temaElegido == null) {
             item { TituloSeccion("Elige un tema", modifier = margenH) }
-            if (!estado.cargando && estado.temas.isEmpty()) {
+            if (!estado.cargando && estado.error == null && estado.temas.isEmpty()) {
                 item {
                     EstadoVacio(
                         titulo = "Sin temas",
@@ -225,7 +103,7 @@ fun PracticaScreen(repo: UmbralRepository) {
                 }
             }
         } else if (estado.preguntas.isEmpty()) {
-            if (!estado.cargando) {
+            if (!estado.cargando && estado.error == null) {
                 item {
                     EstadoVacio(
                         titulo = "Sin preguntas",

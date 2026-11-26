@@ -1,5 +1,7 @@
 package com.umbral.app.ui.alumno
 
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.umbral.app.ui.common.ErrorConReintento
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -11,64 +13,29 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.umbral.app.domain.Comparativo
 import com.umbral.app.domain.ProgresoCurso
 import com.umbral.app.domain.TemaDebil
-import com.umbral.app.domain.UmbralRepository
 import com.umbral.app.ui.common.BarraProgreso
 import com.umbral.app.ui.common.Encabezado
 import com.umbral.app.ui.common.EstadoVacio
 import com.umbral.app.ui.common.Tarjeta
 import com.umbral.app.ui.common.TituloSeccion
-import com.umbral.app.ui.common.vmFactory
 import com.umbral.app.ui.theme.Acento
 import com.umbral.app.ui.theme.ErrorRojo
 import com.umbral.app.ui.theme.Tinta
 import com.umbral.app.ui.theme.TextoSuave
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
-
-data class ProgresoUiState(
-    val cargando: Boolean = true,
-    val cursos: List<ProgresoCurso> = emptyList(),
-    val temasDebiles: List<TemaDebil> = emptyList(),
-    val comparativo: Comparativo? = null,
-)
-
-class ProgresoViewModel(private val repo: UmbralRepository) : ViewModel() {
-    private val _state = MutableStateFlow(ProgresoUiState())
-    val state: StateFlow<ProgresoUiState> = _state.asStateFlow()
-
-    init {
-        viewModelScope.launch {
-            val cursos = repo.progreso()
-            val debiles = repo.temasDebiles()
-            val comp = repo.comparativo()
-            _state.value = ProgresoUiState(
-                cargando = false,
-                cursos = cursos,
-                temasDebiles = debiles,
-                comparativo = comp,
-            )
-        }
-    }
-}
 
 private val margenH = Modifier.padding(horizontal = 16.dp)
 
 @Composable
-fun ProgresoScreen(repo: UmbralRepository) {
-    val vm: ProgresoViewModel = viewModel(factory = vmFactory { ProgresoViewModel(repo) })
-    val estado by vm.state.collectAsState()
+fun ProgresoScreen() {
+    val vm: ProgresoViewModel = viewModel(factory = ProgresoViewModel.Factory)
+    val estado by vm.state.collectAsStateWithLifecycle()
 
     LazyColumn(
         modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
@@ -76,6 +43,10 @@ fun ProgresoScreen(repo: UmbralRepository) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item { Encabezado(titulo = "Progreso", subtitulo = "Cómo vas en tus cursos y temas") }
+        val errorCarga = estado.error
+        if (errorCarga != null) {
+            item { ErrorConReintento(errorCarga, onReintentar = { vm.cargar() }, modifier = margenH) }
+        }
 
         if (estado.cargando) {
             item { CircularProgressIndicator(modifier = margenH) }
@@ -94,7 +65,7 @@ fun ProgresoScreen(repo: UmbralRepository) {
         }
 
         item { TituloSeccion("Temas por reforzar", modifier = margenH) }
-        if (!estado.cargando && estado.temasDebiles.isEmpty()) {
+        if (!estado.cargando && estado.error == null && estado.temasDebiles.isEmpty()) {
             item {
                 EstadoVacio(
                     titulo = "Sin temas débiles",

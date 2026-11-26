@@ -1,5 +1,7 @@
 package com.umbral.app.ui.docente
 
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.umbral.app.ui.common.ErrorConReintento
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,67 +16,28 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.umbral.app.domain.AlumnoSeccion
-import com.umbral.app.domain.UmbralRepository
 import com.umbral.app.ui.common.Encabezado
 import com.umbral.app.ui.common.Etiqueta
 import com.umbral.app.ui.common.EstadoVacio
 import com.umbral.app.ui.common.Tarjeta
-import com.umbral.app.ui.common.vmFactory
 import com.umbral.app.ui.theme.AcentoOscuro
 import com.umbral.app.ui.theme.ErrorRojo
 import com.umbral.app.ui.theme.Fondo
 import com.umbral.app.ui.theme.Luz
 import com.umbral.app.ui.theme.Tinta
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
-
-data class AlumnosUiState(
-    val cargando: Boolean = true,
-    val todos: List<AlumnoSeccion> = emptyList(),
-    val busqueda: String = "",
-) {
-    val visibles: List<AlumnoSeccion>
-        get() = todos.filter { it.nombre.contains(busqueda.trim(), ignoreCase = true) }
-}
-
-class AlumnosViewModel(private val repo: UmbralRepository) : ViewModel() {
-    private val _estado = MutableStateFlow(AlumnosUiState())
-    val estado: StateFlow<AlumnosUiState> = _estado.asStateFlow()
-
-    init {
-        cargar()
-    }
-
-    fun cargar() {
-        viewModelScope.launch {
-            _estado.value = _estado.value.copy(cargando = true)
-            val lista = repo.alumnosSeccion()
-            _estado.value = _estado.value.copy(cargando = false, todos = lista)
-        }
-    }
-
-    fun cambiarBusqueda(texto: String) {
-        _estado.value = _estado.value.copy(busqueda = texto)
-    }
-}
 
 @Composable
-fun AlumnosScreen(repo: UmbralRepository, modifier: Modifier = Modifier) {
-    val vm: AlumnosViewModel = viewModel<AlumnosViewModel>(factory = vmFactory { AlumnosViewModel(repo) })
-    val estado by vm.estado.collectAsState()
+fun AlumnosScreen(modifier: Modifier = Modifier) {
+    val vm: AlumnosViewModel = viewModel(factory = AlumnosViewModel.Factory)
+    val estado by vm.estado.collectAsStateWithLifecycle()
     val visibles = estado.visibles
 
     Column(modifier.fillMaxSize().background(Fondo)) {
@@ -91,7 +54,11 @@ fun AlumnosScreen(repo: UmbralRepository, modifier: Modifier = Modifier) {
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            if (!estado.cargando && visibles.isEmpty()) {
+            val errorCarga = estado.error
+            if (errorCarga != null) {
+                item { ErrorConReintento(errorCarga, onReintentar = { vm.cargar() }) }
+            }
+            if (!estado.cargando && estado.error == null && visibles.isEmpty()) {
                 item {
                     EstadoVacio(
                         if (estado.todos.isEmpty()) "Sin alumnos" else "Sin coincidencias",

@@ -1,5 +1,7 @@
 package com.umbral.app.ui.docente
 
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.umbral.app.ui.common.ErrorConReintento
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,7 +18,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -26,74 +27,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.umbral.app.domain.Duda
-import com.umbral.app.domain.UmbralRepository
 import com.umbral.app.ui.common.Encabezado
 import com.umbral.app.ui.common.Etiqueta
 import com.umbral.app.ui.common.EstadoVacio
 import com.umbral.app.ui.common.Tarjeta
-import com.umbral.app.ui.common.vmFactory
 import com.umbral.app.ui.theme.AcentoOscuro
 import com.umbral.app.ui.theme.Fondo
 import com.umbral.app.ui.theme.Luz
 import com.umbral.app.ui.theme.Tinta
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
-
-data class DudasUiState(
-    val cargando: Boolean = true,
-    val dudas: List<Duda> = emptyList(),
-    val soloPendientes: Boolean = true,
-    val enviandoId: Int? = null,
-) {
-    val visibles: List<Duda>
-        get() = if (soloPendientes) dudas.filter { !it.resuelta } else dudas
-}
-
-class DudasViewModel(private val repo: UmbralRepository) : ViewModel() {
-    private val _estado = MutableStateFlow(DudasUiState())
-    val estado: StateFlow<DudasUiState> = _estado.asStateFlow()
-
-    init {
-        cargar()
-    }
-
-    fun cargar() {
-        viewModelScope.launch {
-            _estado.value = _estado.value.copy(cargando = true)
-            val lista = repo.dudas()
-            _estado.value = _estado.value.copy(cargando = false, dudas = lista)
-        }
-    }
-
-    fun elegirFiltro(soloPendientes: Boolean) {
-        _estado.value = _estado.value.copy(soloPendientes = soloPendientes)
-    }
-
-    fun responder(id: Int, texto: String) {
-        val limpio = texto.trim()
-        if (limpio.isEmpty()) return
-        viewModelScope.launch {
-            _estado.value = _estado.value.copy(enviandoId = id)
-            try {
-                repo.responderDuda(id, limpio)
-            } finally {
-                _estado.value = _estado.value.copy(enviandoId = null)
-            }
-            cargar()
-        }
-    }
-}
 
 @Composable
-fun DudasScreen(repo: UmbralRepository, modifier: Modifier = Modifier) {
-    val vm: DudasViewModel = viewModel<DudasViewModel>(factory = vmFactory { DudasViewModel(repo) })
-    val estado by vm.estado.collectAsState()
+fun DudasScreen(modifier: Modifier = Modifier) {
+    val vm: DudasViewModel = viewModel(factory = DudasViewModel.Factory)
+    val estado by vm.estado.collectAsStateWithLifecycle()
     val visibles = estado.visibles
 
     Column(modifier.fillMaxSize().background(Fondo)) {
@@ -110,7 +58,11 @@ fun DudasScreen(repo: UmbralRepository, modifier: Modifier = Modifier) {
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            if (visibles.isEmpty()) {
+            val errorCarga = estado.error
+            if (errorCarga != null) {
+                item { ErrorConReintento(errorCarga, onReintentar = { vm.cargar() }) }
+            }
+            if (visibles.isEmpty() && estado.error == null) {
                 item {
                     EstadoVacio(
                         if (estado.cargando) "Cargando…" else if (estado.soloPendientes) "No hay dudas pendientes" else "Aún no hay dudas",

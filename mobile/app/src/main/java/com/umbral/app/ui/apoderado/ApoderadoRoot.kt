@@ -1,84 +1,75 @@
 package com.umbral.app.ui.apoderado
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.umbral.app.domain.Hijo
-import com.umbral.app.domain.UmbralRepository
 import com.umbral.app.domain.Usuario
+import com.umbral.app.ui.common.ErrorConReintento
+import com.umbral.app.ui.common.PantallaCarga
+import com.umbral.app.ui.navegacion.ContenedorConPestanas
+import com.umbral.app.ui.navegacion.Pestana
 
-private data class DestinoApoderado(val icono: String, val titulo: String)
-
-private val destinosApoderado = listOf(
-    DestinoApoderado("👨‍👩‍👧", "Mis hijos"),
-    DestinoApoderado("🔔", "Avisos"),
-    DestinoApoderado("📅", "Simulacros"),
+private val PESTANAS_APODERADO = listOf(
+    Pestana("hijos", "👨‍👩‍👧", "Mis hijos"),
+    Pestana("avisos", "🔔", "Avisos"),
+    Pestana("simulacros", "📅", "Simulacros"),
 )
 
+/**
+ * Contenedor del apoderado. Los hijos y el hijo elegido viven en ApoderadoViewModel
+ * (compartido por las pestañas), ya no en la pantalla.
+ */
 @Composable
-fun ApoderadoRoot(repo: UmbralRepository, usuario: Usuario, onSalir: () -> Unit) {
-    var destino by rememberSaveable { mutableIntStateOf(0) }
-    // -1 = todavía no hay hijo elegido.
-    var hijoId by rememberSaveable { mutableIntStateOf(-1) }
-    var hijos by remember { mutableStateOf<List<Hijo>>(emptyList()) }
+fun ApoderadoRoot(usuario: Usuario, onSalir: () -> Unit) {
+    val vm: ApoderadoViewModel = viewModel(factory = ApoderadoViewModel.Factory)
+    val estado by vm.estado.collectAsStateWithLifecycle()
+    val nav = rememberNavController()
 
-    LaunchedEffect(Unit) {
-        hijos = repo.hijos()
-        if (hijoId < 0 && hijos.isNotEmpty()) hijoId = hijos.first().id
-    }
-
-    Scaffold(
-        bottomBar = {
-            NavigationBar {
-                destinosApoderado.forEachIndexed { i, d ->
-                    NavigationBarItem(
-                        selected = destino == i,
-                        onClick = { destino = i },
-                        icon = { Text(d.icono) },
-                        label = { Text(d.titulo) },
+    ContenedorConPestanas(nav, PESTANAS_APODERADO) { mod ->
+        val error = estado.error
+        when {
+            estado.cargando && estado.hijos.isEmpty() -> PantallaCarga(mod)
+            error != null && estado.hijos.isEmpty() -> Box(mod.fillMaxSize().padding(16.dp), contentAlignment = Alignment.Center) {
+                ErrorConReintento(error, onReintentar = { vm.cargarHijos() })
+            }
+            else -> NavHost(navController = nav, startDestination = "hijos", modifier = mod) {
+                composable("hijos") {
+                    MisHijosScreen(
+                        nombre = usuario.nombre,
+                        hijos = estado.hijos,
+                        hijoId = estado.hijoId,
+                        onElegirHijo = vm::elegirHijo,
+                        onSalir = onSalir,
+                    )
+                }
+                composable("avisos") { AvisosScreen() }
+                composable("simulacros") {
+                    SimulacrosScreen(
+                        hijos = estado.hijos,
+                        hijoId = estado.hijoId,
+                        onElegirHijo = vm::elegirHijo,
                     )
                 }
             }
-        },
-    ) { innerPadding ->
-        val mod = Modifier.padding(innerPadding)
-        when (destino) {
-            0 -> MisHijosScreen(
-                repo = repo,
-                nombre = usuario.nombre,
-                hijos = hijos,
-                hijoId = hijoId,
-                onElegirHijo = { hijoId = it },
-                onSalir = onSalir,
-                modifier = mod,
-            )
-            1 -> AvisosScreen(repo = repo, modifier = mod)
-            else -> SimulacrosScreen(
-                repo = repo,
-                hijos = hijos,
-                hijoId = hijoId,
-                onElegirHijo = { hijoId = it },
-                modifier = mod,
-            )
         }
     }
 }
