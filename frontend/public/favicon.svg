@@ -1,2 +1,2 @@
-<!-- Identificador vectorial del campus; evita solicitudes de iconos inexistentes. -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><rect width="40" height="40" rx="10" fill="#101b3b"/><g fill="none" stroke="#f3f6fb" stroke-width="2" stroke-linejoin="round"><path d="m6 17 14-7 14 7-14 7zM11 20v8c6 4 12 4 18 0v-8M34 17v11"/></g></svg>
+<!-- Logotipo del campus: arco del umbral sobre la línea de luz, igual que la landing. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#101b3b"/><path d="M18 50V30a14 14 0 0 1 28 0v20" fill="none" stroke="#f5f6fb" stroke-width="5" stroke-linecap="round"/><path d="M11 50h42" stroke="#ffc83d" stroke-width="6" stroke-linecap="round"/></svg>

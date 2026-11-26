@@ -9,4 +9,6 @@ const paths = {
   user: '<circle cx="12" cy="8" r="4"/><path d="M4 22v-2a8 8 0 0 1 16 0v2"/>',
   bell: '<path d="M6 9a6 6 0 0 1 12 0v5l3 3H3l3-3zM9 21h6"/>',
 };
+// Logotipo de UMBRAL: el arco del umbral con la línea de luz, compartido con la landing.
+export const marca = () => '<svg class="marca-arco" viewBox="0 0 24 28" aria-hidden="true" focusable="false"><path d="M3.5 25V12a8.5 8.5 0 0 1 17 0v13" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M0.5 26.5h23" stroke="#ffc83d" stroke-width="3" stroke-linecap="round"/></svg>';
 export const icon = name => `<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name] || paths.book}</svg>`;
